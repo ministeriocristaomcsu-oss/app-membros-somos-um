@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bem-vindo · Somos Um</title>
+<meta name="theme-color" content="#111111">
+<link rel="icon" href="icone.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+  :root { --bg: #f6f5f3; --card: #fff; --ink: #1b1b1b; --muted: #6b6b6b; --line: #e4e1dc; --red: #c4161c; --red-soft: #fbe9e9; --green: #1f7a3d; --green-soft: #e6f4ea; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #121212; --card: #1d1d1d; --ink: #f1f1f1; --muted: #a3a3a3; --line: #333; --red: #ef4b50; --red-soft: #3a1c1d; --green: #5cc883; --green-soft: #17311f; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--ink); }
+  header { background: #111; color: #fff; padding: 22px 16px; text-align: center; }
+  header h1 { margin: 0; font-size: 20px; }
+  header h1 span { color: #ff5a5f; }
+  header p { margin: 6px 0 0; color: #ccc; font-size: 14px; }
+  main { max-width: 560px; margin: 0 auto; padding: 16px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+  label { display: block; font-size: 14px; color: var(--muted); margin: 14px 0 4px; }
+  label:first-child { margin-top: 0; }
+  input, select, textarea { width: 100%; min-width: 0; max-width: 100%; padding: 12px; border: 1px solid var(--line); border-radius: 8px; font-size: 16px; background: var(--card); color: var(--ink); font-family: inherit; }
+  textarea { min-height: 90px; }
+  .check { display: flex; gap: 10px; align-items: flex-start; margin-top: 14px; font-size: 14px; color: var(--ink); }
+  .check input { width: 22px; height: 22px; flex: none; margin: 0; }
+  button { width: 100%; border: 0; border-radius: 10px; padding: 14px; font-size: 16px; font-weight: 600; background: var(--red); color: #fff; cursor: pointer; }
+  button:disabled { opacity: .6; }
+  .aviso { background: var(--red-soft); color: var(--red); border-radius: 8px; padding: 10px; font-size: 14px; margin-bottom: 12px; }
+  .ok { background: var(--green-soft); color: var(--green); border-radius: 12px; padding: 24px 16px; text-align: center; font-size: 16px; }
+  .dica { font-size: 13px; color: var(--muted); margin: 6px 0 0; }
+  .oculto { display: none !important; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Seja bem-vindo <span>·</span> Somos Um</h1>
+  <p>Ministério Cristão Somos Um · Colombo-PR</p>
+</header>
+<main>
+  <div id="formulario">
+    <div class="card">
+      <p style="margin:0">Que alegria ter você aqui hoje! 🙌 Deixe seu contato para a gente te conhecer melhor. Leva menos de 1 minuto.</p>
+    </div>
+    <div class="card">
+      <label for="nome">Seu nome *</label>
+      <input id="nome" autocomplete="name">
+      <label for="telefone">WhatsApp com DDD *</label>
+      <input id="telefone" type="tel" inputmode="tel" placeholder="41 99999-9999" autocomplete="tel">
+      <label for="bairro">Bairro onde mora</label>
+      <input id="bairro">
+    </div>
+    <div class="card">
+      <label for="primeira_vez">É a sua primeira vez no Somos Um?</label>
+      <select id="primeira_vez"><option value="sim">Sim, primeira vez</option><option value="nao">Não, já vim antes</option></select>
+      <label for="como_conheceu">Como conheceu a igreja?</label>
+      <select id="como_conheceu">
+        <option value=""></option>
+        <option>Convite de alguém</option><option>Redes sociais</option><option>Passei em frente</option>
+        <option>Família</option><option>Jiu-Jitsu</option><option>Outro</option>
+      </select>
+      <div id="convite" class="oculto">
+        <label for="convidado_por">Quem te convidou?</label>
+        <input id="convidado_por">
+      </div>
+    </div>
+    <div class="card">
+      <label for="pedido_oracao">Tem algum pedido de oração? (opcional)</label>
+      <textarea id="pedido_oracao" maxlength="1000"></textarea>
+      <label class="check"><input type="checkbox" id="quer_contato_pastor"> Gostaria de conversar com o pastor.</label>
+    </div>
+    <div class="card">
+      <label class="check" style="margin-top:0"><input type="checkbox" id="aceita_mensagens" checked> Quero receber mensagens da igreja no WhatsApp.</label>
+      <label class="check"><input type="checkbox" id="lgpd"> Autorizo o Ministério Cristão Somos Um a guardar estes dados para fins pastorais e de comunicação, conforme a LGPD. Posso pedir a exclusão a qualquer momento. *</label>
+    </div>
+    <div id="erro" class="aviso oculto"></div>
+    <button id="enviar">Enviar</button>
+    <p class="dica" style="text-align:center;margin-top:12px">Seus dados ficam visíveis apenas para a liderança da igreja.</p>
+  </div>
+  <div id="sucesso" class="ok oculto">
+    <div style="font-size:40px">🙏</div>
+    <p><b>Obrigado pela visita!</b></p>
+    <p style="font-size:14px">Foi uma alegria ter você com a gente. Volte sempre: domingo às 19h e terça às 20h. Deus abençoe!</p>
+  </div>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script>
+const sb = supabase.createClient('https://kucctooazibqfzlmqsws.supabase.co', 'sb_publishable_4yxH3tJotLPLK3LDiYb01A_7dsS2xpn');
+const $ = (s) => document.querySelector(s);
+$('#como_conheceu').onchange = () => $('#convite').classList.toggle('oculto', $('#como_conheceu').value !== 'Convite de alguém');
+
+$('#enviar').onclick = async () => {
+  const v = (id) => $('#' + id).value.trim();
+  const digitos = v('telefone').replace(/\D/g, '');
+  const erros = [];
+  if (v('nome').length < 2) erros.push('Escreva o seu nome.');
+  if (digitos.length < 10 || digitos.length > 13) erros.push('Confira o WhatsApp: DDD + número, por exemplo 41 99999-9999.');
+  if (!$('#lgpd').checked) erros.push('Para enviar, marque a autorização da LGPD.');
+  const erro = $('#erro');
+  if (erros.length) { erro.innerHTML = erros.join('<br>'); erro.classList.remove('oculto'); return; }
+  erro.classList.add('oculto');
+
+  const btn = $('#enviar'); btn.disabled = true; btn.textContent = 'Enviando...';
+  // Sem .select(): o público só pode cadastrar, não ler. Se o telefone já estiver na lista, o banco conta como nova visita.
+  const { error } = await sb.from('visitantes').insert({
+    nome: v('nome').replace(/\s+/g, ' ').slice(0, 120), telefone: v('telefone').slice(0, 30), bairro: v('bairro').slice(0, 80),
+    primeira_vez: v('primeira_vez') === 'sim', como_conheceu: v('como_conheceu'),
+    convidado_por: v('como_conheceu') === 'Convite de alguém' ? v('convidado_por').slice(0, 120) : '',
+    pedido_oracao: v('pedido_oracao').slice(0, 1000), quer_contato_pastor: $('#quer_contato_pastor').checked,
+    aceita_mensagens: $('#aceita_mensagens').checked, lgpd_consentimento: true,
+  });
+  if (error) {
+    btn.disabled = false; btn.textContent = 'Enviar';
+    erro.textContent = 'Não foi possível enviar agora. Confira os dados e tente de novo.'; erro.classList.remove('oculto');
+    return;
+  }
+  $('#formulario').classList.add('oculto');
+  $('#sucesso').classList.remove('oculto');
+  window.scrollTo(0, 0);
+};
+</script>
+</body>
+</html>

@@ -1,0 +1,1498 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Membros Somos Um</title>
+<meta name="theme-color" content="#111111">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icone.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Somos Um">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<style>
+  :root {
+    --bg: #f6f5f3; --card: #ffffff; --ink: #1b1b1b; --muted: #6b6b6b; --line: #e4e1dc;
+    --red: #c4161c; --red-soft: #fbe9e9; --green: #1f7a3d; --green-soft: #e6f4ea; --wa: #1fa855; --blue: #2856b6; --blue-soft: #eef4ff;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #121212; --card: #1d1d1d; --ink: #f1f1f1; --muted: #a3a3a3; --line: #333;
+            --red: #ef4b50; --red-soft: #3a1c1d; --green: #5cc883; --green-soft: #17311f; --blue: #8fb2ff; --blue-soft: #1a2540; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--ink); }
+  header { background: #111; color: #fff; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 5; }
+  header h1 { font-size: 17px; margin: 0; }
+  header h1 span { color: #ff5a5f; }
+  header button { background: none; border: 1px solid #555; color: #ddd; border-radius: 8px; padding: 6px 10px; font-size: 13px; }
+  nav { display: flex; overflow-x: auto; background: var(--card); border-bottom: 1px solid var(--line); position: sticky; top: 52px; z-index: 4; }
+  nav button { flex: 1; border: 0; background: none; padding: 12px 1px; font-size: 12.5px; white-space: nowrap; color: var(--muted); border-bottom: 3px solid transparent; }
+  nav button.ativo { color: var(--ink); border-bottom-color: var(--red); font-weight: 600; }
+  main { max-width: 720px; margin: 0 auto; padding: 16px; }
+  h2 { font-size: 15px; margin: 22px 0 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+  h2:first-child { margin-top: 4px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px; margin-bottom: 10px; }
+  .linha { display: flex; align-items: center; gap: 12px; }
+  .linha .info { flex: 1; min-width: 0; }
+  .avatar { width: 44px; height: 44px; border-radius: 50%; flex: none; object-fit: cover; background: #111; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px; }
+  .avatar.grande { width: 112px; height: 112px; font-size: 34px; margin: 0 auto; }
+  .foto-bloco { text-align: center; }
+  .foto-bloco .acoes { justify-content: center; }
+  .nome { font-weight: 600; }
+  .sub { color: var(--muted); font-size: 13px; margin-top: 2px; }
+  .vazio { color: var(--muted); text-align: center; padding: 26px 10px; }
+  .btn { border: 0; border-radius: 10px; padding: 10px 14px; font-size: 14px; font-weight: 600; cursor: pointer; }
+  a.btn { text-decoration: none; text-align: center; display: inline-block; }
+  .btn-wa { background: var(--wa); color: #fff; white-space: nowrap; }
+  .btn-pri { background: var(--red); color: #fff; }
+  .btn-sec { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+  .btn-perigo { background: transparent; color: var(--red); border: 1px solid var(--red); }
+  .enviado { background: var(--green-soft); color: var(--green); border-radius: 10px; padding: 8px 10px; font-size: 13px; font-weight: 600; white-space: nowrap; }
+  .tag { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 99px; background: var(--red-soft); color: var(--red); font-weight: 600; margin-right: 4px; }
+  .data-grupo { font-weight: 600; margin: 16px 0 8px; }
+  input, select, textarea { width: 100%; padding: 10px; border: 1px solid var(--line); border-radius: 8px; font-size: 16px; background: var(--card); color: var(--ink); font-family: inherit; }
+  textarea { min-height: 160px; }
+  label { display: block; font-size: 13px; color: var(--muted); margin: 12px 0 4px; }
+  .resumo-faixas { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 12px 0; }
+  .faixa-box { text-align: center; border: 1px solid var(--line); cursor: pointer; font: inherit; color: inherit; margin: 0; }
+  .faixa-box.ativo { border-color: var(--red); }
+  .acoes-wa { display: flex; flex-direction: column; gap: 6px; align-items: stretch; }
+  .tag-faixa { background: var(--blue-soft); color: var(--blue); }
+  .grade { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; }
+  .grade .inteiro { grid-column: 1 / -1; }
+  .check { display: flex; gap: 10px; align-items: flex-start; margin-top: 14px; font-size: 14px; color: var(--ink); }
+  .check input { width: 20px; height: 20px; flex: none; margin: 0; }
+  .barra { display: flex; gap: 8px; margin-bottom: 12px; }
+  .barra input { flex: 1; }
+  .acoes { display: flex; gap: 8px; margin-top: 18px; flex-wrap: wrap; }
+  .acoes .btn { flex: 1; }
+  .clicavel { cursor: pointer; }
+  .aviso { background: var(--red-soft); color: var(--red); border-radius: 8px; padding: 10px; font-size: 14px; margin-top: 12px; }
+  .dica { font-size: 13px; color: var(--muted); }
+  #login { max-width: 380px; margin: 60px auto; }
+  #toast { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); background: #111; color: #fff; padding: 10px 16px; border-radius: 10px; font-size: 14px; display: none; z-index: 20; max-width: 90vw; }
+  .oculto { display: none !important; }
+  @media (max-width: 480px) { .grade { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>Somos Um <span>·</span> Membros</h1>
+  <button id="sair" class="oculto">Sair</button>
+</header>
+
+<section id="login" class="card oculto">
+  <h2 id="lg-titulo">Entrar</h2>
+  <p class="dica" id="lg-dica">Entre com o seu e-mail e senha.</p>
+  <label for="lg-email">E-mail</label>
+  <input id="lg-email" type="email" autocomplete="username">
+  <div id="lg-campo-senha"><label for="lg-senha">Senha</label>
+  <input id="lg-senha" type="password" autocomplete="current-password"></div>
+  <div id="lg-campo-senha2" class="oculto"><label for="lg-senha2">Repita a senha</label>
+  <input id="lg-senha2" type="password" autocomplete="new-password"></div>
+  <div class="acoes"><button class="btn btn-pri" id="lg-entrar">Entrar</button></div>
+  <div id="lg-erro" class="aviso oculto"></div>
+  <div id="lg-ok" class="enviado oculto" style="margin-top:12px;white-space:normal"></div>
+  <div class="acoes" id="lg-links">
+    <button class="btn btn-sec" data-modo="criar">Primeiro acesso</button>
+    <button class="btn btn-sec" data-modo="esqueci">Esqueci a senha</button>
+  </div>
+  <div class="acoes oculto" id="lg-voltar"><button class="btn btn-sec" data-modo="entrar">Voltar para Entrar</button></div>
+</section>
+
+<section id="sem-acesso" class="card oculto" style="max-width:420px;margin:60px auto;text-align:center">
+  <div style="font-size:40px">🔒</div>
+  <p><b>Seu e-mail ainda não foi liberado.</b></p>
+  <p class="dica" id="sem-acesso-email"></p>
+  <p class="dica">Peça para o Anderson incluir o seu e-mail em <b>Ajustes → Acessos</b>. Depois é só entrar de novo.</p>
+  <div class="acoes"><button class="btn btn-sec" id="sem-acesso-sair">Sair</button></div>
+</section>
+
+<div id="app" class="oculto">
+  <nav>
+    <button data-aba="hoje" class="ativo">Hoje</button>
+    <button data-aba="proximos">Próximos</button>
+    <button data-aba="membros">Membros</button>
+    <button data-aba="kids">Kids e Jovens</button>
+    <button data-aba="visitantes">Visitantes <span id="badge-visitantes" class="tag oculto"></span></button>
+    <button data-aba="pedidos">Pedidos <span id="badge-pedidos" class="tag oculto"></span></button>
+    <button data-aba="mensagens">Ajustes</button>
+  </nav>
+  <main>
+    <section id="aba-hoje"></section>
+    <section id="aba-proximos" class="oculto"></section>
+    <section id="aba-membros" class="oculto"></section>
+    <section id="aba-mensagens" class="oculto"></section>
+    <section id="aba-pedidos" class="oculto"></section>
+    <section id="aba-form" class="oculto"></section>
+    <section id="aba-importar" class="oculto"></section>
+    <section id="aba-visitantes" class="oculto"></section>
+    <section id="aba-kids" class="oculto"></section>
+    <section id="aba-visitante" class="oculto"></section>
+  </main>
+</div>
+<div id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script>
+const SUPABASE_URL = 'https://kucctooazibqfzlmqsws.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_4yxH3tJotLPLK3LDiYb01A_7dsS2xpn';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const estado = { membros: [], enviados: [], modelos: {}, pedidos: [], visitantes: [], contatos: [], aba: 'hoje', docs: {} };
+const LINK_ATUALIZACAO = new URL('atualizar.html', location.href).href;
+const $ = (s) => document.querySelector(s);
+const esc = (t) => String(t ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const MESES = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+const ESTADOS_CIVIS = { solteiro: 'Solteiro(a)', casado: 'Casado(a)', uniao_estavel: 'União estável', divorciado: 'Divorciado(a)', viuvo: 'Viúvo(a)' };
+const CATEGORIAS = { membro: 'Membro', congregado: 'Congregado', visitante: 'Visitante', obreiro: 'Obreiro', lider: 'Líder', pastor: 'Pastor(a)', crianca_jovem: 'Criança / jovem (ainda não batizado)' };
+// Faixas por idade (Kids 0-11, Adolescentes 12-17, Jovens 18-29). A pessoa muda de faixa sozinha no aniversário.
+const FAIXAS = { kids: { nome: 'Kids', emoji: '🧸', de: 0, ate: 11 }, adolescentes: { nome: 'Adolescentes', emoji: '🎒', de: 12, ate: 17 }, jovens: { nome: 'Jovens', emoji: '🔥', de: 18, ate: 29 } };
+const IDADE_BATISMO = 12;
+function idadeEm(iso, base) {
+  const p = partes(iso); if (!p) return null;
+  let n = base.getFullYear() - p.a;
+  if (base.getMonth() + 1 < p.m || (base.getMonth() + 1 === p.m && base.getDate() < p.d)) n--;
+  return n;
+}
+function idade(m) { return m && m.nascimento ? idadeEm(m.nascimento, hoje()) : null; }
+function faixaDaIdade(n) { return n == null ? null : Object.keys(FAIXAS).find((k) => n >= FAIXAS[k].de && n <= FAIXAS[k].ate) || null; }
+function faixa(m) { return faixaDaIdade(idade(m)); }
+function tagFaixa(m) { const f = faixa(m); return f ? `<span class="tag tag-faixa">${FAIXAS[f].emoji} ${FAIXAS[f].nome}</span>` : ''; }
+const ehMembro = (m) => m.categoria !== 'crianca_jovem' && m.categoria !== 'visitante';
+// Pai, mãe e responsável (cadastrado ou não) de alguém
+function responsaveis(m) {
+  const porId = (id) => id && estado.membros.find((x) => x.id === id);
+  const r = [porId(m.pai_id), porId(m.mae_id)].filter(Boolean).map((x) => ({ id: x.id, nome: x.nome, telefone: x.telefone, aceita_mensagens: x.aceita_mensagens }));
+  if (m.responsavel_nome || m.responsavel_telefone) r.push({ id: 'resp:' + m.id, nome: m.responsavel_nome || 'Responsável', telefone: m.responsavel_telefone, aceita_mensagens: true });
+  return r;
+}
+function filhos(m) { return estado.membros.filter((x) => x.pai_id === m.id || x.mae_id === m.id); }
+// Quem mudou de faixa nos últimos N dias (fez 12, 18 ou 30 anos)
+function mudaramDeFaixa(dias) {
+  const h = hoje(), lista = [];
+  for (const m of estado.membros) {
+    if (m.situacao !== 'ativo' || !m.nascimento) continue;
+    const n = idade(m);
+    if (![12, 18, 30].includes(n)) continue;
+    const aniv = dataNoAno(m.nascimento, h.getFullYear());
+    const passou = Math.round((h - aniv) / 86400000);
+    if (passou >= 0 && passou < dias) lista.push({ m, n, de: faixaDaIdade(n - 1), para: faixaDaIdade(n), data: aniv });
+  }
+  return lista.sort((a, b) => b.data - a.data);
+}
+function textoMudanca(x) {
+  return x.para ? `${FAIXAS[x.de].emoji} → ${FAIXAS[x.para].emoji} fez ${x.n} anos e passou de ${FAIXAS[x.de].nome} para ${FAIXAS[x.para].nome}` : `fez ${x.n} anos e saiu dos Jovens`;
+}
+
+function toast(msg) {
+  const t = $('#toast'); t.textContent = msg; t.style.display = 'block';
+  clearTimeout(toast.h); toast.h = setTimeout(() => (t.style.display = 'none'), 3200);
+}
+
+// ---------- Datas ----------
+function hoje() { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
+function partes(iso) { if (!iso) return null; const [a, m, d] = iso.split('-').map(Number); return { a, m, d }; }
+function bissexto(a) { return (a % 4 === 0 && a % 100 !== 0) || a % 400 === 0; }
+// Data em que a comemoração cai num ano (29/02 vira 28/02 em anos não bissextos)
+function dataNoAno(iso, ano) {
+  const p = partes(iso); if (!p) return null;
+  const dia = p.m === 2 && p.d === 29 && !bissexto(ano) ? 28 : p.d;
+  return new Date(ano, p.m - 1, dia);
+}
+function proximaData(iso, base) {
+  let d = dataNoAno(iso, base.getFullYear());
+  if (d < base) d = dataNoAno(iso, base.getFullYear() + 1);
+  return d;
+}
+function fmtData(d) { return `${d.getDate()} de ${MESES[d.getMonth()]}`; }
+function fmtDiaSemana(d) { return d.toLocaleDateString('pt-BR', { weekday: 'long' }); }
+function fmtIso(iso) { const p = partes(iso); return p ? `${String(p.d).padStart(2, '0')}/${String(p.m).padStart(2, '0')}/${p.a}` : ''; }
+
+// ---------- Telefones e mensagens ----------
+function telefoneWa(tel) {
+  let n = String(tel || '').replace(/\D/g, '');
+  if (n.length === 10 || n.length === 11) n = '55' + n;
+  return n.length >= 12 ? n : '';
+}
+function primeiroNome(n) { return String(n || '').trim().split(/\s+/)[0]; }
+
+// Um "evento" é uma comemoração de uma pessoa (aniversário) ou de um casal (casamento)
+function eventosEntre(inicio, dias) {
+  const fim = new Date(inicio); fim.setDate(fim.getDate() + dias);
+  const porId = Object.fromEntries(estado.membros.map((m) => [m.id, m]));
+  const lista = [];
+  for (const m of estado.membros) {
+    if (m.situacao !== 'ativo') continue;
+    if (m.nascimento) {
+      const d = proximaData(m.nascimento, inicio);
+      if (d < fim) lista.push({ tipo: 'aniversario', data: d, membro: m, quantos: d.getFullYear() - partes(m.nascimento).a });
+    }
+    if (m.casamento && ['casado', 'uniao_estavel'].includes(m.estado_civil)) {
+      const conj = m.conjuge_id ? porId[m.conjuge_id] : null;
+      // Casal cadastrado dos dois lados: mostra uma vez só
+      if (conj && conj.casamento === m.casamento && conj.situacao === 'ativo' && conj.id < m.id) continue;
+      const d = proximaData(m.casamento, inicio);
+      if (d < fim) lista.push({ tipo: 'casamento', data: d, membro: m, conjuge: conj, quantos: d.getFullYear() - partes(m.casamento).a });
+    }
+  }
+  return lista.sort((a, b) => a.data - b.data || a.membro.nome.localeCompare(b.membro.nome));
+}
+function nomeEvento(ev) {
+  if (ev.tipo === 'casamento') {
+    const outro = ev.conjuge ? ev.conjuge.nome : ev.membro.conjuge_nome;
+    return outro ? `${primeiroNome(ev.membro.nome)} e ${primeiroNome(outro)}` : primeiroNome(ev.membro.nome);
+  }
+  return primeiroNome(ev.membro.nome);
+}
+function textoMensagem(ev) {
+  const modelo = estado.modelos[ev.tipo] || '';
+  return modelo.replaceAll('{nome}', nomeEvento(ev)).replaceAll('{idade}', ev.quantos).replaceAll('{anos}', ev.quantos);
+}
+function jaEnviado(ev) {
+  const ids = [ev.membro.id, ev.conjuge?.id].filter(Boolean);
+  return estado.enviados.find((e) => ids.includes(e.membro_id) && e.tipo === ev.tipo && e.ano === ev.data.getFullYear());
+}
+function destinatarios(ev) {
+  // Casamento: manda para o telefone de quem tiver; prefere o membro, depois o cônjuge
+  let pessoas = [ev.membro, ev.conjuge].filter(Boolean);
+  // Menor de 18: manda também (ou só) para pai, mãe ou responsável
+  if (ev.tipo === 'aniversario' && (idade(ev.membro) ?? 99) < 18) pessoas = [...pessoas, ...responsaveis(ev.membro)];
+  const vistos = new Set();
+  return pessoas.filter((p) => p.aceita_mensagens !== false && telefoneWa(p.telefone) && !vistos.has(telefoneWa(p.telefone)) && vistos.add(telefoneWa(p.telefone)));
+}
+
+// ---------- Carregamento ----------
+async function carregar() {
+  const ano = hoje().getFullYear();
+  const [m, e, c, p, v, vc] = await Promise.all([
+    sb.from('membros').select('*').order('nome'),
+    sb.from('mensagens_enviadas').select('*').gte('ano', ano - 1),
+    sb.from('config_mensagens').select('*'),
+    sb.from('atualizacoes_cadastrais').select('*').eq('situacao', 'pendente').order('criado_em'),
+    sb.from('visitantes').select('*').order('primeira_visita', { ascending: false }),
+    sb.from('visitantes_contatos').select('*').order('feito_em'),
+  ]);
+  const erro = m.error || e.error || c.error || p.error || v.error || vc.error;
+  if (erro) { toast('Erro ao carregar: ' + erro.message); return; }
+  estado.membros = m.data; estado.enviados = e.data; estado.pedidos = p.data; estado.visitantes = v.data; estado.contatos = vc.data;
+  const badge = $('#badge-pedidos'); badge.textContent = p.data.length; badge.classList.toggle('oculto', !p.data.length);
+  estado.modelos = Object.fromEntries(c.data.map((x) => [x.tipo, x.texto]));
+  const nVis = visitantesPendentes().length;
+  const bv = $('#badge-visitantes'); bv.textContent = nVis; bv.classList.toggle('oculto', !nVis);
+  // CPF e RG ficam numa tabela separada que só administradores leem
+  estado.docs = {};
+  if (estado.souAdmin) {
+    const d = await sb.from('membros_documentos').select('*');
+    (d.data || []).forEach((x) => (estado.docs[x.membro_id] = x));
+    const dp = await sb.from('atualizacoes_documentos').select('*');
+    (dp.data || []).forEach((x) => (estado.docs['pedido:' + x.pedido_id] = x));
+  }
+  await carregarFotos();
+  render();
+}
+
+// Fotos ficam num bucket privado: gera links temporários (1 dia) para quem está logado
+const fotoUrls = {};
+async function carregarFotos() {
+  const caminhos = [...estado.membros, ...estado.pedidos].map((m) => m.foto).filter((f) => f && !fotoUrls[f]);
+  if (!caminhos.length) return;
+  const { data } = await sb.storage.from('fotos-membros').createSignedUrls(caminhos, 86400);
+  (data || []).forEach((x) => { if (x.signedUrl) fotoUrls[x.path] = x.signedUrl; });
+}
+function iniciais(nome) { const t = String(nome || '').trim().split(/\s+/); return ((t[0] || '')[0] || '') + (t.length > 1 ? t[t.length - 1][0] : ''); }
+function avatar(m, classe = '') {
+  if (!m) return '';
+  const url = m.foto && fotoUrls[m.foto];
+  return url ? `<img class="avatar ${classe}" src="${esc(url)}" alt="" loading="lazy">` : `<div class="avatar ${classe}">${esc(iniciais(m.nome).toUpperCase())}</div>`;
+}
+// Reduz a foto no próprio celular antes de enviar (cabe muito mais no plano grátis)
+async function reduzirFoto(arquivo, lado = 512) {
+  const img = await createImageBitmap(arquivo);
+  const k = Math.min(1, lado / Math.max(img.width, img.height));
+  const cv = document.createElement('canvas'); cv.width = Math.round(img.width * k); cv.height = Math.round(img.height * k);
+  cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+  return new Promise((ok) => cv.toBlob(ok, 'image/jpeg', 0.82));
+}
+
+// ---------- Telas ----------
+function cardEvento(ev, idx) {
+  const env = jaEnviado(ev);
+  const dest = destinatarios(ev);
+  const titulo = ev.tipo === 'casamento'
+    ? `${esc(nomeEvento(ev))} <span class="sub">· ${ev.quantos} ${ev.quantos === 1 ? 'ano' : 'anos'} de casados</span>`
+    : `${esc(ev.membro.nome)} <span class="sub">· ${ev.quantos} anos</span>`;
+  let acao;
+  if (env) acao = `<span class="enviado">✓ Enviado</span>`;
+  else if (dest.length) acao = dest.map((p) => `<button class="btn btn-wa" data-enviar="${idx}" data-pessoa="${p.id}">${dest.length > 1 || p.id !== ev.membro.id ? '📲 ' + esc(primeiroNome(p.nome)) : 'WhatsApp'}</button>`).join(' ');
+  else acao = `<span class="sub">sem WhatsApp</span>`;
+  return `<div class="card linha">${avatar(ev.membro)}<div class="info">
+      <div class="nome">${ev.tipo === 'casamento' ? '💍' : '🎂'} ${titulo}</div>
+      <div class="sub">${ev.tipo === 'casamento' ? 'Aniversário de casamento' : 'Aniversário'}${ev.tipo === 'aniversario' && faixa(ev.membro) && (idade(ev.membro) ?? 99) < 18 ? ' · ' + FAIXAS[faixa(ev.membro)].nome + (dest.some((p) => p.id !== ev.membro.id) ? ' · enviar ao responsável' : '') : ''}${env ? ' · enviado por ' + esc(env.enviado_por || '') : ''}</div>
+    </div><div class="acoes-wa">${acao}</div></div>`;
+}
+
+let eventosVisiveis = [];
+function renderHoje() {
+  const h = hoje();
+  const evs = eventosEntre(h, 1);
+  const semana = eventosEntre(new Date(h.getFullYear(), h.getMonth(), h.getDate() + 1), 7);
+  eventosVisiveis = [...evs, ...semana];
+  const pendentes = evs.filter((e) => !jaEnviado(e)).length;
+  $('#aba-hoje').innerHTML = `
+    <h2>Hoje, ${fmtData(h)}</h2>
+    ${evs.length ? `<p class="dica">${pendentes ? `Falta enviar ${pendentes} ${pendentes === 1 ? 'mensagem' : 'mensagens'}. Toque no botão verde, confira e envie no WhatsApp.` : 'Todas as mensagens de hoje já foram enviadas. 🙌'}</p>` : ''}
+    ${evs.map((e, i) => cardEvento(e, i)).join('') || '<div class="card vazio">Nenhum aniversário hoje.</div>'}
+    ${mudaramDeFaixa(7).length ? `<h2>Mudaram de faixa</h2>${mudaramDeFaixa(7).map((x) => `<div class="card linha clicavel" data-editar="${x.m.id}">${avatar(x.m)}<div class="info"><div class="nome">${esc(x.m.nome)}</div><div class="sub">${textoMudanca(x)} (${fmtData(x.data)})</div></div></div>`).join('')}` : ''}
+    ${visitantesPendentes().length ? `<h2>Visitantes para contatar</h2>${visitantesPendentes().map(cardVisitantePendente).join('')}` : ''}
+    <h2>Próximos 7 dias</h2>
+    ${semana.map((e, i) => `<div class="card linha">${avatar(e.membro)}<div class="info"><div class="nome">${e.tipo === 'casamento' ? '💍' : '🎂'} ${esc(e.tipo === 'casamento' ? nomeEvento(e) : e.membro.nome)}</div>
+      <div class="sub">${fmtDiaSemana(e.data)}, ${fmtData(e.data)} · ${e.tipo === 'casamento' ? e.quantos + ' anos de casados' : e.quantos + ' anos'}</div></div>
+      ${jaEnviado(e) ? '<span class="enviado">✓</span>' : ''}</div>`).join('') || '<div class="card vazio">Nada nos próximos 7 dias.</div>'}
+    ${estado.membros.length === 0 ? '<div class="aviso">Ainda não há membros cadastrados. Vá na aba Membros e toque em "+ Novo".</div>' : ''}`;
+}
+
+function renderProximos() {
+  const h = hoje();
+  const dias = Number($('#aba-proximos').dataset.dias || 30);
+  const evs = eventosEntre(h, dias);
+  let html = `<div class="barra"><select id="px-dias">
+      ${[[30, 'Próximos 30 dias'], [7, 'Próximos 7 dias'], [90, 'Próximos 3 meses'], [366, 'Ano inteiro']].map(([v, t]) => `<option value="${v}" ${v === dias ? 'selected' : ''}>${t}</option>`).join('')}
+    </select><button class="btn btn-sec" id="px-copiar">Copiar lista</button></div>`;
+  let ultima = '';
+  for (const e of evs) {
+    const chave = e.data.toDateString();
+    if (chave !== ultima) { html += `<div class="data-grupo">${fmtDiaSemana(e.data)}, ${fmtData(e.data)}</div>`; ultima = chave; }
+    html += `<div class="card linha">${avatar(e.membro)}<div class="info"><div class="nome">${e.tipo === 'casamento' ? '💍' : '🎂'} ${esc(e.tipo === 'casamento' ? nomeEvento(e) : e.membro.nome)}</div>
+      <div class="sub">${e.tipo === 'casamento' ? e.quantos + ' anos de casados' : 'faz ' + e.quantos + ' anos'}</div></div>${jaEnviado(e) ? '<span class="enviado">✓</span>' : ''}</div>`;
+  }
+  if (!evs.length) html += '<div class="card vazio">Nenhuma data nesse período.</div>';
+  $('#aba-proximos').innerHTML = html;
+  $('#px-dias').onchange = (ev) => { $('#aba-proximos').dataset.dias = ev.target.value; renderProximos(); };
+  $('#px-copiar').onclick = () => {
+    const txt = evs.map((e) => `${String(e.data.getDate()).padStart(2, '0')}/${String(e.data.getMonth() + 1).padStart(2, '0')} ${e.tipo === 'casamento' ? '💍 ' + nomeEvento(e) + ` (${e.quantos} anos de casados)` : '🎂 ' + e.membro.nome}`).join('\n');
+    navigator.clipboard.writeText('Aniversariantes 🎉\n\n' + txt).then(() => toast('Lista copiada. É só colar no grupo ou no aviso do culto.'), () => toast('Não foi possível copiar.'));
+  };
+}
+
+function renderMembros() {
+  const busca = ($('#mb-busca')?.value || '').toLowerCase();
+  const filtro = $('#mb-filtro')?.value || 'ativo';
+  const lista = estado.membros.filter((m) => (filtro === 'todos' || m.situacao === filtro) && (!busca || m.nome.toLowerCase().includes(busca) || (m.telefone || '').includes(busca)));
+  const foco = document.activeElement?.id;
+  $('#aba-membros').innerHTML = `
+    <div class="barra"><input id="mb-busca" placeholder="Buscar por nome ou telefone" value="${esc(busca)}">
+      <button class="btn btn-pri" id="mb-novo">+ Novo</button></div>
+    <div class="barra"><select id="mb-filtro">
+      <option value="ativo" ${filtro === 'ativo' ? 'selected' : ''}>Ativos</option>
+      <option value="inativo" ${filtro === 'inativo' ? 'selected' : ''}>Inativos</option>
+      <option value="todos" ${filtro === 'todos' ? 'selected' : ''}>Todos</option></select>
+      <button class="btn btn-sec" id="mb-importar">Importar planilha</button></div>
+    <p class="dica">${lista.length} ${lista.length === 1 ? 'pessoa' : 'pessoas'}</p>
+    ${lista.map((m) => `<div class="card linha clicavel" data-editar="${m.id}">${avatar(m)}<div class="info">
+      <div class="nome">${esc(m.nome)}</div>
+      <div class="sub">${m.nascimento ? '🎂 ' + fmtIso(m.nascimento) : 'sem data de nascimento'}${m.casamento ? ' · 💍 ' + fmtIso(m.casamento) : ''}${m.telefone ? ' · ' + esc(m.telefone) : ''}${m.autoriza_imagem_publica === false ? ' · 🚫📸 não autoriza imagem' : ''}</div>
+      </div><div>${tagFaixa(m)}<span class="tag">${esc(m.categoria === 'crianca_jovem' ? 'Não batizado' : CATEGORIAS[m.categoria] || m.categoria)}</span></div></div>`).join('') || '<div class="card vazio">Ninguém encontrado.</div>'}`;
+  $('#mb-busca').oninput = renderMembros;
+  $('#mb-filtro').onchange = renderMembros;
+  $('#mb-novo').onclick = () => abrirForm(null);
+  $('#mb-importar').onclick = abrirImportacao;
+  if (foco === 'mb-busca') { const i = $('#mb-busca'); i.focus(); i.setSelectionRange(i.value.length, i.value.length); }
+}
+
+function renderMensagens() {
+  $('#aba-mensagens').innerHTML = `
+    <p class="dica">Esses textos são usados no botão do WhatsApp. Use <b>{nome}</b> para o primeiro nome (ou o nome do casal), <b>{idade}</b> para a idade e <b>{anos}</b> para os anos de casados.</p>
+    <label for="msg-aniversario">🎂 Aniversário</label>
+    <textarea id="msg-aniversario">${esc(estado.modelos.aniversario)}</textarea>
+    <label for="msg-casamento">💍 Aniversário de casamento</label>
+    <textarea id="msg-casamento">${esc(estado.modelos.casamento)}</textarea>
+    <h2>Visitantes</h2>
+    <p class="dica">Cada visitante recebe estas mensagens, contando os dias a partir da primeira visita. O app avisa no dia certo. Use <b>{nome}</b> para o primeiro nome.</p>
+    ${ETAPAS.map((e) => `<label for="msg-visitante_${e.id}">🙋 Dia ${e.dias}: ${esc(e.nome)}</label>
+    <textarea id="msg-visitante_${e.id}" style="min-height:120px">${esc(estado.modelos['visitante_' + e.id])}</textarea>`).join('')}
+    <div class="acoes"><button class="btn btn-pri" id="msg-salvar">Salvar textos</button></div>
+    <h2>Acessos</h2>
+    <p class="dica">Quem está nesta lista pode entrar no app${estado.souAdmin ? '. Para liberar um secretário, coloque o e-mail dele aqui. Depois ele abre o app, toca em <b>Primeiro acesso</b> e cria a própria senha.' : '. Só os administradores podem mudar a lista.'}</p>
+    <div id="acessos"></div>
+    ${estado.souAdmin ? `<div class="card"><div class="grade">
+      <div><label for="ac-email">E-mail</label><input id="ac-email" type="email"></div>
+      <div><label for="ac-nome">Nome</label><input id="ac-nome"></div>
+      <div class="inteiro"><label class="check"><input type="checkbox" id="ac-admin"> Também pode liberar outros acessos (administrador)</label></div>
+    </div><div class="acoes"><button class="btn btn-pri" id="ac-incluir">Liberar acesso</button></div></div>` : ''}`;
+  renderAcessos();
+  $('#msg-salvar').onclick = async () => {
+    const linhas = ['aniversario', 'casamento', ...ETAPAS.map((e) => 'visitante_' + e.id)].map((tipo) => ({ tipo, texto: $('#msg-' + tipo).value.trim() }));
+    if (linhas.some((l) => !l.texto)) return toast('Os textos não podem ficar vazios.');
+    const { error } = await sb.from('config_mensagens').upsert(linhas);
+    if (error) return toast('Erro ao salvar: ' + error.message);
+    linhas.forEach((l) => (estado.modelos[l.tipo] = l.texto));
+    toast('Textos salvos.');
+  };
+}
+
+async function renderAcessos() {
+  const { data, error } = await sb.from('usuarios_autorizados').select('*').order('nome');
+  if (error) return toast('Erro ao carregar acessos: ' + error.message);
+  $('#acessos').innerHTML = data.map((u) => `<div class="card linha"><div class="info"><div class="nome">${esc(u.nome || u.email)}</div>
+    <div class="sub">${esc(u.email)}${u.administrador ? ' · administrador' : ''}</div></div>
+    ${estado.souAdmin && u.email !== estado.email ? `<button class="btn btn-perigo" data-remover-acesso="${esc(u.email)}">Remover</button>` : ''}</div>`).join('');
+  document.querySelectorAll('[data-remover-acesso]').forEach((b) => (b.onclick = async () => {
+    if (!confirm(`Remover o acesso de ${b.dataset.removerAcesso}?`)) return;
+    const { error } = await sb.from('usuarios_autorizados').delete().eq('email', b.dataset.removerAcesso);
+    if (error) return toast('Erro: ' + error.message);
+    toast('Acesso removido.'); renderAcessos();
+  }));
+  if ($('#ac-incluir')) $('#ac-incluir').onclick = async () => {
+    const email = $('#ac-email').value.trim().toLowerCase();
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return toast('Digite um e-mail válido.');
+    const { error } = await sb.from('usuarios_autorizados').insert({ email, nome: $('#ac-nome').value.trim(), administrador: $('#ac-admin').checked });
+    if (error) return toast(error.code === '23505' ? 'Esse e-mail já tem acesso.' : 'Erro: ' + error.message);
+    toast('Acesso liberado. Avise a pessoa para tocar em "Primeiro acesso".');
+    $('#ac-email').value = ''; $('#ac-nome').value = ''; $('#ac-admin').checked = false;
+    renderAcessos();
+  };
+}
+
+// ---------- Formulário de membro ----------
+const CAMPOS = ['nome', 'telefone', 'email', 'nascimento', 'sexo', 'estado_civil', 'conjuge_id', 'conjuge_nome', 'casamento', 'categoria', 'situacao',
+  'pai_id', 'mae_id', 'responsavel_nome', 'responsavel_telefone', 'data_batismo', 'cep', 'endereco', 'numero', 'complemento', 'bairro', 'cidade', 'uf', 'observacoes'];
+const CHECKS = ['batizado', 'aceita_mensagens', 'lgpd_consentimento', 'consentimento_imagem'];
+let fotoNova = null, removerFoto = false, formVoltar = 'membros';
+
+// O que falta no cadastro de alguém (para pedir pelo link pessoal)
+// Essenciais: só eles fazem aparecer o botão de pedir. Os opcionais vão junto no pedido, se faltarem.
+function faltando(m) {
+  const f = [];
+  if (!m.nascimento) f.push('data de nascimento');
+  if (['casado', 'uniao_estavel'].includes(m.estado_civil) && !m.casamento) f.push('data de casamento');
+  if (!m.endereco || !m.numero) f.push('endereço');
+  if (estado.souAdmin && !estado.docs[m.id]?.cpf) f.push('CPF');
+  if (!m.foto) f.push('foto');
+  if (m.autoriza_imagem_publica == null) f.push('autorização de imagem');
+  return f;
+}
+function opcionaisFaltando(m) {
+  const f = [];
+  if (estado.souAdmin && !estado.docs[m.id]?.rg) f.push('RG');
+  if (!m.email) f.push('e-mail');
+  if (!m.lgpd_consentimento) f.push('autorização da LGPD');
+  return f;
+}
+const CAMPO_DO_LINK = { 'autorização de imagem': 'imagem', 'data de nascimento': 'nascimento', 'data de casamento': 'casamento', 'endereço': 'endereco', CPF: 'cpf', RG: 'rg', 'e-mail': 'email', foto: 'foto', 'autorização da LGPD': 'lgpd' };
+function pedirDados(m) {
+  const f = [...faltando(m), ...opcionaisFaltando(m)];
+  const link = `${LINK_ATUALIZACAO}?p=${m.id}&nome=${encodeURIComponent(m.nome)}&f=${f.map((x) => CAMPO_DO_LINK[x]).join(',')}`;
+  const visivel = f.filter((x) => x !== 'autorização da LGPD');
+  const lista = visivel.length > 1 ? visivel.slice(0, -1).join(', ') + ' e ' + visivel[visivel.length - 1] : visivel[0] || 'seus dados';
+  const texto = `Olá, ${primeiroNome(m.nome)}! 🙌 Aqui é da secretaria do Ministério Cristão Somos Um. Estamos atualizando o cadastro da igreja e, no seu, falta: ${lista}. O link já abre só com o que falta: ${link}`;
+  window.open(`https://wa.me/${telefoneWa(m.telefone)}?text=${encodeURIComponent(texto)}`, '_blank');
+}
+
+function abrirForm(id, novo = {}) {
+  const m = estado.membros.find((x) => x.id === id) || { estado_civil: 'solteiro', categoria: 'membro', situacao: 'ativo', aceita_mensagens: true, cidade: 'Colombo', uf: 'PR', ...novo };
+  formVoltar = novo.voltar || (estado.aba === 'kids' ? 'kids' : estado.aba === 'form' ? formVoltar : 'membros');
+  const adultos = estado.membros.filter((x) => x.id !== id && (idade(x) ?? 99) >= 16).sort((a, b) => a.nome.localeCompare(b.nome));
+  const optPessoa = (val, sexo) => '<option value="">(não está cadastrado)</option>' + adultos.filter((x) => !x.sexo || x.sexo === sexo || x.id === val).map((x) => `<option value="${x.id}" ${x.id === val ? 'selected' : ''}>${esc(x.nome)}</option>`).join('');
+  const meusFilhos = id ? filhos(m) : [];
+  const opt = (obj, val) => Object.entries(obj).map(([k, v]) => `<option value="${k}" ${k === val ? 'selected' : ''}>${v}</option>`).join('');
+  const outros = estado.membros.filter((x) => x.id !== id);
+  mostrarAba('form');
+  $('#aba-form').innerHTML = `
+    <h2>${id ? 'Editar cadastro' : 'Novo cadastro'}</h2>
+    ${id && faltando(m).length ? `<div class="card">
+      <div class="nome">Falta no cadastro</div>
+      <div class="sub">${esc(faltando(m).join(', '))}</div>
+      ${telefoneWa(m.telefone) ? '<div class="acoes"><button class="btn btn-wa" id="f-pedir">📲 Pedir ao membro pelo WhatsApp</button></div>' : '<p class="dica">Sem WhatsApp cadastrado para mandar o pedido.</p>'}
+    </div>` : ''}
+    <div class="card foto-bloco">
+      <div id="f-foto-prev">${avatar(m.nome ? m : { nome: '?' }, 'grande')}</div>
+      <input type="file" id="f-foto" accept="image/*" class="oculto">
+      <div class="acoes"><button class="btn btn-sec" id="f-foto-escolher">${m.foto ? 'Trocar foto' : 'Colocar foto'}</button>
+        ${m.foto ? '<button class="btn btn-perigo" id="f-foto-remover">Remover foto</button>' : ''}</div>
+      <label class="check" style="text-align:left"><input type="checkbox" id="f-consentimento_imagem" ${m.consentimento_imagem ? 'checked' : ''}> <span id="f-img-txt"></span></label>
+    </div>
+    <div class="card"><div class="grade">
+      <div class="inteiro"><label for="f-nome">Nome completo *</label><input id="f-nome" value="${esc(m.nome)}"></div>
+      <div><label for="f-telefone">WhatsApp (com DDD)</label><input id="f-telefone" type="tel" inputmode="tel" placeholder="41 99999-9999" value="${esc(m.telefone)}"></div>
+      <div><label for="f-email">E-mail</label><input id="f-email" type="email" value="${esc(m.email)}"></div>
+      <div><label for="f-nascimento">Data de nascimento</label><input id="f-nascimento" type="date" value="${esc(m.nascimento)}"></div>
+      <div><label for="f-sexo">Sexo</label><select id="f-sexo"><option value=""></option>${opt({ masculino: 'Masculino', feminino: 'Feminino' }, m.sexo)}</select></div>
+      <div><label for="f-categoria">Vínculo com a igreja</label><select id="f-categoria">${opt(CATEGORIAS, m.categoria)}</select></div>
+      <div><label for="f-situacao">Situação</label><select id="f-situacao">${opt({ ativo: 'Ativo', inativo: 'Inativo' }, m.situacao)}</select></div>
+    </div></div>
+
+    <div class="card"><div class="grade">
+      <div><label for="f-estado_civil">Estado civil</label><select id="f-estado_civil">${opt(ESTADOS_CIVIS, m.estado_civil)}</select></div>
+      <div class="casal"><label for="f-casamento">Data de casamento</label><input id="f-casamento" type="date" value="${esc(m.casamento)}"></div>
+      <div class="casal"><label for="f-conjuge_id">Cônjuge cadastrado</label><select id="f-conjuge_id"><option value="">(não está cadastrado)</option>
+        ${outros.map((x) => `<option value="${x.id}" ${x.id === m.conjuge_id ? 'selected' : ''}>${esc(x.nome)}</option>`).join('')}</select></div>
+      <div class="casal"><label for="f-conjuge_nome">Nome do cônjuge (se não for membro)</label><input id="f-conjuge_nome" value="${esc(m.conjuge_nome)}"></div>
+    </div><p class="dica casal">Ao escolher o cônjuge cadastrado, a data de casamento é copiada para o cadastro dele(a) também, e o casal recebe uma mensagem só.</p></div>
+
+    <div class="card">
+      <div class="nome">Família <span class="sub" id="f-faixa">${tagFaixa(m)}</span></div>
+      <div class="grade">
+        <div><label for="f-pai_id">Pai</label><select id="f-pai_id">${optPessoa(m.pai_id, 'masculino')}</select></div>
+        <div><label for="f-mae_id">Mãe</label><select id="f-mae_id">${optPessoa(m.mae_id, 'feminino')}</select></div>
+        <div><label for="f-responsavel_nome">Outro responsável (se não for da igreja)</label><input id="f-responsavel_nome" placeholder="Nome" value="${esc(m.responsavel_nome)}"></div>
+        <div><label for="f-responsavel_telefone">WhatsApp do responsável</label><input id="f-responsavel_telefone" type="tel" inputmode="tel" placeholder="41 99999-9999" value="${esc(m.responsavel_telefone)}"></div>
+      </div>
+      <p class="dica">Para crianças e adolescentes, o parabéns do aniversário vai para o WhatsApp do pai, da mãe ou do responsável.</p>
+      ${meusFilhos.length ? `<div class="sub"><b>Filhos cadastrados:</b> ${meusFilhos.map((f) => `<a href="#" data-editar="${f.id}">${esc(f.nome)}</a>${idade(f) != null ? ` (${idade(f)} anos)` : ''}`).join(', ')}</div>` : ''}
+      ${id && (idade(m) ?? 99) >= 16 ? `<div class="acoes"><button class="btn btn-sec" id="f-novo-filho">+ Cadastrar filho(a)</button></div>` : ''}
+    </div>
+
+    <div class="card"><div class="grade">
+      <div><label for="f-cep">CEP</label><input id="f-cep" inputmode="numeric" value="${esc(m.cep)}"></div>
+      <div><label for="f-numero">Número</label><input id="f-numero" value="${esc(m.numero)}"></div>
+      <div class="inteiro"><label for="f-endereco">Rua</label><input id="f-endereco" value="${esc(m.endereco)}"></div>
+      <div><label for="f-complemento">Complemento</label><input id="f-complemento" value="${esc(m.complemento)}"></div>
+      <div><label for="f-bairro">Bairro</label><input id="f-bairro" value="${esc(m.bairro)}"></div>
+      <div><label for="f-cidade">Cidade</label><input id="f-cidade" value="${esc(m.cidade)}"></div>
+      <div><label for="f-uf">UF</label><input id="f-uf" maxlength="2" value="${esc(m.uf)}"></div>
+    </div></div>
+
+    <div class="card">
+      <label class="check"><input type="checkbox" id="f-batizado" ${m.batizado ? 'checked' : ''}> Batizado(a) nas águas</label>
+      <div id="f-bloco-batismo"><label for="f-data_batismo">Data do batismo</label><input id="f-data_batismo" type="date" value="${esc(m.data_batismo)}"></div>
+      <label class="check"><input type="checkbox" id="f-aceita_mensagens" ${m.aceita_mensagens !== false ? 'checked' : ''}> Aceita receber mensagens da igreja (aniversário, bodas)</label>
+      <label for="f-imagem">Uso de imagem em fotos, vídeos e lives da igreja</label>
+      <select id="f-imagem">${opt({ '': 'Ainda não respondeu', sim: 'Autoriza', nao: 'Não autoriza' }, m.autoriza_imagem_publica == null ? '' : m.autoriza_imagem_publica ? 'sim' : 'nao')}</select>
+      <label class="check"><input type="checkbox" id="f-lgpd_consentimento" ${m.lgpd_consentimento ? 'checked' : ''}> <span id="f-lgpd-txt"></span></label>
+      <label for="f-observacoes">Observações</label><textarea id="f-observacoes" style="min-height:80px">${esc(m.observacoes)}</textarea>
+    </div>
+    ${estado.souAdmin ? `<div class="card">
+      <div class="nome">Documentos <span class="sub">(só administradores veem)</span></div>
+      <div class="grade">
+        <div><label for="f-cpf">CPF</label><input id="f-cpf" inputmode="numeric" placeholder="000.000.000-00" value="${esc(estado.docs[id]?.cpf || '')}"></div>
+        <div><label for="f-rg">RG</label><input id="f-rg" value="${esc(estado.docs[id]?.rg || '')}"></div>
+      </div>
+    </div>` : ''}
+    <div id="f-erro" class="aviso oculto"></div>
+    <div class="acoes">
+      <button class="btn btn-sec" id="f-cancelar">Cancelar</button>
+      <button class="btn btn-pri" id="f-salvar">Salvar</button>
+    </div>
+    ${id ? '<div class="acoes"><button class="btn btn-perigo" id="f-excluir">Excluir cadastro</button></div>' : ''}`;
+
+  const atualizaCasal = () => document.querySelectorAll('.casal').forEach((el) => el.classList.toggle('oculto', !['casado', 'uniao_estavel'].includes($('#f-estado_civil').value)));
+  $('#f-estado_civil').onchange = atualizaCasal; atualizaCasal();
+  $('#f-cep').onblur = buscarCep;
+  fotoNova = null; removerFoto = false;
+  $('#f-foto-escolher').onclick = () => $('#f-foto').click();
+  $('#f-foto').onchange = async (ev) => {
+    const arq = ev.target.files[0]; if (!arq) return;
+    try { fotoNova = await reduzirFoto(arq); } catch { return toast('Não consegui abrir essa imagem.'); }
+    removerFoto = false;
+    $('#f-foto-prev').innerHTML = `<img class="avatar grande" src="${URL.createObjectURL(fotoNova)}" alt="">`;
+    $('#f-consentimento_imagem').checked = true;
+  };
+  if ($('#f-foto-remover')) $('#f-foto-remover').onclick = () => {
+    fotoNova = null; removerFoto = true;
+    $('#f-foto-prev').innerHTML = avatar({ nome: $('#f-nome').value || '?' }, 'grande');
+    $('#f-foto-remover').classList.add('oculto');
+  };
+  $('#f-cancelar').onclick = () => mostrarAba(formVoltar);
+  const atualizaBatismo = () => $('#f-bloco-batismo').classList.toggle('oculto', !$('#f-batizado').checked);
+  $('#f-batizado').onchange = () => {
+    atualizaBatismo();
+    // Batizou: deixa de ser "criança / jovem não batizado" e vira membro
+    if ($('#f-batizado').checked && $('#f-categoria').value === 'crianca_jovem') $('#f-categoria').value = 'membro';
+  };
+  atualizaBatismo();
+  // LGPD (art. 14): dados de criança e adolescente só com autorização do pai, mãe ou responsável
+  const atualizaMenor = () => {
+    const menor = (idadeEm($('#f-nascimento').value, hoje()) ?? 99) < 18;
+    $('#f-faixa').innerHTML = tagFaixa({ nascimento: $('#f-nascimento').value });
+    $('#f-lgpd-txt').textContent = menor
+      ? 'O pai, a mãe ou o responsável autorizou a igreja a guardar os dados desta criança/adolescente, só para fins pastorais e de cuidado do ministério (LGPD) *'
+      : 'A pessoa autorizou a igreja a guardar estes dados para fins pastorais e de comunicação (LGPD) *';
+    $('#f-img-txt').textContent = menor ? 'O responsável autorizou o uso da foto no cadastro da igreja' : 'A pessoa autorizou o uso da foto no cadastro da igreja';
+  };
+  $('#f-nascimento').onchange = atualizaMenor; atualizaMenor();
+  if ($('#f-novo-filho')) $('#f-novo-filho').onclick = () => {
+    const pai = m.sexo === 'feminino' ? { mae_id: m.id, pai_id: m.conjuge_id || null } : { pai_id: m.id, mae_id: m.conjuge_id || null };
+    abrirForm(null, { ...pai, categoria: 'crianca_jovem', cep: m.cep, endereco: m.endereco, numero: m.numero, complemento: m.complemento, bairro: m.bairro, cidade: m.cidade, uf: m.uf, voltar: formVoltar });
+  };
+  $('#f-salvar').onclick = () => salvarMembro(id);
+  if (id) $('#f-excluir').onclick = () => excluirMembro(id);
+  if ($('#f-pedir')) $('#f-pedir').onclick = () => pedirDados(m);
+  window.scrollTo(0, 0);
+}
+
+async function buscarCep() {
+  const cep = $('#f-cep').value.replace(/\D/g, '');
+  if (cep.length !== 8) return;
+  try {
+    const r = await fetch(`https://viacep.com.br/ws/${cep}/json/`).then((x) => x.json());
+    if (r.erro) return toast('CEP não encontrado.');
+    $('#f-endereco').value = r.logradouro || ''; $('#f-bairro').value = r.bairro || '';
+    $('#f-cidade').value = r.localidade || ''; $('#f-uf').value = r.uf || '';
+    $('#f-numero').focus();
+  } catch { /* sem internet: preenche à mão */ }
+}
+
+async function salvarMembro(id) {
+  const dados = {};
+  CAMPOS.forEach((c) => (dados[c] = $('#f-' + c).value.trim()));
+  CHECKS.forEach((c) => (dados[c] = $('#f-' + c).checked));
+  dados.autoriza_imagem_publica = { sim: true, nao: false }[$('#f-imagem').value] ?? null;
+  ['nascimento', 'casamento', 'sexo', 'conjuge_id', 'pai_id', 'mae_id', 'data_batismo'].forEach((c) => { if (!dados[c]) dados[c] = null; });
+  if (!dados.batizado) dados.data_batismo = null;
+  if (dados.batizado && dados.categoria === 'crianca_jovem') dados.categoria = 'membro';
+  dados.uf = dados.uf.toUpperCase();
+  const casado = ['casado', 'uniao_estavel'].includes(dados.estado_civil);
+  if (!casado) { dados.casamento = null; dados.conjuge_id = null; dados.conjuge_nome = ''; }
+  if (dados.conjuge_id) dados.conjuge_nome = '';
+
+  const erros = [];
+  if (!dados.nome) erros.push('Preencha o nome.');
+  if (!dados.lgpd_consentimento) erros.push('Marque a autorização da LGPD. Sem ela não podemos guardar os dados.');
+  const menor = (idadeEm(dados.nascimento, hoje()) ?? 99) < 18;
+  if (menor && !dados.pai_id && !dados.mae_id && !dados.responsavel_nome) erros.push('Menor de 18 anos: informe o pai, a mãe ou o responsável que autorizou o cadastro (LGPD).');
+  if (dados.categoria === 'crianca_jovem' && !dados.nascimento) erros.push('Preencha a data de nascimento para saber a faixa (Kids, Adolescentes ou Jovens).');
+  if (dados.telefone && !telefoneWa(dados.telefone)) erros.push('O WhatsApp precisa ter DDD + número (ex.: 41 99999-9999).');
+  if (dados.responsavel_telefone && !telefoneWa(dados.responsavel_telefone)) erros.push('O WhatsApp do responsável precisa ter DDD + número.');
+  if (dados.data_batismo && new Date(dados.data_batismo) > new Date()) erros.push('A data do batismo está no futuro.');
+  if (id && (dados.pai_id === id || dados.mae_id === id)) erros.push('A pessoa não pode ser pai ou mãe dela mesma.');
+  if (dados.nascimento && new Date(dados.nascimento) > new Date()) erros.push('A data de nascimento está no futuro.');
+  if (fotoNova && !dados.consentimento_imagem) erros.push('Para guardar a foto, marque a autorização de uso da foto.');
+  const doc = estado.souAdmin ? { cpf: fmtCpf($('#f-cpf').value), rg: $('#f-rg').value.trim() } : null;
+  if (doc && doc.cpf && doc.cpf !== (estado.docs[id]?.cpf || '') && doc.cpf.replace(/\D/g, '').length !== 11) erros.push('O CPF precisa ter 11 números.');
+  if (erros.length) { const e = $('#f-erro'); e.innerHTML = erros.map(esc).join('<br>'); e.classList.remove('oculto'); return; }
+
+  $('#f-salvar').disabled = true;
+  const anterior = estado.membros.find((x) => x.id === id);
+  const res = id ? await sb.from('membros').update(dados).eq('id', id).select().single() : await sb.from('membros').insert(dados).select().single();
+  if (res.error) { $('#f-salvar').disabled = false; return toast('Erro ao salvar: ' + res.error.message); }
+  const salvo = res.data;
+
+  // Foto: envia a nova, apaga a antiga
+  if (fotoNova || removerFoto) {
+    let caminho = '';
+    if (fotoNova) {
+      caminho = `${salvo.id}/${Date.now()}.jpg`;
+      const up = await sb.storage.from('fotos-membros').upload(caminho, fotoNova, { contentType: 'image/jpeg' });
+      if (up.error) { toast('Cadastro salvo, mas a foto não subiu: ' + up.error.message); caminho = anterior?.foto || ''; }
+    }
+    if (caminho !== (anterior?.foto || '')) {
+      await sb.from('membros').update({ foto: caminho }).eq('id', salvo.id);
+      if (anterior?.foto) await sb.storage.from('fotos-membros').remove([anterior.foto]);
+    }
+  }
+
+  const docAntes = estado.docs[salvo.id] || { cpf: '', rg: '' };
+  if (doc && (doc.cpf !== docAntes.cpf || doc.rg !== docAntes.rg)) {
+    const r = await sb.from('membros_documentos').upsert({ membro_id: salvo.id, ...doc });
+    if (r.error) toast('Cadastro salvo, mas os documentos não: ' + r.error.message);
+  }
+
+  // Mantém o vínculo do casal dos dois lados
+  if (salvo.conjuge_id) {
+    await sb.from('membros').update({ conjuge_id: salvo.id, conjuge_nome: '', estado_civil: salvo.estado_civil, casamento: salvo.casamento }).eq('id', salvo.conjuge_id);
+  }
+  if (anterior?.conjuge_id && anterior.conjuge_id !== salvo.conjuge_id) {
+    await sb.from('membros').update({ conjuge_id: null }).eq('id', anterior.conjuge_id).eq('conjuge_id', salvo.id);
+  }
+  toast('Cadastro salvo.');
+  await carregar();
+  mostrarAba(formVoltar);
+}
+
+async function excluirMembro(id) {
+  const m = estado.membros.find((x) => x.id === id);
+  if (!confirm(`Excluir o cadastro de ${m.nome}? Isso não pode ser desfeito.`)) return;
+  const { error } = await sb.from('membros').delete().eq('id', id);
+  if (error) return toast('Erro ao excluir: ' + error.message);
+  if (m.foto) await sb.storage.from('fotos-membros').remove([m.foto]);
+  toast('Cadastro excluído.');
+  await carregar();
+  mostrarAba('membros');
+}
+
+// ---------- Importação de planilha (CSV exportado do software da Secretaria) ----------
+const PARTICULAS = new Set(['da', 'de', 'do', 'dos', 'das', 'e']);
+const semAcento = (s) => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+const tokens = (s) => semAcento(s).replace(/\(.*?\)/g, ' ').replace(/[^a-z\s]/g, ' ').split(/\s+/).filter((t) => t && !PARTICULAS.has(t));
+function digitos(t) {
+  let d = String(t || '').replace(/\D/g, '');
+  if (d.startsWith('55') && d.length >= 12) d = d.slice(2);
+  if (d.length === 10 && '6789'.includes(d[2])) d = d.slice(0, 2) + '9' + d.slice(2); // celular antigo sem o 9
+  return d.length === 11 ? d : '';
+}
+const fmtTel = (d) => (d ? `${d.slice(0, 2)} ${d.slice(2, 7)}-${d.slice(7)}` : '');
+function arrumaNome(n) {
+  return n.replace(/\s+/g, ' ').trim().split(' ').filter(Boolean).map((t) => {
+    const l = t.toLowerCase();
+    if (PARTICULAS.has(l)) return l;
+    if (t === l || (t === t.toUpperCase() && t.length > 2 && !t.includes('.'))) return l[0].toUpperCase() + l.slice(1);
+    return t;
+  }).join(' ');
+}
+function dataIso(t) {
+  const m = String(t || '').match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  if (m) return `${m[3]}-${m[2].padStart(2, '0')}-${m[1].padStart(2, '0')}`;
+  return /^\d{4}-\d{2}-\d{2}/.test(t || '') ? t.slice(0, 10) : null;
+}
+function lerCsv(texto) {
+  const sep = (texto.split('\n')[0].match(/;/g) || []).length > (texto.split('\n')[0].match(/,/g) || []).length ? ';' : ',';
+  const linhas = []; let campo = '', linha = [], aspas = false;
+  for (let i = 0; i < texto.length; i++) {
+    const c = texto[i];
+    if (aspas) { if (c === '"' && texto[i + 1] === '"') { campo += '"'; i++; } else if (c === '"') aspas = false; else campo += c; }
+    else if (c === '"') aspas = true;
+    else if (c === sep) { linha.push(campo); campo = ''; }
+    else if (c === '\n' || c === '\r') { if (c === '\r' && texto[i + 1] === '\n') i++; linha.push(campo); linhas.push(linha); linha = []; campo = ''; }
+    else campo += c;
+  }
+  if (campo || linha.length) { linha.push(campo); linhas.push(linha); }
+  return linhas.filter((l) => l.some((x) => x.trim()));
+}
+// O software da Secretaria exporta ".xls" que na verdade é uma tabela HTML
+function lerTabela(texto) {
+  if (!/<table/i.test(texto)) return lerCsv(texto);
+  const doc = new DOMParser().parseFromString(texto, 'text/html');
+  const linhas = [...doc.querySelectorAll('tr')].map((tr) => [...tr.children].map((c) => c.textContent.trim()));
+  const iCab = linhas.findIndex((l) => l.some((c) => semAcento(c) === 'nome'));
+  return iCab < 0 ? linhas : linhas.slice(iCab);
+}
+function colunas(cab) {
+  const achar = (...nomes) => cab.findIndex((h) => nomes.some((n) => semAcento(h).trim().startsWith(n)));
+  const exata = (...nomes) => cab.findIndex((h) => nomes.includes(semAcento(h).trim()));
+  return { nome: exata('nome', 'nome completo'), email: achar('e-mail', 'email'), celular: achar('celular'), telefone: achar('telefone', 'fone'),
+    nascimento: achar('data de nascimento', 'nascimento', 'aniversario'), casamento: achar('data de casamento', 'casamento'), estado: achar('estado civil'),
+    cep: exata('cep'), rua: exata('rua', 'endereco', 'logradouro'), numero: exata('numero', 'n', 'no'), complemento: exata('complemento'),
+    bairro: exata('bairro'), cidade: exata('cidade', 'municipio'), uf: exata('estado', 'uf'),
+    cpf: exata('cpf'), rg: exata('identidade', 'rg'), sexo: exata('sexo'), conjuge: achar('nome do conjuge', 'conjuge') };
+}
+const fmtCpf = (t) => { const d = String(t || '').replace(/\D/g, ''); return d.length === 11 ? `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6, 9)}-${d.slice(9)}` : String(t || '').trim(); };
+const fmtCep = (t) => { const d = String(t || '').replace(/\D/g, ''); return d.length === 8 ? d.slice(0, 5) + '-' + d.slice(5) : ''; };
+const ESTADO_DE = { solteiro: 'solteiro', solteira: 'solteiro', casado: 'casado', casada: 'casado', divorciado: 'divorciado', divorciada: 'divorciado', viuvo: 'viuvo', viuva: 'viuvo', uniao: 'uniao_estavel' };
+
+function planejarImportacao(texto) {
+  const [cab, ...todas] = lerTabela(texto);
+  const c = colunas(cab);
+  if (c.nome < 0) throw new Error('Não achei a coluna "Nome" na planilha.');
+  const linhas = todas.filter((l) => (l[c.nome] || '').trim());
+  const val = (l, i) => (i >= 0 ? (l[i] || '').trim() : '');
+  // 1. Lê e junta linhas repetidas da própria planilha
+  const pessoas = []; const vistos = {};
+  for (const l of linhas) {
+    const nome = arrumaNome(val(l, c.nome)); if (!nome) continue;
+    const tels = [digitos(val(l, c.celular)), digitos(val(l, c.telefone))].filter(Boolean);
+    const p = { nome, email: val(l, c.email).toLowerCase(), tels, nascimento: dataIso(val(l, c.nascimento)), casamento: dataIso(val(l, c.casamento)),
+      estado_civil: ESTADO_DE[semAcento(val(l, c.estado)).split(/\W/)[0]] || null,
+      sexo: { masculino: 'masculino', feminino: 'feminino' }[semAcento(val(l, c.sexo))] || null, conjuge: arrumaNome(val(l, c.conjuge)),
+      end: { cep: fmtCep(val(l, c.cep)), endereco: val(l, c.rua), numero: val(l, c.numero), complemento: val(l, c.complemento),
+        bairro: arrumaNome(val(l, c.bairro)), cidade: arrumaNome(val(l, c.cidade)), uf: val(l, c.uf).toUpperCase().slice(0, 2) },
+      doc: { cpf: fmtCpf(val(l, c.cpf)), rg: val(l, c.rg) } };
+    // Sem telefone na planilha, só junta linhas com o nome inteiro igual
+    const chave = tels[0] ? tels[0] + '|' + tokens(nome)[0] : 'nome|' + tokens(nome).join(' ');
+    const ja = vistos[chave];
+    if (ja) { if (nome.length > ja.nome.length) ja.nome = nome; ['email', 'nascimento', 'casamento', 'estado_civil', 'sexo', 'conjuge'].forEach((k) => (ja[k] = ja[k] || p[k])); ['cpf', 'rg'].forEach((k) => (ja.doc[k] = ja.doc[k] || p.doc[k])); continue; }
+    vistos[chave] = p; pessoas.push(p);
+  }
+  // Sem telefone, "Maria Beatriz" e "Maria Beatriz Pereira" na mesma planilha são a mesma pessoa
+  for (let i = pessoas.length - 1; i >= 0; i--) {
+    const p = pessoas[i], tp = tokens(p.nome);
+    if (p.tels.length || tp.length < 2) continue;
+    const maiores = pessoas.filter((q) => q !== p && tp.every((t) => tokens(q.nome).includes(t)));
+    if (maiores.length !== 1) continue;
+    const q = maiores[0];
+    ['email', 'nascimento', 'casamento', 'estado_civil', 'sexo', 'conjuge'].forEach((k) => (q[k] = q[k] || p[k]));
+    if (!q.end.endereco && p.end.endereco) q.end = p.end;
+    ['cpf', 'rg'].forEach((k) => (q.doc[k] = q.doc[k] || p.doc[k]));
+    pessoas.splice(i, 1);
+  }
+  // 2. Procura cada pessoa no cadastro: primeiro pelo telefone + nome parecido, depois só pelo nome
+  const usados = new Set();
+  const existentes = estado.membros.map((m) => ({ m, d: digitos(m.telefone), t: tokens(m.nome) }));
+  for (const p of pessoas) {
+    const tp = tokens(p.nome);
+    let e = existentes.find((x) => !usados.has(x.m.id) && x.d && p.tels.includes(x.d) && x.t.length &&
+      (x.t[0].slice(0, 3) === (tp[0] || '').slice(0, 3) || x.t.some((t) => tp.includes(t)) || (x.t[0].length >= 4 && tp.some((t) => t.endsWith(x.t[0]))))); // "Cido" = Aparecido
+    if (!e) e = existentes.find((x) => !usados.has(x.m.id) && x.t.join(' ') === tp.join(' '));
+    if (!e) {
+      const cand = existentes.filter((x) => !usados.has(x.m.id) && x.t.length && x.t.every((t) => tp.includes(t)));
+      const outrosIguais = (x) => pessoas.filter((q) => x.t.every((t) => tokens(q.nome).includes(t))).length;
+      e = cand.find((x) => outrosIguais(x) === 1);
+    }
+    if (e) { usados.add(e.m.id); p.existente = e.m; }
+  }
+  // 3. Monta as alterações: só completa o que está vazio, nunca apaga nada
+  const novos = [], atualizacoes = [], docs = [];
+  const comDoc = (p) => estado.souAdmin && (p.doc.cpf || p.doc.rg);
+  for (const p of pessoas) {
+    if (!p.existente) {
+      if (comDoc(p)) docs.push({ novo: novos.length, cpf: p.doc.cpf, rg: p.doc.rg });
+      p.novo = novos.length;
+      novos.push({ ...p.end, nome: p.nome, telefone: fmtTel(p.tels[0]), email: p.email, nascimento: p.nascimento, casamento: p.casamento,
+        sexo: p.sexo, conjuge_nome: ['casado', 'uniao_estavel'].includes(p.estado_civil) ? p.conjuge : '',
+        estado_civil: p.estado_civil || 'solteiro', categoria: 'membro', cidade: p.end.cidade || 'Colombo', uf: p.end.uf || 'PR', lgpd_consentimento: false,
+        observacoes: 'Importado da Secretaria' });
+      continue;
+    }
+    const m = p.existente, mud = {};
+    if (tokens(p.nome).length > tokens(m.nome).length) mud.nome = p.nome;
+    if (!m.email && p.email) mud.email = p.email;
+    if (!m.nascimento && p.nascimento) mud.nascimento = p.nascimento;
+    if (!m.casamento && p.casamento) mud.casamento = p.casamento;
+    if (p.estado_civil && m.estado_civil === 'solteiro' && p.estado_civil !== 'solteiro') mud.estado_civil = p.estado_civil;
+    if (!m.telefone && p.tels[0]) mud.telefone = fmtTel(p.tels[0]);
+    if (!m.sexo && p.sexo) mud.sexo = p.sexo;
+    if (p.conjuge && !m.conjuge_id && !m.conjuge_nome && ['casado', 'uniao_estavel'].includes(mud.estado_civil || m.estado_civil)) mud.conjuge_nome = p.conjuge;
+    // Endereço: só preenche quem ainda não tem rua cadastrada (e mantém o bloco junto)
+    if (!m.endereco && p.end.endereco) Object.entries(p.end).forEach(([k, v]) => { if (v) mud[k] = v; });
+    else if (!m.cep && p.end.cep) mud.cep = p.end.cep;
+    const d = digitos(m.telefone);
+    if (d && p.tels[0] && !p.tels.includes(d) && !(m.observacoes || '').includes('telefone na Secretaria'))
+      mud.observacoes = [m.observacoes, `telefone na Secretaria: ${fmtTel(p.tels[0])}`].filter(Boolean).join('; ');
+    if (Object.keys(mud).length) atualizacoes.push({ m, mud });
+    // Documentos: só completa o que está vazio
+    const atual = estado.docs[m.id] || { cpf: '', rg: '' };
+    const doc = { cpf: atual.cpf || p.doc.cpf, rg: atual.rg || p.doc.rg };
+    if (comDoc(p) && (doc.cpf !== atual.cpf || doc.rg !== atual.rg)) docs.push({ membro_id: m.id, ...doc, soDoc: !Object.keys(mud).length });
+  }
+  // 4. Casais: quando o cônjuge também está na planilha, liga os dois cadastros
+  const casais = [], ligados = new Set();
+  const conjugeDe = (q) => q.existente?.conjuge_id ? estado.membros.find((x) => x.id === q.existente.conjuge_id) : null;
+  for (const p of pessoas) {
+    if (!p.conjuge || ligados.has(p)) continue;
+    const tc = tokens(p.conjuge);
+    const cand = pessoas.filter((q) => q !== p && !ligados.has(q) && (() => { const tq = tokens(q.nome); return tq.length && tc.length && (tq.every((t) => tc.includes(t)) || (tc.length >= 2 && tc.every((t) => tq.includes(t)))); })());
+    if (cand.length !== 1) continue;
+    const q = cand[0];
+    const jaLigados = p.existente && q.existente && p.existente.conjuge_id === q.existente.id && q.existente.conjuge_id === p.existente.id;
+    if (conjugeDe(p) && !jaLigados || conjugeDe(q) && !jaLigados) continue; // já casado no app com outra pessoa: não mexe
+    const casamento = p.casamento || q.casamento || p.existente?.casamento || q.existente?.casamento || null;
+    const iguaisDatas = (p.existente?.casamento || null) === casamento && (q.existente?.casamento || null) === casamento;
+    ligados.add(p); ligados.add(q);
+    if (jaLigados && iguaisDatas) continue;
+    casais.push({ a: p, b: q, casamento, estado_civil: p.estado_civil === 'uniao_estavel' || q.estado_civil === 'uniao_estavel' ? 'uniao_estavel' : 'casado' });
+  }
+  const iguais = pessoas.filter((p) => p.existente && !atualizacoes.some((a) => a.m === p.existente) && !docs.some((d) => d.membro_id === p.existente.id)
+    && !casais.some((c) => c.a === p || c.b === p)).length;
+  return { linhas: linhas.length, pessoas: pessoas.length, novos, atualizacoes, docs, casais, iguais };
+}
+
+let planoImportacao = null;
+function abrirImportacao() {
+  mostrarAba('importar');
+  $('#aba-importar').innerHTML = `
+    <h2>Importar planilha</h2>
+    <div class="card">
+      <p class="dica">Exporte a lista de membros do software da Secretaria (em <b>CSV</b> ou <b>XLS</b>) e escolha o arquivo aqui. O app compara com quem já está cadastrado (pelo telefone e pelo nome) e <b>não duplica ninguém</b>: quem já existe só ganha o que estiver faltando. Antes de gravar, você vê o resumo.</p>
+      <label for="imp-arquivo">Arquivo CSV</label>
+      <input type="file" id="imp-arquivo" accept=".csv,.xls,.html,text/csv">
+    </div>
+    <div id="imp-resumo"></div>
+    <div class="acoes"><button class="btn btn-sec" id="imp-voltar">Voltar</button></div>`;
+  $('#imp-voltar').onclick = () => mostrarAba('membros');
+  $('#imp-arquivo').onchange = async (ev) => {
+    const arq = ev.target.files[0]; if (!arq) return;
+    const bytes = await arq.arrayBuffer();
+    let texto = new TextDecoder('utf-8').decode(bytes);
+    if (texto.includes('�')) texto = new TextDecoder('windows-1252').decode(bytes); // planilhas antigas do Excel
+    try { planoImportacao = planejarImportacao(texto.replace(/^﻿/, '')); }
+    catch (e) { $('#imp-resumo').innerHTML = `<div class="aviso">${esc(e.message)}</div>`; return; }
+    const p = planoImportacao;
+    const lista = (itens) => itens.slice(0, 200).map((t) => `<div class="sub">• ${esc(t)}</div>`).join('');
+    $('#imp-resumo').innerHTML = `
+      <div class="card">
+        <div class="nome">${p.pessoas} pessoas na planilha</div>
+        <div class="sub">${p.linhas - p.pessoas ? `${p.linhas - p.pessoas} linhas repetidas foram juntadas. ` : ''}${p.iguais} já estão em dia no cadastro.</div>
+        <h2>${p.novos.length} novos cadastros</h2>${lista(p.novos.map((n) => n.nome))}
+        <h2>${p.atualizacoes.length} cadastros completados</h2>${lista(p.atualizacoes.map((a) => `${a.m.nome}${a.mud.nome ? ' → ' + a.mud.nome : ''} (${Object.keys(a.mud).filter((k) => k !== 'nome').map((k) => k === 'observacoes' ? 'telefone diferente anotado' : k).filter((k) => !['numero', 'complemento', 'bairro', 'cidade', 'uf', 'cep'].includes(k) || !a.mud.endereco).map((k) => k === 'endereco' ? 'endereço' : k).join(', ') || 'nome completo'})`))}
+        ${p.casais.length ? `<h2>${p.casais.length} casais ligados</h2>${lista(p.casais.map((c) => `${c.a.nome} e ${c.b.nome}${c.casamento ? ' · 💍 ' + fmtIso(c.casamento) : ''}`))}` : ''}
+        ${p.docs.length ? `<h2>${p.docs.length} com CPF/RG completados</h2><div class="sub">${p.docs.filter((d) => d.cpf).length} com CPF e ${p.docs.filter((d) => d.rg).length} com RG. Só administradores veem os documentos.</div>` : ''}
+      </div>
+      ${p.novos.length + p.atualizacoes.length + p.docs.length + p.casais.length ? '<div class="acoes"><button class="btn btn-pri" id="imp-gravar">Gravar no cadastro</button></div>' : '<div class="card vazio">Nada para importar: está tudo em dia.</div>'}`;
+    if ($('#imp-gravar')) $('#imp-gravar').onclick = gravarImportacao;
+  };
+}
+async function gravarImportacao() {
+  const p = planoImportacao; const btn = $('#imp-gravar'); btn.disabled = true; btn.textContent = 'Gravando...';
+  let erros = 0;
+  let ids = [];
+  if (p.novos.length) {
+    const { data, error } = await sb.from('membros').insert(p.novos).select('id');
+    if (error) { toast('Erro ao gravar os novos: ' + error.message); btn.disabled = false; btn.textContent = 'Gravar no cadastro'; return; }
+    ids = data.map((x) => x.id);
+  }
+  for (const a of p.atualizacoes) { const { error } = await sb.from('membros').update(a.mud).eq('id', a.m.id); if (error) erros++; }
+  // Casais: os dois lados apontam um para o outro, com a mesma data (assim o app mostra as bodas uma vez só)
+  const idDe = (q) => q.existente?.id || ids[q.novo];
+  for (const c of p.casais) {
+    const a = idDe(c.a), b = idDe(c.b);
+    if (!a || !b) continue;
+    const comum = { estado_civil: c.estado_civil, casamento: c.casamento, conjuge_nome: '' };
+    const r1 = await sb.from('membros').update({ ...comum, conjuge_id: b }).eq('id', a);
+    const r2 = await sb.from('membros').update({ ...comum, conjuge_id: a }).eq('id', b);
+    if (r1.error || r2.error) erros++;
+  }
+  const docs = p.docs.map((d) => ({ membro_id: d.membro_id || ids[d.novo], cpf: d.cpf, rg: d.rg })).filter((d) => d.membro_id);
+  if (docs.length) { const { error } = await sb.from('membros_documentos').upsert(docs); if (error) toast('Erro ao gravar CPF/RG: ' + error.message); }
+  toast(`Importação concluída: ${p.novos.length} novos e ${p.atualizacoes.length - erros} completados${erros ? `, ${erros} com erro` : ''}.`);
+  planoImportacao = null;
+  await carregar();
+  mostrarAba('membros');
+}
+
+// ---------- Pedidos de atualização cadastral (link público) ----------
+function sugerirMembro(ped) {
+  const pedido = estado.membros.find((m) => m.id === ped.pedido_para);
+  if (pedido) return pedido;
+  const d = digitos(ped.telefone), tp = tokens(ped.nome);
+  const porTel = estado.membros.find((m) => d && digitos(m.telefone) === d);
+  if (porTel) return porTel;
+  const porNome = estado.membros.filter((m) => { const t = tokens(m.nome); return t.length && t.every((x) => tp.includes(x)); });
+  return porNome.length === 1 ? porNome[0] : null;
+}
+function renderPedidos() {
+  const texto = `Olá, família Somos Um! 🙌 Estamos atualizando o cadastro da igreja para celebrarmos juntos os aniversários e as bodas. Leva menos de 1 minuto: ${LINK_ATUALIZACAO}`;
+  const lista = estado.pedidos.map((p) => {
+    const sug = sugerirMembro(p);
+    const opcoes = `<option value="">➕ Criar cadastro novo</option>` + estado.membros.map((m) => `<option value="${m.id}" ${sug && sug.id === m.id ? 'selected' : ''}>${esc(m.nome)}</option>`).join('');
+    return `<div class="card" data-pedido="${p.id}">
+      <div class="linha">${avatar(p)}<div class="info"><div class="nome">${esc(p.nome)}</div>${p.foto ? '<div class="sub">📷 enviou foto</div>' : ''}</div></div>
+      ${p.campos ? `<div class="sub">🔗 Link pessoal: mandou ${esc(p.campos.split(',').map((c) => ({ nascimento: 'nascimento', casamento: 'casamento', endereco: 'endereço', cpf: 'CPF', rg: 'RG', email: 'e-mail', foto: 'foto', lgpd: 'LGPD', imagem: 'autorização de imagem' }[c] || c)).join(', '))}</div>` : ''}
+      <div class="sub">📱 ${esc(p.telefone)}${p.email ? ' · ' + esc(p.email) : ''}</div>
+      <div class="sub">🎂 ${fmtIso(p.nascimento) || '—'}${p.casamento ? ' · 💍 ' + fmtIso(p.casamento) : ''}${p.conjuge_nome ? ' com ' + esc(p.conjuge_nome) : ''} · ${esc(ESTADOS_CIVIS[p.estado_civil] || '')}</div>
+      ${p.endereco ? `<div class="sub">🏠 ${esc([p.endereco, p.numero, p.complemento].filter(Boolean).join(', '))} · ${esc(p.bairro)} · ${esc(p.cidade)}-${esc(p.uf)} · ${esc(p.cep)}</div>` : ''}
+      ${estado.docs['pedido:' + p.id] ? `<div class="sub">🪪 ${[estado.docs['pedido:' + p.id].cpf && 'CPF ' + esc(estado.docs['pedido:' + p.id].cpf), estado.docs['pedido:' + p.id].rg && 'RG ' + esc(estado.docs['pedido:' + p.id].rg)].filter(Boolean).join(' · ')}</div>` : ''}
+      ${p.autoriza_imagem_publica != null ? `<div class="sub">📸 ${p.autoriza_imagem_publica ? 'autoriza' : 'NÃO autoriza'} uso da imagem em fotos, vídeos e lives</div>` : ''}
+      <div class="sub">Enviado em ${new Date(p.criado_em).toLocaleDateString('pt-BR')}${p.aceita_mensagens ? '' : ' · não quer receber mensagens'}</div>
+      <label>Aplicar no cadastro de</label><select class="ped-membro">${opcoes}</select>
+      ${sug ? '' : '<p class="dica">Não achei essa pessoa no cadastro. Confira se não está com outro nome antes de criar um novo.</p>'}
+      <div class="acoes"><button class="btn btn-sec ped-descartar">Descartar</button><button class="btn btn-pri ped-aplicar">Aplicar</button></div>
+    </div>`;
+  }).join('');
+  $('#aba-pedidos').innerHTML = `
+    <div class="card">
+      <div class="nome">Link de atualização cadastral</div>
+      <p class="dica">Mande no grupo da igreja. Cada pessoa preenche nascimento, casamento, endereço, documentos e a autorização da LGPD. Os pedidos aparecem aqui e só entram no cadastro quando alguém da liderança aplica.</p>
+      <div class="acoes"><button class="btn btn-sec" id="ped-copiar">Copiar mensagem com o link</button><button class="btn btn-wa" id="ped-wa">Enviar no WhatsApp</button></div>
+    </div>
+    <div class="card" style="text-align:center">
+      <div class="nome">QR code para novos membros</div>
+      <p class="dica">Quem chegar na igreja aponta a câmera do celular e cai direto no cadastro. Dá para imprimir e deixar na recepção.</p>
+      <img src="qrcode-cadastro.png" alt="QR code do cadastro" style="width:200px;height:200px;image-rendering:pixelated">
+      <div class="acoes"><a class="btn btn-sec" href="qrcode-cadastro.png" download="qrcode-cadastro-somos-um.png">Baixar QR code</a><a class="btn btn-pri" href="cartaz.html" target="_blank">Imprimir cartaz</a></div>
+    </div>
+    <h2>${estado.pedidos.length ? estado.pedidos.length + ' aguardando' : 'Nenhum pedido aguardando'}</h2>
+    ${lista}`;
+  $('#ped-copiar').onclick = () => navigator.clipboard.writeText(texto).then(() => toast('Mensagem copiada. Cole no grupo da igreja.'), () => toast(LINK_ATUALIZACAO));
+  $('#ped-wa').onclick = () => window.open('https://wa.me/?text=' + encodeURIComponent(texto), '_blank');
+  document.querySelectorAll('[data-pedido]').forEach((card) => {
+    const ped = estado.pedidos.find((p) => p.id === card.dataset.pedido);
+    card.querySelector('.ped-aplicar').onclick = () => aplicarPedido(ped, card.querySelector('.ped-membro').value);
+    card.querySelector('.ped-descartar').onclick = () => resolverPedido(ped, 'descartado', null);
+  });
+}
+async function aplicarPedido(ped, membroId) {
+  if (ped.campos && membroId) return aplicarPedidoParcial(ped, membroId);
+  const casado = ['casado', 'uniao_estavel'].includes(ped.estado_civil);
+  const dados = { nascimento: ped.nascimento, estado_civil: ped.estado_civil || 'solteiro', casamento: casado ? ped.casamento : null,
+    aceita_mensagens: ped.aceita_mensagens, lgpd_consentimento: true };
+  if (ped.autoriza_imagem_publica != null) dados.autoriza_imagem_publica = ped.autoriza_imagem_publica;
+  if (ped.sexo) dados.sexo = ped.sexo;
+  if (ped.email) dados.email = ped.email;
+  // Endereço enviado pela própria pessoa substitui o antigo (CPF e RG o banco move sozinho)
+  if (ped.endereco) ['cep', 'endereco', 'numero', 'complemento', 'bairro', 'cidade', 'uf'].forEach((k) => (dados[k] = ped[k] || ''));
+  let id = membroId;
+  if (membroId) {
+    const m = estado.membros.find((x) => x.id === membroId);
+    if (tokens(ped.nome).length > tokens(m.nome).length) dados.nome = arrumaNome(ped.nome);
+    if (!m.telefone) dados.telefone = ped.telefone;
+    if (casado && !m.conjuge_id) dados.conjuge_nome = ped.conjuge_nome || m.conjuge_nome;
+    if (!casado) { dados.conjuge_id = null; dados.conjuge_nome = ''; }
+    const { error } = await sb.from('membros').update(dados).eq('id', membroId);
+    if (error) return toast('Erro ao aplicar: ' + error.message);
+  } else {
+    const { data, error } = await sb.from('membros').insert({ ...dados, nome: arrumaNome(ped.nome), telefone: ped.telefone, conjuge_nome: casado ? ped.conjuge_nome : '',
+      categoria: 'membro', cidade: ped.cidade || 'Colombo', uf: ped.uf || 'PR', observacoes: 'Cadastrado pelo link de atualização' }).select().single();
+    if (error) return toast('Erro ao criar: ' + error.message);
+    id = data.id;
+  }
+  // Foto enviada pelo link: passa da pasta pedidos/ para a pasta do membro
+  if (ped.foto && ped.consentimento_imagem) {
+    const destino = `${id}/${Date.now()}.jpg`;
+    const mv = await sb.storage.from('fotos-membros').move(ped.foto, destino);
+    if (mv.error) toast('Dados aplicados, mas a foto não foi copiada: ' + mv.error.message);
+    else {
+      const antiga = estado.membros.find((x) => x.id === id)?.foto;
+      await sb.from('membros').update({ foto: destino, consentimento_imagem: true }).eq('id', id);
+      if (antiga) await sb.storage.from('fotos-membros').remove([antiga]);
+    }
+  }
+  await resolverPedido(ped, 'aplicado', id);
+}
+// Pedido do link pessoal: traz só os campos que faltavam
+async function aplicarPedidoParcial(ped, id) {
+  const c = ped.campos.split(','), dados = {};
+  if (c.includes('nascimento') && ped.nascimento) dados.nascimento = ped.nascimento;
+  if (c.includes('casamento') && ped.casamento) dados.casamento = ped.casamento;
+  if (c.includes('email') && ped.email) dados.email = ped.email;
+  if (c.includes('lgpd')) dados.lgpd_consentimento = true;
+  if (ped.autoriza_imagem_publica != null) dados.autoriza_imagem_publica = ped.autoriza_imagem_publica;
+  if (c.includes('endereco') && ped.endereco) ['cep', 'endereco', 'numero', 'complemento', 'bairro', 'cidade', 'uf'].forEach((k) => (dados[k] = ped[k] || ''));
+  if (Object.keys(dados).length) {
+    const { error } = await sb.from('membros').update(dados).eq('id', id);
+    if (error) return toast('Erro ao aplicar: ' + error.message);
+  }
+  // Casal ligado: a data de casamento vale para os dois
+  const m = estado.membros.find((x) => x.id === id);
+  if (dados.casamento && m?.conjuge_id) await sb.from('membros').update({ casamento: dados.casamento }).eq('id', m.conjuge_id);
+  if (ped.foto && ped.consentimento_imagem) {
+    const destino = `${id}/${Date.now()}.jpg`;
+    const mv = await sb.storage.from('fotos-membros').move(ped.foto, destino);
+    if (mv.error) toast('Dados aplicados, mas a foto não foi copiada: ' + mv.error.message);
+    else {
+      await sb.from('membros').update({ foto: destino, consentimento_imagem: true }).eq('id', id);
+      if (m?.foto) await sb.storage.from('fotos-membros').remove([m.foto]);
+    }
+  }
+  await resolverPedido(ped, 'aplicado', id);
+}
+async function resolverPedido(ped, situacao, membroId) {
+  if (situacao === 'descartado' && ped.foto) await sb.storage.from('fotos-membros').remove([ped.foto]);
+  const { data: { user } } = await sb.auth.getUser();
+  const { error } = await sb.from('atualizacoes_cadastrais').update({ situacao, membro_id: membroId, resolvido_em: new Date().toISOString(), resolvido_por: user?.email || '' }).eq('id', ped.id);
+  if (error) return toast('Erro: ' + error.message);
+  toast(situacao === 'aplicado' ? 'Cadastro atualizado.' : 'Pedido descartado.');
+  await carregar();
+}
+
+// ---------- Visitantes: cadastro e régua de acompanhamento ----------
+// Cada etapa vira um lembrete no dia certo (contado da primeira visita). O texto de cada uma fica em Ajustes.
+const ETAPAS = [
+  { id: 'd0', dias: 0, nome: 'Agradecimento pela visita' },
+  { id: 'd3', dias: 3, nome: 'Convite para voltar' },
+  { id: 'd7', dias: 7, nome: 'Oração' },
+  { id: 'd15', dias: 15, nome: 'Convite para um café' },
+  { id: 'd30', dias: 30, nome: 'Contato pessoal (ligar ou visitar)' },
+];
+const SITUACOES_VIS = { novo: 'Novo', acompanhando: 'Em acompanhamento', frequentando: 'Frequentando', membro: 'Virou membro', arquivado: 'Arquivado' };
+const CANAIS = { whatsapp: 'WhatsApp', ligacao: 'Ligação', visita: 'Visita', pessoalmente: 'Pessoalmente no culto', pulado: 'Pulado' };
+const COMO_CONHECEU = ['Convite de alguém', 'Redes sociais', 'Passei em frente', 'Família', 'Jiu-Jitsu', 'Outro'];
+const LINK_VISITANTE = new URL('visitante.html', location.href).href;
+
+function dataDeIso(iso) { const p = partes(iso); return p ? new Date(p.a, p.m - 1, p.d) : null; }
+function isoDe(d) { return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
+function contatosDe(v) { return estado.contatos.filter((c) => c.visitante_id === v.id); }
+// Próxima etapa ainda não feita de quem está em acompanhamento (null se acabou ou saiu da régua)
+function proximaEtapa(v) {
+  if (!['novo', 'acompanhando'].includes(v.situacao)) return null;
+  const feitas = new Set(contatosDe(v).map((c) => c.etapa));
+  const etapa = ETAPAS.find((e) => !feitas.has(e.id));
+  if (!etapa) return null;
+  const data = dataDeIso(v.primeira_visita); data.setDate(data.getDate() + etapa.dias);
+  return { ...etapa, data };
+}
+function visitantesPendentes() {
+  const h = hoje();
+  return estado.visitantes.map((v) => ({ v, etapa: proximaEtapa(v) })).filter((x) => x.etapa && x.etapa.data <= h)
+    .sort((a, b) => a.etapa.data - b.etapa.data || a.v.nome.localeCompare(b.v.nome));
+}
+function textoVisitante(v, etapaId) {
+  return (estado.modelos['visitante_' + etapaId] || '').replaceAll('{nome}', primeiroNome(v.nome));
+}
+function podeWhats(v) { return v.aceita_mensagens !== false && telefoneWa(v.telefone); }
+
+function cardVisitantePendente({ v, etapa }) {
+  const atraso = Math.round((hoje() - etapa.data) / 86400000);
+  return `<div class="card"><div class="linha clicavel" data-vis-abrir="${v.id}">${avatar(v)}<div class="info">
+      <div class="nome">🙋 ${esc(v.nome)}</div>
+      <div class="sub">${esc(etapa.nome)} · visitou em ${fmtIso(v.primeira_visita)}${atraso > 0 ? ` · <b>${atraso} ${atraso === 1 ? 'dia' : 'dias'} de atraso</b>` : ''}</div>
+      ${v.quer_contato_pastor ? '<div class="sub">⛪ Quer conversar com o pastor</div>' : ''}
+      ${v.responsavel ? `<div class="sub">Responsável: ${esc(v.responsavel)}</div>` : ''}
+    </div></div>
+    <div class="acoes" style="margin-top:10px">
+      ${podeWhats(v) ? `<button class="btn btn-wa" data-vis-wa="${v.id}" data-etapa="${etapa.id}">WhatsApp</button>`
+        : `<button class="btn btn-sec" data-vis-feito="${v.id}" data-etapa="${etapa.id}">Já falei com a pessoa</button>`}
+      <button class="btn btn-sec" data-vis-pular="${v.id}" data-etapa="${etapa.id}">Pular etapa</button>
+    </div>
+    ${podeWhats(v) ? '' : `<p class="dica">${v.aceita_mensagens === false ? 'Não quer receber mensagens: fale pessoalmente ou por ligação.' : 'Sem WhatsApp cadastrado.'}</p>`}
+  </div>`;
+}
+
+function renderVisitantes() {
+  const busca = ($('#vs-busca')?.value || '').toLowerCase();
+  const filtro = $('#vs-filtro')?.value || 'acompanhando';
+  const noFiltro = (v) => filtro === 'todos' || (filtro === 'acompanhando' ? ['novo', 'acompanhando'].includes(v.situacao) : v.situacao === filtro);
+  const lista = estado.visitantes.filter((v) => noFiltro(v) && (!busca || v.nome.toLowerCase().includes(busca) || (v.telefone || '').includes(busca)))
+    .sort((a, b) => b.primeira_visita.localeCompare(a.primeira_visita) || a.nome.localeCompare(b.nome));
+  const pend = visitantesPendentes();
+  const foco = document.activeElement?.id;
+  const convite = `Que alegria ter você com a gente no Ministério Cristão Somos Um! 🙌 Deixe seu contato aqui: ${LINK_VISITANTE}`;
+  $('#aba-visitantes').innerHTML = `
+    ${pend.length ? `<h2>Para contatar hoje (${pend.length})</h2>${pend.map(cardVisitantePendente).join('')}` : ''}
+    <h2>Visitantes</h2>
+    <div class="barra"><input id="vs-busca" placeholder="Buscar por nome ou telefone" value="${esc(busca)}">
+      <button class="btn btn-pri" id="vs-novo">+ Novo</button></div>
+    <div class="barra"><select id="vs-filtro">
+      ${[['acompanhando', 'Em acompanhamento'], ['frequentando', 'Frequentando'], ['membro', 'Viraram membros'], ['arquivado', 'Arquivados'], ['todos', 'Todos']]
+        .map(([k, t]) => `<option value="${k}" ${k === filtro ? 'selected' : ''}>${t}</option>`).join('')}</select></div>
+    <p class="dica">${lista.length} ${lista.length === 1 ? 'pessoa' : 'pessoas'}</p>
+    ${lista.map((v) => {
+      const et = proximaEtapa(v);
+      return `<div class="card linha clicavel" data-vis-abrir="${v.id}">${avatar(v)}<div class="info">
+        <div class="nome">${esc(v.nome)}</div>
+        <div class="sub">1ª visita ${fmtIso(v.primeira_visita)}${v.visitas > 1 ? ` · veio ${v.visitas} vezes` : ''}${v.telefone ? ' · ' + esc(v.telefone) : ''}</div>
+        <div class="sub">${et ? `Próximo: ${esc(et.nome)} (${fmtIso(isoDe(et.data))})` : ['novo', 'acompanhando'].includes(v.situacao) ? 'Régua concluída: decida se está frequentando ou arquive' : ''}</div>
+      </div><span class="tag">${esc(SITUACOES_VIS[v.situacao])}</span></div>`;
+    }).join('') || '<div class="card vazio">Nenhum visitante aqui.</div>'}
+    <div class="card" style="text-align:center;margin-top:22px">
+      <div class="nome">QR code para visitantes</div>
+      <p class="dica">Mostre no telão ou deixe na recepção. O visitante aponta a câmera, preenche nome e WhatsApp e já entra aqui na lista.</p>
+      <img src="qrcode-visitante.png" alt="QR code para visitantes" style="width:200px;height:200px;image-rendering:pixelated">
+      <div class="acoes"><a class="btn btn-sec" href="qrcode-visitante.png" download="qrcode-visitantes-somos-um.png">Baixar QR code</a><a class="btn btn-pri" href="cartaz-visitante.html" target="_blank">Imprimir cartaz</a></div>
+      <div class="acoes"><button class="btn btn-sec" id="vs-copiar">Copiar link</button></div>
+    </div>`;
+  $('#vs-busca').oninput = renderVisitantes;
+  $('#vs-filtro').onchange = renderVisitantes;
+  $('#vs-novo').onclick = () => abrirVisitante(null);
+  $('#vs-copiar').onclick = () => navigator.clipboard.writeText(convite).then(() => toast('Link copiado.'), () => toast(LINK_VISITANTE));
+  if (foco === 'vs-busca') { const i = $('#vs-busca'); i.focus(); i.setSelectionRange(i.value.length, i.value.length); }
+}
+
+const CAMPOS_VIS = ['nome', 'telefone', 'email', 'bairro', 'como_conheceu', 'convidado_por', 'primeira_visita', 'situacao', 'responsavel', 'pedido_oracao', 'observacoes'];
+const CHECKS_VIS = ['quer_contato_pastor', 'aceita_mensagens', 'lgpd_consentimento'];
+function abrirVisitante(id) {
+  const v = estado.visitantes.find((x) => x.id === id) || { situacao: 'novo', aceita_mensagens: true, primeira_visita: isoDe(hoje()), visitas: 1 };
+  const opt = (obj, val) => Object.entries(obj).map(([k, t]) => `<option value="${esc(k)}" ${k === val ? 'selected' : ''}>${esc(t)}</option>`).join('');
+  const feitos = id ? contatosDe(v) : [];
+  const porEtapa = Object.fromEntries(feitos.filter((c) => c.etapa !== 'avulso').map((c) => [c.etapa, c]));
+  const prox = id ? proximaEtapa(v) : null;
+  const como = Object.fromEntries([['', ''], ...COMO_CONHECEU.map((c) => [c, c]), ...(v.como_conheceu && !COMO_CONHECEU.includes(v.como_conheceu) ? [[v.como_conheceu, v.como_conheceu]] : [])]);
+  mostrarAba('visitante');
+  $('#aba-visitante').innerHTML = `
+    <h2>${id ? 'Visitante' : 'Novo visitante'}</h2>
+    ${id ? `<div class="card">
+      <div class="nome">Acompanhamento</div>
+      <div class="sub">1ª visita ${fmtIso(v.primeira_visita)} · veio ${v.visitas} ${v.visitas === 1 ? 'vez' : 'vezes'}${v.visitas > 1 ? ` (última em ${fmtIso(v.ultima_visita)})` : ''}</div>
+      ${ETAPAS.map((e) => {
+        const c = porEtapa[e.id];
+        const quando = dataDeIso(v.primeira_visita); quando.setDate(quando.getDate() + e.dias);
+        const status = c ? (c.canal === 'pulado' ? `⏭️ pulada` : `✅ ${esc(CANAIS[c.canal] || c.canal)} em ${new Date(c.feito_em).toLocaleDateString('pt-BR')}${c.feito_por ? ' por ' + esc(c.feito_por) : ''}`)
+          : `⏳ ${fmtIso(isoDe(quando))}`;
+        const botao = !c && prox && prox.id === e.id
+          ? (podeWhats(v) ? `<button class="btn btn-wa" data-vis-wa="${v.id}" data-etapa="${e.id}">WhatsApp</button>` : `<button class="btn btn-sec" data-vis-feito="${v.id}" data-etapa="${e.id}">Feito</button>`) : '';
+        return `<div class="linha" style="margin-top:10px"><div class="info"><div>${esc(e.nome)}</div><div class="sub">${status}</div></div>${botao}</div>`;
+      }).join('')}
+      ${feitos.filter((c) => c.etapa === 'avulso').map((c) => `<div class="sub" style="margin-top:8px">📝 ${new Date(c.feito_em).toLocaleDateString('pt-BR')} · ${esc(CANAIS[c.canal] || c.canal)}${c.nota ? ': ' + esc(c.nota) : ''}${c.feito_por ? ' (' + esc(c.feito_por) + ')' : ''}</div>`).join('')}
+      <div class="grade" style="margin-top:6px">
+        <div><label for="v-canal">Registrar outro contato</label><select id="v-canal">${opt({ ligacao: 'Ligação', visita: 'Visita', pessoalmente: 'Pessoalmente no culto', whatsapp: 'WhatsApp' }, 'ligacao')}</select></div>
+        <div><label for="v-nota">Anotação</label><input id="v-nota" placeholder="como foi a conversa"></div>
+      </div>
+      <div class="acoes"><button class="btn btn-sec" id="v-registrar">Registrar contato</button><button class="btn btn-sec" id="v-voltou">🙌 Veio de novo hoje</button></div>
+    </div>` : ''}
+    <div class="card"><div class="grade">
+      <div class="inteiro"><label for="v-nome">Nome *</label><input id="v-nome" value="${esc(v.nome)}"></div>
+      <div><label for="v-telefone">WhatsApp (com DDD)</label><input id="v-telefone" type="tel" inputmode="tel" placeholder="41 99999-9999" value="${esc(v.telefone)}"></div>
+      <div><label for="v-email">E-mail</label><input id="v-email" type="email" value="${esc(v.email)}"></div>
+      <div><label for="v-bairro">Bairro</label><input id="v-bairro" value="${esc(v.bairro)}"></div>
+      <div><label for="v-primeira_visita">Primeira visita</label><input id="v-primeira_visita" type="date" value="${esc(v.primeira_visita)}"></div>
+      <div><label for="v-como_conheceu">Como conheceu</label><select id="v-como_conheceu">${opt(como, v.como_conheceu || '')}</select></div>
+      <div><label for="v-convidado_por">Convidado por</label><input id="v-convidado_por" value="${esc(v.convidado_por)}"></div>
+      <div><label for="v-situacao">Situação</label><select id="v-situacao">${opt(SITUACOES_VIS, v.situacao)}</select></div>
+      <div><label for="v-responsavel">Responsável pelo contato</label><input id="v-responsavel" placeholder="quem vai acompanhar" value="${esc(v.responsavel)}"></div>
+      <div class="inteiro"><label for="v-pedido_oracao">Pedido de oração</label><textarea id="v-pedido_oracao" style="min-height:70px">${esc(v.pedido_oracao)}</textarea></div>
+      <div class="inteiro"><label for="v-observacoes">Observações</label><textarea id="v-observacoes" style="min-height:70px">${esc(v.observacoes)}</textarea></div>
+    </div>
+      <label class="check"><input type="checkbox" id="v-quer_contato_pastor" ${v.quer_contato_pastor ? 'checked' : ''}> Quer conversar com o pastor</label>
+      <label class="check"><input type="checkbox" id="v-aceita_mensagens" ${v.aceita_mensagens !== false ? 'checked' : ''}> Aceita receber mensagens da igreja no WhatsApp</label>
+      <label class="check"><input type="checkbox" id="v-lgpd_consentimento" ${v.lgpd_consentimento ? 'checked' : ''}> A pessoa autorizou a igreja a guardar estes dados (LGPD) *</label>
+    </div>
+    <div id="v-erro" class="aviso oculto"></div>
+    <div class="acoes"><button class="btn btn-sec" id="v-cancelar">Voltar</button><button class="btn btn-pri" id="v-salvar">Salvar</button></div>
+    ${id ? `<div class="acoes">${v.situacao !== 'membro' ? '<button class="btn btn-sec" id="v-membro">⛪ Virou membro: criar cadastro</button>' : v.membro_id ? '<button class="btn btn-sec" id="v-ver-membro">Ver cadastro de membro</button>' : ''}
+      <button class="btn btn-perigo" id="v-excluir">Excluir</button></div>` : ''}`;
+  $('#v-cancelar').onclick = () => mostrarAba('visitantes');
+  $('#v-salvar').onclick = () => salvarVisitante(id);
+  if (id) {
+    $('#v-excluir').onclick = () => excluirVisitante(v);
+    $('#v-registrar').onclick = () => registrarContato(v, 'avulso', $('#v-canal').value, $('#v-nota').value.trim());
+    $('#v-voltou').onclick = () => voltouVisitante(v);
+    if ($('#v-membro')) $('#v-membro').onclick = () => virarMembro(v);
+    if ($('#v-ver-membro')) $('#v-ver-membro').onclick = () => abrirForm(v.membro_id);
+  }
+  window.scrollTo(0, 0);
+}
+
+async function salvarVisitante(id) {
+  const dados = {};
+  CAMPOS_VIS.forEach((c) => (dados[c] = $('#v-' + c).value.trim()));
+  CHECKS_VIS.forEach((c) => (dados[c] = $('#v-' + c).checked));
+  const erros = [];
+  if (dados.nome.length < 2) erros.push('Preencha o nome.');
+  if (!dados.primeira_visita) erros.push('Preencha a data da primeira visita.');
+  if (!dados.lgpd_consentimento) erros.push('Marque a autorização da LGPD (pergunte à pessoa antes).');
+  if (dados.telefone && !telefoneWa(dados.telefone)) erros.push('Confira o WhatsApp: DDD + número.');
+  if (erros.length) { $('#v-erro').innerHTML = erros.join('<br>'); $('#v-erro').classList.remove('oculto'); return; }
+  dados.nome = arrumaNome(dados.nome);
+  let r;
+  if (id) r = await sb.from('visitantes').update(dados).eq('id', id);
+  else {
+    const d = digitos(dados.telefone);
+    const repetido = d && estado.visitantes.find((x) => digitos(x.telefone) === d);
+    if (repetido && confirm(`${repetido.nome} já está na lista com esse WhatsApp. Abrir o cadastro dele(a) em vez de criar outro?`)) return abrirVisitante(repetido.id);
+    if (!dados.situacao) dados.situacao = 'novo';
+    r = await sb.from('visitantes').insert({ ...dados, origem: 'app', ultima_visita: dados.primeira_visita });
+  }
+  if (r.error) return toast('Erro ao salvar: ' + r.error.message);
+  toast('Visitante salvo.');
+  await carregar();
+  mostrarAba('visitantes');
+}
+
+async function excluirVisitante(v) {
+  if (!confirm(`Excluir ${v.nome} da lista de visitantes? O histórico de contatos também é apagado.`)) return;
+  const { error } = await sb.from('visitantes').delete().eq('id', v.id);
+  if (error) return toast('Erro ao excluir: ' + error.message);
+  toast('Visitante excluído.');
+  await carregar();
+  mostrarAba('visitantes');
+}
+
+// Grava a etapa feita; o primeiro contato tira o visitante de "Novo"
+async function registrarContato(v, etapa, canal, nota = '') {
+  const { data, error } = await sb.from('visitantes_contatos').insert({ visitante_id: v.id, etapa, canal, nota }).select().single();
+  if (error && error.code !== '23505') return toast((canal === 'whatsapp' ? 'O WhatsApp abriu, mas não consegui marcar: ' : 'Erro: ') + error.message);
+  if (data) estado.contatos.push(data);
+  if (v.situacao === 'novo' && canal !== 'pulado') {
+    await sb.from('visitantes').update({ situacao: 'acompanhando' }).eq('id', v.id);
+    v.situacao = 'acompanhando';
+  }
+  if (error) await carregar();
+  if (estado.aba === 'visitante') abrirVisitante(v.id); else render();
+}
+function contatarVisitante(id, etapa, canal) {
+  const v = estado.visitantes.find((x) => x.id === id);
+  if (!v) return;
+  if (canal === 'whatsapp') window.open(`https://wa.me/${telefoneWa(v.telefone)}?text=${encodeURIComponent(textoVisitante(v, etapa))}`, '_blank');
+  if (canal === 'pulado' && !confirm('Pular esta etapa? Ela não vai mais aparecer para essa pessoa.')) return;
+  registrarContato(v, etapa, canal);
+}
+
+async function voltouVisitante(v) {
+  const hj = isoDe(hoje());
+  if (v.ultima_visita >= hj) return toast('A visita de hoje já está contada.');
+  const dados = { visitas: v.visitas + 1, ultima_visita: hj };
+  if (['novo', 'acompanhando', 'arquivado'].includes(v.situacao) && v.visitas + 1 >= 3) dados.situacao = 'frequentando';
+  const { error } = await sb.from('visitantes').update(dados).eq('id', v.id);
+  if (error) return toast('Erro: ' + error.message);
+  toast(dados.situacao ? 'Que bênção! Já veio 3 vezes: agora está como "Frequentando".' : 'Visita registrada. 🙌');
+  await carregar();
+  abrirVisitante(v.id);
+}
+
+// Cria o cadastro de membro a partir do visitante (ou liga a um cadastro que já existe com o mesmo telefone)
+async function virarMembro(v) {
+  const d = digitos(v.telefone);
+  let membro = d && estado.membros.find((m) => digitos(m.telefone) === d);
+  if (membro && !confirm(`Já existe um membro com esse WhatsApp: ${membro.nome}. Ligar o visitante a esse cadastro?`)) membro = null;
+  if (!membro) {
+    if (!confirm(`Criar o cadastro de membro de ${v.nome}? Depois você completa nascimento, endereço etc.`)) return;
+    const { data, error } = await sb.from('membros').insert({
+      nome: arrumaNome(v.nome), telefone: v.telefone, email: v.email, bairro: v.bairro, categoria: 'congregado', situacao: 'ativo',
+      aceita_mensagens: v.aceita_mensagens !== false, lgpd_consentimento: !!v.lgpd_consentimento, cidade: 'Colombo', uf: 'PR',
+      observacoes: `Visitou a igreja pela primeira vez em ${fmtIso(v.primeira_visita)}.`,
+    }).select().single();
+    if (error) return toast('Erro ao criar o cadastro: ' + error.message);
+    membro = data;
+  }
+  const { error } = await sb.from('visitantes').update({ situacao: 'membro', membro_id: membro.id }).eq('id', v.id);
+  if (error) return toast('Erro: ' + error.message);
+  toast('Cadastro de membro criado. Complete os dados que faltam.');
+  await carregar();
+  abrirForm(membro.id);
+}
+
+// ---------- Kids, Adolescentes e Jovens ----------
+function renderKids() {
+  const busca = ($('#kj-busca')?.value || '').toLowerCase();
+  const filtro = $('#kj-filtro')?.value || 'todas';
+  const todos = estado.membros.filter((m) => m.situacao === 'ativo' && faixa(m));
+  const lista = todos.filter((m) => (filtro === 'todas' || (filtro === 'batismo' ? !m.batizado && idade(m) >= IDADE_BATISMO : faixa(m) === filtro)) && (!busca || m.nome.toLowerCase().includes(busca)))
+    .sort((a, b) => idade(a) - idade(b) || a.nome.localeCompare(b.nome));
+  const conta = (k) => todos.filter((m) => faixa(m) === k).length;
+  const aBatizar = todos.filter((m) => !m.batizado && idade(m) >= IDADE_BATISMO).length;
+  const semNasc = estado.membros.filter((m) => m.categoria === 'crianca_jovem' && !m.nascimento);
+  const mud = mudaramDeFaixa(30);
+  const foco = document.activeElement?.id;
+  $('#aba-kids').innerHTML = `
+    <div class="resumo-faixas">${Object.entries(FAIXAS).map(([k, f]) => `<button class="card faixa-box ${filtro === k ? 'ativo' : ''}" data-kj-faixa="${k}"><div style="font-size:22px">${f.emoji}</div><div class="nome">${conta(k)}</div><div class="sub">${f.nome}<br>${f.de} a ${f.ate} anos</div></button>`).join('')}</div>
+    ${mud.length ? `<h2>Mudaram de faixa (últimos 30 dias)</h2>${mud.map((x) => `<div class="card linha clicavel" data-editar="${x.m.id}">${avatar(x.m)}<div class="info"><div class="nome">${esc(x.m.nome)}</div><div class="sub">${textoMudanca(x)} em ${fmtData(x.data)}</div></div></div>`).join('')}` : ''}
+    <h2>Kids, Adolescentes e Jovens</h2>
+    <div class="barra"><input id="kj-busca" placeholder="Buscar por nome" value="${esc(busca)}">
+      <button class="btn btn-pri" id="kj-novo">+ Novo</button></div>
+    <div class="barra"><select id="kj-filtro">
+      ${[['todas', 'Todas as faixas'], ['kids', '🧸 Kids'], ['adolescentes', '🎒 Adolescentes'], ['jovens', '🔥 Jovens'], ['batismo', `💧 ${IDADE_BATISMO}+ ainda não batizados (${aBatizar})`]]
+        .map(([k, t]) => `<option value="${k}" ${k === filtro ? 'selected' : ''}>${t}</option>`).join('')}</select>
+      <button class="btn btn-sec" id="kj-copiar">Copiar lista</button></div>
+    <p class="dica">${lista.length} ${lista.length === 1 ? 'pessoa' : 'pessoas'}. Membros batizados entre 18 e 29 anos também aparecem em Jovens.</p>
+    ${lista.map((m) => {
+      const r = responsaveis(m);
+      const podeBatizar = !m.batizado && idade(m) >= IDADE_BATISMO;
+      return `<div class="card linha clicavel" data-editar="${m.id}">${avatar(m)}<div class="info">
+        <div class="nome">${esc(m.nome)} <span class="sub">· ${idade(m)} anos</span></div>
+        <div class="sub">🎂 ${fmtIso(m.nascimento)}${r.length ? ' · Resp.: ' + r.map((x) => esc(primeiroNome(x.nome))).join(' e ') : ''}</div>
+        <div>${tagFaixa(m)}<span class="tag">${m.batizado ? '💧 Batizado' + (m.data_batismo ? ' em ' + fmtIso(m.data_batismo) : '') : 'Não batizado'}</span></div>
+      </div>${podeBatizar ? `<button class="btn btn-sec" data-kj-batizou="${m.id}">💧 Batizou</button>` : ''}</div>`;
+    }).join('') || '<div class="card vazio">Ninguém nesta lista.</div>'}
+    ${semNasc.length ? `<div class="aviso">Sem data de nascimento (não dá para saber a faixa): ${semNasc.map((m) => `<a href="#" data-editar="${m.id}">${esc(m.nome)}</a>`).join(', ')}</div>` : ''}`;
+  $('#kj-busca').oninput = renderKids;
+  $('#kj-filtro').onchange = renderKids;
+  $('#kj-novo').onclick = () => abrirForm(null, { categoria: 'crianca_jovem', voltar: 'kids' });
+  $('#kj-copiar').onclick = () => {
+    const txt = lista.map((m) => `${m.nome} (${idade(m)} anos)${responsaveis(m).length ? ' · resp.: ' + responsaveis(m).map((x) => x.nome + (x.telefone ? ' ' + x.telefone : '')).join(', ') : ''}`).join('\n');
+    navigator.clipboard.writeText(txt).then(() => toast('Lista copiada.'), () => toast('Não foi possível copiar.'));
+  };
+  document.querySelectorAll('[data-kj-faixa]').forEach((b) => (b.onclick = () => { $('#kj-filtro').value = filtro === b.dataset.kjFaixa ? 'todas' : b.dataset.kjFaixa; renderKids(); }));
+  if (foco === 'kj-busca') { const i = $('#kj-busca'); i.focus(); i.setSelectionRange(i.value.length, i.value.length); }
+}
+// Batismo nas águas: marca batizado, guarda a data e passa o vínculo para Membro
+async function registrarBatismo(id) {
+  const m = estado.membros.find((x) => x.id === id);
+  const r = prompt(`Data do batismo de ${primeiroNome(m.nome)} (dd/mm/aaaa):`, fmtIso(isoDe(hoje())));
+  if (r == null) return;
+  const iso = dataIso(r);
+  if (!iso || new Date(iso) > new Date()) return toast('Data inválida. Use dd/mm/aaaa.');
+  const mud = { batizado: true, data_batismo: iso };
+  if (!ehMembro(m)) mud.categoria = 'membro';
+  const { error } = await sb.from('membros').update(mud).eq('id', id);
+  if (error) return toast('Erro: ' + error.message);
+  toast(`🙌 ${primeiroNome(m.nome)} foi batizado(a)${mud.categoria ? ' e agora é Membro' : ''}!`);
+  await carregar();
+}
+
+// ---------- Envio pelo WhatsApp ----------
+async function enviar(idx, pessoaId) {
+  const ev = eventosVisiveis[idx];
+  const pessoa = destinatarios(ev).find((p) => p.id === pessoaId);
+  const url = `https://wa.me/${telefoneWa(pessoa.telefone)}?text=${encodeURIComponent(textoMensagem(ev))}`;
+  window.open(url, '_blank');
+  const { data, error } = await sb.from('mensagens_enviadas').insert({ membro_id: ev.membro.id, tipo: ev.tipo, ano: ev.data.getFullYear() }).select().single();
+  if (error && error.code !== '23505') return toast('O WhatsApp abriu, mas não consegui marcar como enviado: ' + error.message);
+  if (data) estado.enviados.push(data);
+  else await carregar();
+  render();
+}
+
+// ---------- Navegação ----------
+function mostrarAba(aba) {
+  estado.aba = aba;
+  document.querySelectorAll('main > section').forEach((s) => s.classList.toggle('oculto', s.id !== 'aba-' + aba));
+  document.querySelectorAll('nav button').forEach((b) => b.classList.toggle('ativo', b.dataset.aba === aba));
+  if (aba !== 'form') render();
+}
+function render() {
+  if (estado.aba === 'hoje') renderHoje();
+  if (estado.aba === 'proximos') renderProximos();
+  if (estado.aba === 'membros') renderMembros();
+  if (estado.aba === 'mensagens') renderMensagens();
+  if (estado.aba === 'pedidos') renderPedidos();
+  if (estado.aba === 'visitantes') renderVisitantes();
+  if (estado.aba === 'kids') renderKids();
+}
+document.querySelectorAll('nav button').forEach((b) => (b.onclick = () => mostrarAba(b.dataset.aba)));
+document.addEventListener('click', (e) => {
+  const env = e.target.closest('[data-enviar]');
+  if (env) return enviar(Number(env.dataset.enviar), env.dataset.pessoa);
+  const vw = e.target.closest('[data-vis-wa]');
+  if (vw) return contatarVisitante(vw.dataset.visWa, vw.dataset.etapa, 'whatsapp');
+  const vf = e.target.closest('[data-vis-feito]');
+  if (vf) return contatarVisitante(vf.dataset.visFeito, vf.dataset.etapa, 'pessoalmente');
+  const vp = e.target.closest('[data-vis-pular]');
+  if (vp) return contatarVisitante(vp.dataset.visPular, vp.dataset.etapa, 'pulado');
+  const va = e.target.closest('[data-vis-abrir]');
+  if (va) return abrirVisitante(va.dataset.visAbrir);
+  const bt = e.target.closest('[data-kj-batizou]');
+  if (bt) { e.stopPropagation(); return registrarBatismo(bt.dataset.kjBatizou); }
+  const ed = e.target.closest('[data-editar]');
+  if (ed) { e.preventDefault(); abrirForm(ed.dataset.editar); }
+});
+
+// ---------- Login ----------
+let modoLogin = 'entrar';
+const MODOS = {
+  entrar: { titulo: 'Entrar', dica: 'Entre com o seu e-mail e senha.', botao: 'Entrar' },
+  criar: { titulo: 'Primeiro acesso', dica: 'Use o e-mail que o Anderson liberou para você e escolha uma senha (mínimo 6 caracteres).', botao: 'Criar minha senha' },
+  esqueci: { titulo: 'Esqueci a senha', dica: 'Digite seu e-mail. Vamos mandar um link para você criar uma senha nova.', botao: 'Enviar link' },
+  nova: { titulo: 'Nova senha', dica: 'Escolha a sua nova senha (mínimo 6 caracteres).', botao: 'Salvar nova senha' },
+};
+function modo(m) {
+  modoLogin = m; const c = MODOS[m];
+  $('#lg-titulo').textContent = c.titulo; $('#lg-dica').textContent = c.dica; $('#lg-entrar').textContent = c.botao;
+  $('#lg-campo-senha').classList.toggle('oculto', m === 'esqueci');
+  $('#lg-campo-senha2').classList.toggle('oculto', !['criar', 'nova'].includes(m));
+  $('#lg-email').parentElement.querySelector('label[for=lg-email]').classList.toggle('oculto', m === 'nova');
+  $('#lg-email').classList.toggle('oculto', m === 'nova');
+  $('#lg-senha').autocomplete = m === 'entrar' ? 'current-password' : 'new-password';
+  $('#lg-links').classList.toggle('oculto', m !== 'entrar');
+  $('#lg-voltar').classList.toggle('oculto', m === 'entrar' || m === 'nova');
+  $('#lg-erro').classList.add('oculto'); $('#lg-ok').classList.add('oculto');
+}
+document.querySelectorAll('[data-modo]').forEach((b) => (b.onclick = () => modo(b.dataset.modo)));
+async function entrar() {
+  const erro = $('#lg-erro'), ok = $('#lg-ok'); erro.classList.add('oculto'); ok.classList.add('oculto');
+  const falha = (t) => { erro.textContent = t; erro.classList.remove('oculto'); };
+  const email = $('#lg-email').value.trim().toLowerCase(), senha = $('#lg-senha').value;
+  const voltarAqui = location.origin + location.pathname;
+  if (['criar', 'nova'].includes(modoLogin)) {
+    if (senha.length < 6) return falha('A senha precisa ter pelo menos 6 caracteres.');
+    if (senha !== $('#lg-senha2').value) return falha('As duas senhas estão diferentes.');
+  }
+  if (modoLogin === 'entrar') {
+    const { error } = await sb.auth.signInWithPassword({ email, password: senha });
+    if (error) falha(/confirm/i.test(error.message) ? 'Falta confirmar o seu e-mail: abra a mensagem que enviamos e toque no link.' : 'Não foi possível entrar: confira o e-mail e a senha.');
+  } else if (modoLogin === 'criar') {
+    const { data, error } = await sb.auth.signUp({ email, password: senha, options: { emailRedirectTo: voltarAqui } });
+    if (error) return falha(/registered|already/i.test(error.message) ? 'Esse e-mail já tem senha. Use "Entrar" ou "Esqueci a senha".' : 'Não foi possível criar: ' + error.message);
+    if (!data.session) { ok.textContent = 'Pronto! Enviamos um e-mail para ' + email + '. Abra e toque no link para confirmar, depois volte aqui e entre.'; ok.classList.remove('oculto'); }
+  } else if (modoLogin === 'esqueci') {
+    const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: voltarAqui });
+    if (error) return falha('Não foi possível enviar: ' + error.message);
+    ok.textContent = 'Se esse e-mail tiver acesso, você vai receber um link para criar a senha nova.'; ok.classList.remove('oculto');
+  } else if (modoLogin === 'nova') {
+    const { error } = await sb.auth.updateUser({ password: senha });
+    if (error) return falha('Não foi possível salvar: ' + error.message);
+    toast('Senha nova salva.'); modo('entrar'); mostrarTela(true);
+  }
+}
+$('#lg-entrar').onclick = entrar;
+['lg-senha', 'lg-senha2', 'lg-email'].forEach((id) => ($('#' + id).onkeydown = (e) => { if (e.key === 'Enter') entrar(); }));
+$('#sair').onclick = () => sb.auth.signOut();
+$('#sem-acesso-sair').onclick = () => sb.auth.signOut();
+
+async function mostrarTela(logado, sessao) {
+  let liberado = false;
+  if (logado) {
+    estado.email = (sessao?.user?.email || (await sb.auth.getUser()).data.user?.email || '').toLowerCase();
+    const { data } = await sb.from('usuarios_autorizados').select('email,administrador').eq('email', estado.email);
+    liberado = !!data?.length; estado.souAdmin = !!data?.[0]?.administrador;
+    $('#sem-acesso-email').textContent = estado.email;
+  }
+  $('#login').classList.toggle('oculto', logado);
+  $('#sem-acesso').classList.toggle('oculto', !logado || liberado);
+  $('#app').classList.toggle('oculto', !liberado);
+  $('#sair').classList.toggle('oculto', !logado);
+  if (liberado) carregar();
+}
+
+if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
+
+sb.auth.onAuthStateChange((ev, sessao) => {
+  if (ev === 'PASSWORD_RECOVERY') { // voltou pelo link de "Esqueci a senha"
+    modo('nova'); $('#login').classList.remove('oculto'); $('#app').classList.add('oculto'); return;
+  }
+  if (ev === 'TOKEN_REFRESHED' || ev === 'USER_UPDATED') return;
+  setTimeout(() => mostrarTela(!!sessao, sessao), 0);
+});
+</script>
+</body>
+</html>
