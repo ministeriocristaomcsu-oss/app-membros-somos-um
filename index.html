@@ -26,6 +26,7 @@
   header { background: #111; color: #fff; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 5; }
   header h1 { font-size: 17px; margin: 0; }
   header h1 span { color: #ff5a5f; }
+  header h1 small { display: block; font-size: 11px; font-weight: 600; color: #ff5a5f; text-transform: uppercase; letter-spacing: .08em; margin-top: 2px; }
   header button { background: none; border: 1px solid #555; color: #ddd; border-radius: 8px; padding: 6px 10px; font-size: 13px; }
   nav { display: flex; overflow-x: auto; background: var(--card); border-bottom: 1px solid var(--line); position: sticky; top: 52px; z-index: 4; }
   nav button { flex: 1; border: 0; background: none; padding: 12px 1px; font-size: 12.5px; white-space: nowrap; color: var(--muted); border-bottom: 3px solid transparent; }
@@ -45,9 +46,8 @@
     #btn-mais, nav svg { display: block; }
     #btn-mais { display: flex; }
     nav .tag { position: absolute; top: 4px; left: calc(50% + 6px); margin: 0; padding: 0 5px; font-size: 10px; line-height: 16px; background: var(--red); color: #fff; }
-    main { padding-bottom: 80px; }
   }
-  main { max-width: 720px; margin: 0 auto; padding: 16px; }
+  main { max-width: 720px; margin: 0 auto; padding: 16px 16px calc(110px + env(safe-area-inset-bottom)); }
   h2 { font-size: 15px; margin: 22px 0 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
   h2:first-child { margin-top: 4px; }
   .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px; margin-bottom: 10px; }
@@ -96,7 +96,7 @@
 </head>
 <body>
 <header>
-  <h1>Somos Um <span>·</span> Membros</h1>
+  <h1>Ministério Cristão Somos Um<small>Cadastro de membros</small></h1>
   <button id="sair" class="oculto">Sair</button>
 </header>
 
@@ -483,7 +483,7 @@ async function renderAcessos() {
 const CAMPOS = ['nome', 'telefone', 'email', 'nascimento', 'sexo', 'estado_civil', 'conjuge_id', 'conjuge_nome', 'casamento', 'categoria', 'situacao',
   'pai_id', 'mae_id', 'responsavel_nome', 'responsavel_telefone', 'data_batismo', 'cep', 'endereco', 'numero', 'complemento', 'bairro', 'cidade', 'uf', 'observacoes'];
 const CHECKS = ['batizado', 'aceita_mensagens', 'lgpd_consentimento', 'consentimento_imagem'];
-let fotoNova = null, removerFoto = false, formVoltar = 'membros';
+let fotoNova = null, removerFoto = false, formVoltar = 'membros', formVisitante = null;
 
 // O que falta no cadastro de alguém (para pedir pelo link pessoal)
 // Essenciais: só eles fazem aparecer o botão de pedir. Os opcionais vão junto no pedido, se faltarem.
@@ -516,6 +516,7 @@ function pedirDados(m) {
 
 function abrirForm(id, novo = {}) {
   const m = estado.membros.find((x) => x.id === id) || { estado_civil: 'solteiro', categoria: 'membro', situacao: 'ativo', aceita_mensagens: true, cidade: 'Colombo', uf: 'PR', ...novo };
+  formVisitante = novo.visitante_id || null;
   formVoltar = novo.voltar || (estado.aba === 'kids' ? 'kids' : estado.aba === 'form' ? formVoltar : 'membros');
   const adultos = estado.membros.filter((x) => x.id !== id && (idade(x) ?? 99) >= 16).sort((a, b) => a.nome.localeCompare(b.nome));
   const optPessoa = (val, sexo) => '<option value="">(não está cadastrado)</option>' + adultos.filter((x) => !x.sexo || x.sexo === sexo || x.id === val).map((x) => `<option value="${x.id}" ${x.id === val ? 'selected' : ''}>${esc(x.nome)}</option>`).join('');
@@ -682,30 +683,36 @@ async function salvarMembro(id) {
   if (dados.data_batismo && new Date(dados.data_batismo) > new Date()) erros.push('A data do batismo está no futuro.');
   if (id && (dados.pai_id === id || dados.mae_id === id)) erros.push('A pessoa não pode ser pai ou mãe dela mesma.');
   if (dados.nascimento && new Date(dados.nascimento) > new Date()) erros.push('A data de nascimento está no futuro.');
-  if (fotoNova && !dados.consentimento_imagem) erros.push('Para guardar a foto, marque a autorização de uso da foto.');
+  const anterior = estado.membros.find((x) => x.id === id);
+  // Regra da igreja: nenhum cadastro sem foto
+  const temFoto = !!fotoNova || (!!anterior?.foto && !removerFoto);
+  if (!temFoto) erros.push('A foto é obrigatória. Toque em "Colocar foto" para tirar ou escolher a foto da pessoa.');
+  else if (!dados.consentimento_imagem) erros.push('Marque a autorização de uso da foto no cadastro da igreja.');
   const doc = estado.souAdmin ? { cpf: fmtCpf($('#f-cpf').value), rg: $('#f-rg').value.trim() } : null;
   if (doc && doc.cpf && doc.cpf !== (estado.docs[id]?.cpf || '') && doc.cpf.replace(/\D/g, '').length !== 11) erros.push('O CPF precisa ter 11 números.');
   if (erros.length) { const e = $('#f-erro'); e.innerHTML = erros.map(esc).join('<br>'); e.classList.remove('oculto'); return; }
 
   $('#f-salvar').disabled = true;
-  const anterior = estado.membros.find((x) => x.id === id);
-  const res = id ? await sb.from('membros').update(dados).eq('id', id).select().single() : await sb.from('membros').insert(dados).select().single();
-  if (res.error) { $('#f-salvar').disabled = false; return toast('Erro ao salvar: ' + res.error.message); }
-  const salvo = res.data;
-
-  // Foto: envia a nova, apaga a antiga
-  if (fotoNova || removerFoto) {
-    let caminho = '';
-    if (fotoNova) {
-      caminho = `${salvo.id}/${Date.now()}.jpg`;
-      const up = await sb.storage.from('fotos-membros').upload(caminho, fotoNova, { contentType: 'image/jpeg' });
-      if (up.error) { toast('Cadastro salvo, mas a foto não subiu: ' + up.error.message); caminho = anterior?.foto || ''; }
-    }
-    if (caminho !== (anterior?.foto || '')) {
-      await sb.from('membros').update({ foto: caminho }).eq('id', salvo.id);
-      if (anterior?.foto) await sb.storage.from('fotos-membros').remove([anterior.foto]);
-    }
+  // A foto sobe antes de gravar, para o cadastro já nascer com ela
+  const novoId = id || crypto.randomUUID();
+  let caminho = anterior?.foto || '';
+  if (fotoNova) {
+    caminho = `${novoId}/${Date.now()}.jpg`;
+    const up = await sb.storage.from('fotos-membros').upload(caminho, fotoNova, { contentType: 'image/jpeg' });
+    if (up.error) { $('#f-salvar').disabled = false; return toast('A foto não subiu, o cadastro não foi salvo. Confira a internet e tente de novo. (' + up.error.message + ')'); }
   }
+  dados.foto = caminho;
+  if (!id) dados.id = novoId;
+  const res = id ? await sb.from('membros').update(dados).eq('id', id).select().single() : await sb.from('membros').insert(dados).select().single();
+  if (res.error) {
+    if (fotoNova) await sb.storage.from('fotos-membros').remove([caminho]);
+    $('#f-salvar').disabled = false;
+    return toast('Erro ao salvar: ' + (/FOTO_OBRIGATORIA/.test(res.error.message) ? 'a foto é obrigatória.' : res.error.message));
+  }
+  const salvo = res.data;
+  if (fotoNova && anterior?.foto && anterior.foto !== caminho) await sb.storage.from('fotos-membros').remove([anterior.foto]);
+  // Veio do botão "Virou membro" de um visitante: liga os dois cadastros
+  if (formVisitante && !id) { await sb.from('visitantes').update({ situacao: 'membro', membro_id: salvo.id }).eq('id', formVisitante); formVisitante = null; }
 
   const docAntes = estado.docs[salvo.id] || { cpf: '', rg: '' };
   if (doc && (doc.cpf !== docAntes.cpf || doc.rg !== docAntes.rg)) {
@@ -927,7 +934,7 @@ function abrirImportacao() {
       <div class="card">
         <div class="nome">${p.pessoas} pessoas na planilha</div>
         <div class="sub">${p.linhas - p.pessoas ? `${p.linhas - p.pessoas} linhas repetidas foram juntadas. ` : ''}${p.iguais} já estão em dia no cadastro.</div>
-        <h2>${p.novos.length} novos cadastros</h2>${lista(p.novos.map((n) => n.nome))}
+        <h2>${p.novos.length} pessoas novas (não serão criadas)</h2><p class="dica">Todo cadastro precisa de foto. Cadastre estas pessoas pelo "+ Novo".</p>${lista(p.novos.map((n) => n.nome))}
         <h2>${p.atualizacoes.length} cadastros completados</h2>${lista(p.atualizacoes.map((a) => `${a.m.nome}${a.mud.nome ? ' → ' + a.mud.nome : ''} (${Object.keys(a.mud).filter((k) => k !== 'nome').map((k) => k === 'observacoes' ? 'telefone diferente anotado' : k).filter((k) => !['numero', 'complemento', 'bairro', 'cidade', 'uf', 'cep'].includes(k) || !a.mud.endereco).map((k) => k === 'endereco' ? 'endereço' : k).join(', ') || 'nome completo'})`))}
         ${p.casais.length ? `<h2>${p.casais.length} casais ligados</h2>${lista(p.casais.map((c) => `${c.a.nome} e ${c.b.nome}${c.casamento ? ' · 💍 ' + fmtIso(c.casamento) : ''}`))}` : ''}
         ${p.docs.length ? `<h2>${p.docs.length} com CPF/RG completados</h2><div class="sub">${p.docs.filter((d) => d.cpf).length} com CPF e ${p.docs.filter((d) => d.rg).length} com RG. Só administradores veem os documentos.</div>` : ''}
@@ -940,11 +947,7 @@ async function gravarImportacao() {
   const p = planoImportacao; const btn = $('#imp-gravar'); btn.disabled = true; btn.textContent = 'Gravando...';
   let erros = 0;
   let ids = [];
-  if (p.novos.length) {
-    const { data, error } = await sb.from('membros').insert(p.novos).select('id');
-    if (error) { toast('Erro ao gravar os novos: ' + error.message); btn.disabled = false; btn.textContent = 'Gravar no cadastro'; return; }
-    ids = data.map((x) => x.id);
-  }
+  // Pessoas novas da planilha não são criadas: todo cadastro precisa de foto (use "+ Novo")
   for (const a of p.atualizacoes) { const { error } = await sb.from('membros').update(a.mud).eq('id', a.m.id); if (error) erros++; }
   // Casais: os dois lados apontam um para o outro, com a mesma data (assim o app mostra as bodas uma vez só)
   const idDe = (q) => q.existente?.id || ids[q.novo];
@@ -958,7 +961,7 @@ async function gravarImportacao() {
   }
   const docs = p.docs.map((d) => ({ membro_id: d.membro_id || ids[d.novo], cpf: d.cpf, rg: d.rg })).filter((d) => d.membro_id);
   if (docs.length) { const { error } = await sb.from('membros_documentos').upsert(docs); if (error) toast('Erro ao gravar CPF/RG: ' + error.message); }
-  toast(`Importação concluída: ${p.novos.length} novos e ${p.atualizacoes.length - erros} completados${erros ? `, ${erros} com erro` : ''}.`);
+  toast(`Importação concluída: ${p.atualizacoes.length - erros} completados${p.novos.length ? `. ${p.novos.length} pessoas novas precisam ser cadastradas pelo "+ Novo", com foto` : ''}${erros ? `, ${erros} com erro` : ''}.`);
   planoImportacao = null;
   await carregar();
   mostrarAba('membros');
@@ -1035,6 +1038,12 @@ async function aplicarPedido(ped, membroId) {
     const { error } = await sb.from('membros').update(dados).eq('id', membroId);
     if (error) return toast('Erro ao aplicar: ' + error.message);
   } else {
+    if (!ped.foto || !ped.consentimento_imagem) return toast('Este pedido veio sem foto. A foto é obrigatória: peça para a pessoa preencher o link de novo com a foto.');
+    const novoId = crypto.randomUUID(), destino = `${novoId}/${Date.now()}.jpg`;
+    const mv = await sb.storage.from('fotos-membros').move(ped.foto, destino);
+    if (mv.error) return toast('Não consegui copiar a foto do pedido: ' + mv.error.message);
+    ped = { ...ped, foto: '' }; // a foto já foi usada aqui
+    dados.id = novoId; dados.foto = destino; dados.consentimento_imagem = true;
     const { data, error } = await sb.from('membros').insert({ ...dados, nome: arrumaNome(ped.nome), telefone: ped.telefone, conjuge_nome: casado ? ped.conjuge_nome : '',
       categoria: 'membro', cidade: ped.cidade || 'Colombo', uf: ped.uf || 'PR', observacoes: 'Cadastrado pelo link de atualização' }).select().single();
     if (error) return toast('Erro ao criar: ' + error.message);
@@ -1319,18 +1328,15 @@ async function virarMembro(v) {
   let membro = d && estado.membros.find((m) => digitos(m.telefone) === d);
   if (membro && !confirm(`Já existe um membro com esse WhatsApp: ${membro.nome}. Ligar o visitante a esse cadastro?`)) membro = null;
   if (!membro) {
-    if (!confirm(`Criar o cadastro de membro de ${v.nome}? Depois você completa nascimento, endereço etc.`)) return;
-    const { data, error } = await sb.from('membros').insert({
-      nome: arrumaNome(v.nome), telefone: v.telefone, email: v.email, bairro: v.bairro, categoria: 'congregado', situacao: 'ativo',
-      aceita_mensagens: v.aceita_mensagens !== false, lgpd_consentimento: !!v.lgpd_consentimento, cidade: 'Colombo', uf: 'PR',
-      observacoes: `Visitou a igreja pela primeira vez em ${fmtIso(v.primeira_visita)}.`,
-    }).select().single();
-    if (error) return toast('Erro ao criar o cadastro: ' + error.message);
-    membro = data;
+    // Cadastro novo passa pelo formulário, porque a foto é obrigatória
+    toast('Complete o cadastro e coloque a foto para salvar.');
+    return abrirForm(null, { nome: arrumaNome(v.nome), telefone: v.telefone, email: v.email, bairro: v.bairro, categoria: 'congregado',
+      aceita_mensagens: v.aceita_mensagens !== false, lgpd_consentimento: !!v.lgpd_consentimento,
+      observacoes: `Visitou a igreja pela primeira vez em ${fmtIso(v.primeira_visita)}.`, visitante_id: v.id, voltar: 'visitantes' });
   }
   const { error } = await sb.from('visitantes').update({ situacao: 'membro', membro_id: membro.id }).eq('id', v.id);
   if (error) return toast('Erro: ' + error.message);
-  toast('Cadastro de membro criado. Complete os dados que faltam.');
+  toast('Visitante ligado ao cadastro de membro.');
   await carregar();
   abrirForm(membro.id);
 }
@@ -1425,6 +1431,8 @@ function render() {
   if (estado.aba === 'kids') renderKids();
 }
 document.querySelectorAll('nav button[data-aba], #menu-mais button').forEach((b) => (b.onclick = () => { mostrarAba(b.dataset.aba); window.scrollTo(0, 0); }));
+const ajustaNav = () => { $('nav').style.top = $('header').offsetHeight + 'px'; };
+addEventListener('resize', ajustaNav); setTimeout(ajustaNav, 0);
 $('#btn-mais').onclick = () => {
   $('#menu-mais .folha').style.top = $('nav').getBoundingClientRect().bottom + 6 + 'px';
   $('#menu-mais').classList.toggle('oculto');
@@ -1511,7 +1519,7 @@ async function mostrarTela(logado, sessao) {
   $('#sem-acesso').classList.toggle('oculto', !logado || liberado);
   $('#app').classList.toggle('oculto', !liberado);
   $('#sair').classList.toggle('oculto', !logado);
-  if (liberado) carregar();
+  if (liberado) { ajustaNav(); carregar(); }
 }
 
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
