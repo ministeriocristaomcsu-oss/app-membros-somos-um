@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Certificado de apresentação</title>
+<title>Certificados</title>
 <meta name="theme-color" content="#111111">
 <link rel="icon" href="icone.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -122,13 +122,18 @@
 </head>
 <body>
 <header>
-  <h1>Certificado de apresentação<small>Ministério Cristão Somos Um</small></h1>
+  <h1 id="titulo-pag">Certificado de apresentação<small>Ministério Cristão Somos Um</small></h1>
   <a href="./" id="voltar">Voltar ao app</a>
 </header>
 
 <div class="tela">
   <section class="painel" id="painel">
     <div id="aviso" class="aviso oculto"></div>
+    <h2>Certificado de</h2>
+    <div class="modelos tipos" style="grid-template-columns:1fr 1fr;margin-bottom:14px">
+      <button data-tipo="apresentacao"><b>👶 Apresentação</b></button>
+      <button data-tipo="batismo"><b>💧 Batismo</b></button>
+    </div>
     <h2>Modelo</h2>
     <div class="modelos">
       <button data-modelo="m1"><b>Clássico</b>moldura</button>
@@ -136,20 +141,21 @@
       <button data-modelo="m3"><b>Infantil</b>suave</button>
     </div>
     <h2 style="margin-top:16px">Dados</h2>
-    <label for="c-nome">Nome da criança</label><input id="c-nome">
+    <label for="c-nome" id="l-nome">Nome da criança</label><input id="c-nome">
     <label for="c-sexo">Menino ou menina</label>
     <select id="c-sexo"><option value="masculino">Menino</option><option value="feminino">Menina</option></select>
     <label for="c-nascimento">Data de nascimento</label><input id="c-nascimento" type="date">
     <label for="c-pai">Pai</label><input id="c-pai">
     <label for="c-mae">Mãe</label><input id="c-mae">
-    <label for="c-data">Data da apresentação</label><input id="c-data" type="date">
-    <label for="c-pastor">Pastor(a) que apresentou</label><input id="c-pastor" list="lista-pastores" value="Pr. Oziel Arnone Antunes">
+    <label for="c-data" id="l-data">Data da apresentação</label><input id="c-data" type="date">
+    <label for="c-pastor">Pastor que assina</label><input id="c-pastor" list="lista-pastores" value="Pr. Oziel Arnone Antunes">
     <datalist id="lista-pastores"></datalist>
     <label for="c-cargo">Cargo de quem assina</label><input id="c-cargo" value="Pastor Presidente">
     <label for="c-ass2">Segunda assinatura (cargo)</label><input id="c-ass2" value="Secretaria">
     <label for="c-cidade">Cidade</label><input id="c-cidade" value="Colombo - PR">
     <label for="c-verso">Versículo</label><select id="c-verso"></select>
-    <label class="check"><input type="checkbox" id="c-foto"> Mostrar a foto da criança</label>
+    <label class="check"><input type="checkbox" id="c-foto"> Mostrar a foto</label>
+    <p class="dica" id="dica-foto">A foto vem do cadastro da pessoa. Para trocar, mude a foto no cadastro.</p>
     <button class="btn btn-pri" id="imprimir">🖨️ Imprimir ou salvar em PDF</button>
     <p class="dica">No celular ou computador, escolha <b>Salvar como PDF</b> na tela de impressão. Papel A4 deitado; se aparecer, desmarque "Cabeçalhos e rodapés".</p>
   </section>
@@ -167,7 +173,18 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const $ = (s) => document.querySelector(s);
 const esc = (t) => String(t ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const MESES = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
-const VERSOS = [
+const TIPOS = {
+  apresentacao: { nome: 'apresentação', titulo: 'Apresentação', rotuloNome: 'Nome da criança', rotuloData: 'Data da apresentação' },
+  batismo: { nome: 'batismo', titulo: 'Batismo', rotuloNome: 'Nome de quem foi batizado(a)', rotuloData: 'Data do batismo' },
+};
+const VERSOS_BATISMO = [
+  ['Portanto, ide, ensinai todas as nações, batizando-as em nome do Pai, e do Filho, e do Espírito Santo.', 'Mateus 28:19'],
+  ['De sorte que fomos sepultados com ele pelo batismo na morte; para que, como Cristo ressuscitou dos mortos pela glória do Pai, assim andemos nós também em novidade de vida.', 'Romanos 6:4'],
+  ['Arrependei-vos, e cada um de vós seja batizado em nome de Jesus Cristo para perdão dos pecados, e recebereis o dom do Espírito Santo.', 'Atos 2:38'],
+  ['Porque todos quantos fostes batizados em Cristo já vos revestistes de Cristo.', 'Gálatas 3:27'],
+  ['Assim que, se alguém está em Cristo, nova criatura é; as coisas velhas já passaram; eis que tudo se fez novo.', '2 Coríntios 5:17'],
+];
+const VERSOS_APRESENTACAO = [
   ['Deixai vir a mim os pequeninos e não os impeçais, porque dos tais é o Reino de Deus.', 'Marcos 10:14'],
   ['Por este menino orava eu; e o Senhor me concedeu a minha petição. Pelo que também ao Senhor eu o entrego, por todos os dias que viver.', '1 Samuel 1:27-28'],
   ['Eis que os filhos são herança do Senhor, e o fruto do ventre, o seu galardão.', 'Salmos 127:3'],
@@ -178,6 +195,9 @@ const params = new URLSearchParams(location.search);
 const demo = params.has('demo');
 let fotoUrl = '';
 let modelo = params.get('modelo') || lerLocal('cert-modelo') || 'm1';
+let tipo = params.get('tipo') === 'batismo' ? 'batismo' : 'apresentacao';
+let membro = null; // cadastro carregado do app
+const versos = () => (tipo === 'batismo' ? VERSOS_BATISMO : VERSOS_APRESENTACAO);
 
 function lerLocal(k) { try { return localStorage.getItem(k); } catch { return null; } }
 function gravarLocal(k, v) { try { localStorage.setItem(k, v); } catch {} }
@@ -190,7 +210,7 @@ const LOGO = '<img class="logo" src="img/logo-somos-um.png" alt="Ministério Cri
 
 function dados() {
   const v = (id) => $(id).value.trim();
-  const [verso, ref] = VERSOS[Number($('#c-verso').value) || 0];
+  const [verso, ref] = versos()[Number($('#c-verso').value) || 0] || versos()[0];
   return { nome: v('#c-nome'), menina: $('#c-sexo').value === 'feminino', nasc: v('#c-nascimento'), pai: v('#c-pai'), mae: v('#c-mae'), data: v('#c-data'),
     pastor: v('#c-pastor'), cargo: v('#c-cargo') || 'Pastor Presidente', ass2: v('#c-ass2'), cidade: v('#c-cidade'), verso, ref, foto: $('#c-foto').checked && fotoUrl };
 }
@@ -198,6 +218,9 @@ function dados() {
 function textoPrincipal(d) {
   const pais = [d.pai, d.mae].filter(Boolean).map(esc).join(' e ');
   const o = d.menina ? 'a' : 'o';
+  if (tipo === 'batismo') return `${d.nasc ? `nascid${o} em ${porExtenso(d.nasc)}, ` : ''}${pais ? `filh${o} de <b>${pais}</b>, ` : ''}foi batizad${o} nas águas,
+    em nome do Pai, do Filho e do Espírito Santo, no <b>Ministério Cristão Somos Um</b>, em ${porExtenso(d.data)},
+    confessando Jesus Cristo como seu Senhor e Salvador.`;
   return `${d.nasc ? `nascid${o} em ${porExtenso(d.nasc)}, ` : ''}${pais ? `filh${o} de <b>${pais}</b>, ` : ''}foi apresentad${o} ao Senhor no
     <b>Ministério Cristão Somos Um</b>, em ${porExtenso(d.data)}, seguindo o exemplo de Jesus, que foi apresentado no templo (Lucas 2:22).`;
 }
@@ -205,12 +228,12 @@ function assinaturas(d) {
   return `<div class="ass"><div>${esc(d.pastor) || '&nbsp;'}<small>${esc(d.cargo)}</small></div>${d.ass2 ? `<div>&nbsp;<small>${esc(d.ass2)}</small></div>` : ''}</div>`;
 }
 const fotoTag = (d) => d.foto ? `<img class="foto" src="${esc(d.foto)}" alt="" crossorigin="anonymous">` : '';
-const nomeOu = (d) => esc(d.nome) || 'Nome da criança';
+const nomeOu = (d) => esc(d.nome) || (tipo === 'batismo' ? 'Nome completo' : 'Nome da criança');
 
 const MODELOS = {
   m1: (d) => `<div class="folha m1"><div class="borda"></div><div class="borda2"></div><div class="canto c1"></div><div class="canto c2"></div><div class="canto c3"></div><div class="canto c4"></div>
     <div class="conteudo">${LOGO}
-      <div class="titulo">CERTIFICADO</div><div class="subt">DE APRESENTAÇÃO</div>
+      <div class="titulo">CERTIFICADO</div><div class="subt">DE ${TIPOS[tipo].titulo.toUpperCase()}</div>
       <div class="meio"><div class="linha-meio">${fotoTag(d)}<div><div class="cert">Certificamos que</div><div class="nome">${nomeOu(d)}</div></div></div>
       <div class="texto">${textoPrincipal(d)}</div>
       <div class="verso">“${esc(d.verso)}” <b>${esc(d.ref.toUpperCase())}</b></div></div>
@@ -220,7 +243,7 @@ const MODELOS = {
       <div><img class="mao" src="img/mao-somos-um.png" alt=""><img class="texto-logo" src="img/texto-somos-um-branco.png" alt="Ministério Cristão Somos Um - Resgatando Vidas"></div>
       ${fotoTag(d)}
       <div class="data">${esc(d.cidade.toUpperCase())}<br>${curta(d.data)}</div></div>
-    <div class="corpo"><div class="titulo">CERTIFICADO DE</div><div class="titulo2">Apresentação</div><div class="barra"></div>
+    <div class="corpo"><div class="titulo">CERTIFICADO DE</div><div class="titulo2">${TIPOS[tipo].titulo}</div><div class="barra"></div>
       <div class="meio"><div class="cert">Certificamos que</div><div class="nome">${nomeOu(d)}</div>
       <div class="texto">${textoPrincipal(d)}</div>
       <div class="verso">“${esc(d.verso)}”<b>${esc(d.ref.toUpperCase())}</b></div></div>
@@ -228,7 +251,7 @@ const MODELOS = {
     </div></div>`,
   m3: (d) => `<div class="folha m3 ${d.menina ? '' : 'menino'}">${fundoInfantil(d.menina)}<div class="borda"></div>
     <div class="conteudo"><div class="topo">${LOGO}</div>
-      <div class="titulo">Certificado de Apresentação</div>
+      <div class="titulo">Certificado de ${TIPOS[tipo].titulo}</div>
       <div class="meio"><div class="linha-meio">${fotoTag(d)}<div><div class="cert">Com alegria, certificamos que</div><div class="nome">${nomeOu(d)}</div></div></div>
       <div class="texto">${textoPrincipal(d)}</div>
       <div class="verso">“${esc(d.verso)}” <b>${esc(d.ref)}</b></div></div>
@@ -271,23 +294,23 @@ function preencher(c) {
 }
 
 async function iniciar() {
-  $('#c-verso').innerHTML = VERSOS.map(([, r], i) => `<option value="${i}">${r}</option>`).join('');
-  $('#c-verso').value = lerLocal('cert-verso') || '0';
-  $('#c-data').value = hojeIso();
+  aplicarTipo();
+  document.querySelectorAll('[data-tipo]').forEach((b) => (b.onclick = () => { tipo = b.dataset.tipo; aplicarTipo(); render(); }));
   document.querySelectorAll('[data-modelo]').forEach((b) => (b.onclick = () => { modelo = b.dataset.modelo; gravarLocal('cert-modelo', modelo); render(); }));
   document.querySelectorAll('#painel input, #painel select').forEach((el) => (el.oninput = el.onchange = render));
-  $('#c-verso').addEventListener('change', () => gravarLocal('cert-verso', $('#c-verso').value));
+  $('#c-verso').addEventListener('change', () => gravarLocal('cert-verso-' + tipo, $('#c-verso').value));
   $('#imprimir').onclick = () => {
     const d = dados();
-    if (!d.nome) return alert('Preencha o nome da criança.');
+    if (!d.nome) return alert('Preencha o nome.');
     const anterior = document.title;
-    document.title = 'Certificado de apresentação - ' + d.nome; // vira o nome do PDF
+    document.title = `Certificado de ${TIPOS[tipo].nome} - ${d.nome}`; // vira o nome do PDF
     window.print();
     setTimeout(() => (document.title = anterior), 1000);
   };
 
   if (demo) {
-    preencher({ nome: 'Helena Souza Martins', sexo: 'feminino', nascimento: '2026-03-12', pai: 'Lucas Martins', mae: 'Ana Souza Martins' });
+    preencher(tipo === 'batismo' ? { nome: 'Gabriel Henrique Lopes', sexo: 'masculino', nascimento: '2011-08-03', pai: '', mae: '' }
+      : { nome: 'Helena Souza Martins', sexo: 'feminino', nascimento: '2026-03-12', pai: 'Lucas Martins', mae: 'Ana Souza Martins' });
     if (params.get('foto')) { fotoUrl = params.get('foto'); $('#c-foto').checked = true; }
     return render();
   }
@@ -300,16 +323,29 @@ async function iniciar() {
   if (!id) return render();
   const { data: m, error } = await sb.from('membros').select('*').eq('id', id).single();
   if (error || !m) return mostrarAviso('Não encontrei esse cadastro. Preencha os campos à mão.');
+  membro = m;
   const ids = [m.pai_id, m.mae_id].filter(Boolean);
   const { data: pais } = ids.length ? await sb.from('membros').select('id,nome').in('id', ids) : { data: [] };
   const nomeDe = (pid) => (pais || []).find((p) => p.id === pid)?.nome || '';
   preencher({ nome: m.nome, sexo: m.sexo === 'feminino' ? 'feminino' : 'masculino', nascimento: m.nascimento, pai: nomeDe(m.pai_id), mae: nomeDe(m.mae_id) || (!m.pai_id ? m.responsavel_nome : '') });
+  if (tipo === 'batismo' && m.data_batismo) $('#c-data').value = m.data_batismo;
   if (m.foto) {
     const r = await sb.storage.from('fotos-membros').createSignedUrl(m.foto, 3600);
-    if (r.data?.signedUrl) fotoUrl = r.data.signedUrl;
+    if (r.data?.signedUrl) { fotoUrl = r.data.signedUrl; $('#c-foto').checked = true; }
   }
-  document.title = 'Certificado de apresentação - ' + m.nome;
+  document.title = `Certificado de ${TIPOS[tipo].nome} - ${m.nome}`;
   render();
+}
+// Troca entre apresentação e batismo: textos, versículos e data padrão
+function aplicarTipo() {
+  const t = TIPOS[tipo];
+  document.querySelectorAll('[data-tipo]').forEach((b) => b.classList.toggle('ativo', b.dataset.tipo === tipo));
+  $('#titulo-pag').firstChild.textContent = 'Certificado de ' + t.nome;
+  $('#l-nome').textContent = t.rotuloNome;
+  $('#l-data').textContent = t.rotuloData;
+  $('#c-verso').innerHTML = versos().map(([, r], i) => `<option value="${i}">${r}</option>`).join('');
+  $('#c-verso').value = lerLocal('cert-verso-' + tipo) || '0';
+  $('#c-data').value = (tipo === 'batismo' && membro?.data_batismo) || hojeIso();
 }
 function mostrarAviso(t) { const a = $('#aviso'); a.textContent = t; a.classList.remove('oculto'); }
 document.fonts?.ready.then(ajustarEscala);

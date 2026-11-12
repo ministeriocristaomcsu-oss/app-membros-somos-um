@@ -135,12 +135,14 @@
     <button data-aba="kids"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="5"/><path d="M10 7.5h.01M14 7.5h.01M10 10.2a2.6 2.6 0 0 0 4 0M7 21c.8-3 2.8-4.5 5-4.5s4.2 1.5 5 4.5"/></svg><span>Kids e Jovens</span></button>
     <button data-aba="visitantes"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.6-3.5 3.3-5.5 6.5-5.5s5.9 2 6.5 5.5M19 7v6M16 10h6"/></svg><span>Visitantes</span> <span id="badge-visitantes" class="tag oculto"></span></button>
     <button data-aba="pedidos" class="sec"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 13h5l1.5 3h5L16 13h5"/><path d="M5.5 5h13L21 13v6a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-6z"/></svg><span>Pedidos</span> <span id="badge-pedidos" class="tag oculto"></span></button>
+    <button data-aba="certificados" class="sec"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="9" r="5.5"/><path d="M8.5 13.3 7 21l5-2.5 5 2.5-1.5-7.7"/><path d="m10 9 1.4 1.4L14.2 7.6"/></svg><span>Certificados</span></button>
     <button data-aba="mensagens" class="sec"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/></svg><span>Ajustes</span></button>
     <button id="btn-mais"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg><span>Mais</span> <span id="badge-mais" class="tag oculto"></span></button>
   </nav>
   <div id="menu-mais" class="oculto"><div class="folha">
     <button data-aba="proximos"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span>Próximos aniversários</span></button>
     <button data-aba="pedidos"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 13h5l1.5 3h5L16 13h5"/><path d="M5.5 5h13L21 13v6a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-6z"/></svg><span>Pedidos de atualização</span> <span id="badge-pedidos2" class="tag oculto"></span></button>
+    <button data-aba="certificados"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="9" r="5.5"/><path d="M8.5 13.3 7 21l5-2.5 5 2.5-1.5-7.7"/><path d="m10 9 1.4 1.4L14.2 7.6"/></svg><span>Certificados (apresentação e batismo)</span></button>
     <button data-aba="mensagens"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/></svg><span>Ajustes e acessos</span></button>
   </div></div>
   <main>
@@ -153,6 +155,7 @@
     <section id="aba-importar" class="oculto"></section>
     <section id="aba-visitantes" class="oculto"></section>
     <section id="aba-kids" class="oculto"></section>
+    <section id="aba-certificados" class="oculto"></section>
     <section id="aba-visitante" class="oculto"></section>
   </main>
 </div>
@@ -600,7 +603,9 @@ function abrirForm(id, novo = {}) {
       <button class="btn btn-sec" id="f-cancelar">Cancelar</button>
       <button class="btn btn-pri" id="f-salvar">Salvar</button>
     </div>
-    ${id && (m.categoria === 'crianca_jovem' || (idade(m) ?? 99) <= 11) ? `<div class="acoes"><a class="btn btn-sec" href="certificado.html?id=${m.id}">📜 Certificado de apresentação</a></div>` : ''}
+    ${id && (m.categoria === 'crianca_jovem' || (idade(m) ?? 99) <= 11 || m.batizado) ? `<div class="acoes">
+      ${m.categoria === 'crianca_jovem' || (idade(m) ?? 99) <= 11 ? `<a class="btn btn-sec" href="certificado.html?id=${m.id}">📜 Certificado de apresentação</a>` : ''}
+      ${m.batizado ? `<a class="btn btn-sec" href="certificado.html?tipo=batismo&id=${m.id}">💧 Certificado de batismo</a>` : ''}</div>` : ''}
     ${id ? '<div class="acoes"><button class="btn btn-perigo" id="f-excluir">Excluir cadastro</button></div>' : ''}`;
 
   const atualizaCasal = () => document.querySelectorAll('.casal').forEach((el) => el.classList.toggle('oculto', !['casado', 'uniao_estavel'].includes($('#f-estado_civil').value)));
@@ -1364,7 +1369,7 @@ function renderKids() {
       ${[['todas', 'Todas as faixas'], ['kids', '🧸 Kids'], ['adolescentes', '🎒 Adolescentes'], ['jovens', '🔥 Jovens'], ['batismo', `💧 ${IDADE_BATISMO}+ ainda não batizados (${aBatizar})`]]
         .map(([k, t]) => `<option value="${k}" ${k === filtro ? 'selected' : ''}>${t}</option>`).join('')}</select>
       <button class="btn btn-sec" id="kj-copiar">Copiar lista</button></div>
-    <p class="dica">📜 Para o <a href="certificado.html">certificado de apresentação</a>, abra o cadastro da criança e toque em "Certificado de apresentação".</p>
+    <p class="dica">📜 Certificados de apresentação e de batismo ficam no menu <a href="#" data-ir-aba="certificados">Certificados</a>.</p>
     <p class="dica">${lista.length} ${lista.length === 1 ? 'pessoa' : 'pessoas'}. Membros batizados entre 18 e 29 anos também aparecem em Jovens.</p>
     ${lista.map((m) => {
       const r = responsaveis(m);
@@ -1401,6 +1406,35 @@ async function registrarBatismo(id) {
   await carregar();
 }
 
+// ---------- Certificados (apresentação de criança e batismo) ----------
+function renderCertificados() {
+  const busca = ($('#ct-busca')?.value || '').toLowerCase();
+  const tipo = $('#ct-tipo')?.value || 'apresentacao';
+  const ativos = estado.membros.filter((m) => m.situacao === 'ativo');
+  const lista = (tipo === 'batismo'
+    ? ativos.filter((m) => m.batizado).sort((a, b) => (b.data_batismo || '').localeCompare(a.data_batismo || '') || a.nome.localeCompare(b.nome))
+    : ativos.filter((m) => idade(m) != null && idade(m) <= 11).sort((a, b) => idade(a) - idade(b) || a.nome.localeCompare(b.nome)))
+    .filter((m) => !busca || m.nome.toLowerCase().includes(busca));
+  const foco = document.activeElement?.id;
+  $('#aba-certificados').innerHTML = `
+    <h2>Certificados</h2>
+    <div class="resumo-faixas" style="grid-template-columns:1fr 1fr">
+      <button class="card faixa-box ${tipo === 'apresentacao' ? 'ativo' : ''}" data-ct-tipo="apresentacao"><div style="font-size:22px">👶</div><div class="nome">Apresentação</div><div class="sub">crianças até 11 anos</div></button>
+      <button class="card faixa-box ${tipo === 'batismo' ? 'ativo' : ''}" data-ct-tipo="batismo"><div style="font-size:22px">💧</div><div class="nome">Batismo</div><div class="sub">batizados nas águas</div></button>
+    </div>
+    <input type="hidden" id="ct-tipo" value="${tipo}">
+    <div class="barra"><input id="ct-busca" placeholder="Buscar por nome" value="${esc(busca)}">
+      <a class="btn btn-sec" href="certificado.html${tipo === 'batismo' ? '?tipo=batismo' : ''}">Em branco</a></div>
+    <p class="dica">Toque na pessoa para abrir o certificado já preenchido. Lá você escolhe o modelo e imprime ou salva em PDF.</p>
+    ${lista.map((m) => `<a class="card linha clicavel" style="text-decoration:none;color:inherit" href="certificado.html?${tipo === 'batismo' ? 'tipo=batismo&' : ''}id=${m.id}">${avatar(m)}<div class="info">
+        <div class="nome">${esc(m.nome)}</div>
+        <div class="sub">${tipo === 'batismo' ? (m.data_batismo ? '💧 Batizado(a) em ' + fmtIso(m.data_batismo) : '💧 Batizado(a), sem data no cadastro') : `🎂 ${fmtIso(m.nascimento)} · ${idade(m) === 0 ? 'menos de 1 ano' : idade(m) + (idade(m) === 1 ? ' ano' : ' anos')}`}</div>
+      </div><span class="btn btn-sec">📜</span></a>`).join('') || '<div class="card vazio">Ninguém nesta lista.</div>'}`;
+  $('#ct-busca').oninput = renderCertificados;
+  document.querySelectorAll('[data-ct-tipo]').forEach((b) => (b.onclick = () => { $('#ct-tipo').value = b.dataset.ctTipo; renderCertificados(); }));
+  if (foco === 'ct-busca') { const i = $('#ct-busca'); i.focus(); i.setSelectionRange(i.value.length, i.value.length); }
+}
+
 // ---------- Envio pelo WhatsApp ----------
 async function enviar(idx, pessoaId) {
   const ev = eventosVisiveis[idx];
@@ -1419,7 +1453,7 @@ function mostrarAba(aba) {
   estado.aba = aba;
   document.querySelectorAll('main > section').forEach((s) => s.classList.toggle('oculto', s.id !== 'aba-' + aba));
   document.querySelectorAll('nav button[data-aba], #menu-mais button').forEach((b) => b.classList.toggle('ativo', b.dataset.aba === aba));
-  $('#btn-mais').classList.toggle('ativo', ['proximos', 'pedidos', 'mensagens'].includes(aba));
+  $('#btn-mais').classList.toggle('ativo', ['proximos', 'pedidos', 'mensagens', 'certificados'].includes(aba));
   $('#menu-mais').classList.add('oculto');
   if (aba !== 'form') render();
 }
@@ -1431,6 +1465,7 @@ function render() {
   if (estado.aba === 'pedidos') renderPedidos();
   if (estado.aba === 'visitantes') renderVisitantes();
   if (estado.aba === 'kids') renderKids();
+  if (estado.aba === 'certificados') renderCertificados();
 }
 document.querySelectorAll('nav button[data-aba], #menu-mais button').forEach((b) => (b.onclick = () => { mostrarAba(b.dataset.aba); window.scrollTo(0, 0); }));
 const ajustaNav = () => { $('nav').style.top = $('header').offsetHeight + 'px'; };
@@ -1453,6 +1488,8 @@ document.addEventListener('click', (e) => {
   if (va) return abrirVisitante(va.dataset.visAbrir);
   const bt = e.target.closest('[data-kj-batizou]');
   if (bt) { e.stopPropagation(); return registrarBatismo(bt.dataset.kjBatizou); }
+  const ir = e.target.closest('[data-ir-aba]');
+  if (ir) { e.preventDefault(); mostrarAba(ir.dataset.irAba); return window.scrollTo(0, 0); }
   const ed = e.target.closest('[data-editar]');
   if (ed) { e.preventDefault(); abrirForm(ed.dataset.editar); }
 });
