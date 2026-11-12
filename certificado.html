@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Certificado de apresentação</title>
+<meta name="theme-color" content="#111111">
+<link rel="icon" href="icone.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Great+Vibes&family=Montserrat:wght@400;500;600;700;800&family=Fredoka:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root { --red: #ce0a0e; --ink: #1b1b1b; --muted: #6b6b6b; --line: #e4e1dc; --bg: #f6f5f3; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--ink); }
+  header { background: #111; color: #fff; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; gap: 10px; position: sticky; top: 0; z-index: 5; }
+  header h1 { font-size: 16px; margin: 0; }
+  header h1 small { display: block; font-size: 11px; font-weight: 600; color: #ff5a5f; text-transform: uppercase; letter-spacing: .08em; margin-top: 2px; }
+  header a { color: #ddd; border: 1px solid #555; border-radius: 8px; padding: 6px 10px; font-size: 13px; text-decoration: none; white-space: nowrap; }
+  .tela { max-width: 1100px; margin: 0 auto; padding: 16px 16px 120px; display: grid; grid-template-columns: 340px minmax(0, 1fr); gap: 18px; align-items: start; }
+  @media (max-width: 860px) { .tela { grid-template-columns: minmax(0, 1fr); } .previa { position: static; order: -1; } }
+  .painel { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 14px; }
+  .painel h2 { font-size: 13px; margin: 4px 0 8px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+  label { display: block; font-size: 13px; color: var(--muted); margin: 10px 0 4px; }
+  input, select, textarea { width: 100%; padding: 9px; border: 1px solid var(--line); border-radius: 8px; font-size: 16px; background: #fff; color: var(--ink); font-family: inherit; }
+  textarea { min-height: 70px; }
+  .modelos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .modelos button { border: 2px solid var(--line); background: #fff; border-radius: 10px; padding: 8px 4px; font: inherit; font-size: 12.5px; cursor: pointer; color: var(--ink); }
+  .modelos button b { display: block; font-size: 13.5px; }
+  .modelos button.ativo { border-color: var(--red); color: var(--red); }
+  .check { display: flex; gap: 8px; align-items: center; margin-top: 10px; font-size: 14px; color: var(--ink); }
+  .check input { width: 18px; height: 18px; margin: 0; }
+  .btn { border: 0; border-radius: 10px; padding: 12px 14px; font-size: 15px; font-weight: 600; cursor: pointer; width: 100%; margin-top: 14px; }
+  .btn-pri { background: var(--red); color: #fff; }
+  .dica { font-size: 12.5px; color: var(--muted); margin: 8px 0 0; }
+  .aviso { background: #fbe9e9; color: var(--red); border-radius: 8px; padding: 12px; font-size: 14px; }
+  .previa { position: sticky; top: 70px; min-width: 0; }
+  .moldura-previa { width: 100%; overflow: hidden; border-radius: 6px; box-shadow: 0 6px 24px rgba(0,0,0,.15); background: #fff; }
+  @media (max-width: 860px) { .previa { position: static; } }
+  .oculto { display: none !important; }
+
+  /* ---------- Folha A4 deitada ---------- */
+  .folha { width: 297mm; height: 210mm; position: relative; overflow: hidden; background: #fff; color: #1b1b1b; transform-origin: top left; }
+  .folha .foto { object-fit: cover; border-radius: 50%; }
+  .folha .meio { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6mm; width: 100%; }
+  .folha .verso b { white-space: nowrap; }
+  .ass { display: flex; justify-content: center; gap: 30mm; }
+  .ass div { width: 80mm; text-align: center; border-top: 1px solid currentColor; padding-top: 2mm; font-size: 12pt; }
+  .ass small { display: block; font-size: 9pt; opacity: .75; }
+
+  /* Modelo 1: Clássico (moldura dupla, letras de convite) */
+  .m1 { padding: 11mm; background: #fffdf8; }
+  .m1 .borda { position: absolute; inset: 9mm; border: 2.2mm solid #111; }
+  .m1 .borda2 { position: absolute; inset: 13.5mm; border: .6mm solid var(--red); }
+  .m1 .canto { position: absolute; width: 16mm; height: 16mm; border: .6mm solid var(--red); }
+  .m1 .c1 { top: 16mm; left: 16mm; border-right: 0; border-bottom: 0; } .m1 .c2 { top: 16mm; right: 16mm; border-left: 0; border-bottom: 0; }
+  .m1 .c3 { bottom: 16mm; left: 16mm; border-right: 0; border-top: 0; } .m1 .c4 { bottom: 16mm; right: 16mm; border-left: 0; border-top: 0; }
+  .m1 .conteudo { position: absolute; inset: 20mm 26mm; display: flex; flex-direction: column; align-items: center; text-align: center; font-family: "Cormorant Garamond", Georgia, serif; }
+  .m1 .logo { height: 30mm; }
+  .m1 .titulo { font-size: 40pt; font-weight: 700; letter-spacing: .06em; margin: 4mm 0 0; line-height: 1; }
+  .m1 .subt { font-family: Montserrat, sans-serif; color: var(--red); letter-spacing: .5em; font-size: 12pt; font-weight: 600; margin-top: 2mm; }
+  .m1 .linha-meio { display: flex; align-items: center; gap: 9mm; }
+  .m1 .foto { width: 38mm; height: 38mm; border: 1mm solid var(--red); }
+  .m1 .cert { font-size: 16pt; font-style: italic; margin-bottom: 1mm; }
+  .m1 .nome { font-family: "Great Vibes", cursive; font-size: 58pt; line-height: 1.05; color: #111; }
+  .m1 .texto { font-size: 16.5pt; line-height: 1.5; max-width: 215mm; }
+  .m1 .verso { font-style: italic; font-size: 14.5pt; color: #444; max-width: 200mm; }
+  .m1 .verso b { font-style: normal; color: var(--red); font-family: Montserrat, sans-serif; font-size: 9pt; letter-spacing: .1em; }
+  .m1 .ass { font-family: Montserrat, sans-serif; }
+
+  /* Modelo 2: Moderno (faixa preta lateral) */
+  .m2 { display: grid; grid-template-columns: 82mm 1fr; font-family: Montserrat, sans-serif; }
+  .m2 .lado { background: #111; color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 18mm 8mm 14mm; text-align: center; position: relative; }
+  .m2 .lado::after { content: ""; position: absolute; top: 0; right: 0; width: 3mm; height: 100%; background: var(--red); }
+  .m2 .mao { width: 40mm; display: block; margin: 0 auto; }
+  .m2 .texto-logo { width: 60mm; display: block; margin: 4mm auto 0; }
+  .m2 .foto { width: 52mm; height: 52mm; border: 1.2mm solid #fff; outline: 1mm solid var(--red); }
+  .m2 .lado .data { font-size: 9pt; letter-spacing: .14em; color: #bbb; }
+  .m2 .corpo { padding: 20mm 18mm 14mm 18mm; display: flex; flex-direction: column; }
+  .m2 .titulo { font-size: 13pt; font-weight: 700; letter-spacing: .45em; color: var(--red); }
+  .m2 .titulo2 { font-size: 46pt; font-weight: 800; line-height: 1; margin-top: 2mm; letter-spacing: -.01em; }
+  .m2 .barra { width: 24mm; height: 1.8mm; background: var(--red); margin: 6mm 0 0; }
+  .m2 .meio { align-items: flex-start; gap: 0; }
+  .m2 .cert { font-size: 13pt; color: #555; }
+  .m2 .nome { font-size: 40pt; font-weight: 700; line-height: 1.1; margin: 1mm 0 3mm; font-family: "Cormorant Garamond", Georgia, serif; }
+  .m2 .texto { font-size: 13.5pt; line-height: 1.65; color: #333; max-width: 180mm; }
+  .m2 .verso { margin-top: 7mm; padding-left: 4mm; border-left: 1mm solid var(--red); font-family: "Cormorant Garamond", Georgia, serif; font-style: italic; font-size: 16pt; color: #333; max-width: 175mm; }
+  .m2 .verso b { display: block; font-style: normal; font-family: Montserrat, sans-serif; font-size: 8.5pt; letter-spacing: .12em; color: var(--red); margin-top: 1mm; }
+  .m2 .ass { justify-content: flex-start; gap: 18mm; }
+  .m2 .ass div { width: 70mm; text-align: left; }
+
+  /* Modelo 3: Infantil (suave, com estrelas e nuvens) */
+  .m3 { --suave: #e3a6a8; --sombra: #f0d9d9; background: #fdf8f3; font-family: Fredoka, Montserrat, sans-serif; }
+  .m3.menino { --suave: #a9a9a9; --sombra: #e4e4e4; background: #f7f7f6; }
+  .m3 .fundo { position: absolute; inset: 0; }
+  .m3 .borda { position: absolute; inset: 8mm; border: 1mm dashed var(--suave); border-radius: 10mm; }
+  .m3 .conteudo { position: absolute; inset: 15mm 26mm 16mm; display: flex; flex-direction: column; align-items: center; text-align: center; }
+  .m3 .topo { display: flex; align-items: center; gap: 3mm; font-weight: 600; letter-spacing: .2em; font-size: 11pt; color: #333; }
+  .m3 .logo { height: 22mm; }
+  .m3 .titulo { font-family: "Great Vibes", cursive; font-size: 56pt; color: var(--red); line-height: 1; margin-top: 2mm; }
+  .m3 .subt { font-weight: 500; letter-spacing: .4em; font-size: 10pt; color: #555; margin-top: 1mm; }
+  .m3 .linha-meio { display: flex; align-items: center; gap: 9mm; }
+  .m3 .foto { width: 42mm; height: 42mm; border: 1.6mm solid #fff; box-shadow: 0 0 0 .8mm var(--suave); }
+  .m3 .nome { font-size: 40pt; font-weight: 600; color: #222; line-height: 1.1; }
+  .m3 .cert { font-size: 14pt; color: #666; }
+  .m3 .texto { font-size: 15pt; line-height: 1.55; color: #444; max-width: 210mm; }
+  .m3 .verso { background: #fff; border-radius: 6mm; padding: 3.5mm 8mm; font-size: 13.5pt; color: #555; max-width: 210mm; box-shadow: 0 .6mm 0 var(--sombra); }
+  .m3 .verso b { color: var(--red); font-weight: 600; }
+  .m3 .ass { color: #333; }
+
+  @page { size: A4 landscape; margin: 0; }
+  @media print {
+    body { background: #fff; }
+    header, .painel, .dica-tela { display: none !important; }
+    .tela { display: block; padding: 0; max-width: none; }
+    .previa { position: static; }
+    .moldura-previa { box-shadow: none; border-radius: 0; height: auto !important; overflow: visible; }
+    .folha { transform: none !important; }
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>Certificado de apresentação<small>Ministério Cristão Somos Um</small></h1>
+  <a href="./" id="voltar">Voltar ao app</a>
+</header>
+
+<div class="tela">
+  <section class="painel" id="painel">
+    <div id="aviso" class="aviso oculto"></div>
+    <h2>Modelo</h2>
+    <div class="modelos">
+      <button data-modelo="m1"><b>Clássico</b>moldura</button>
+      <button data-modelo="m2"><b>Moderno</b>faixa preta</button>
+      <button data-modelo="m3"><b>Infantil</b>suave</button>
+    </div>
+    <h2 style="margin-top:16px">Dados</h2>
+    <label for="c-nome">Nome da criança</label><input id="c-nome">
+    <label for="c-sexo">Menino ou menina</label>
+    <select id="c-sexo"><option value="masculino">Menino</option><option value="feminino">Menina</option></select>
+    <label for="c-nascimento">Data de nascimento</label><input id="c-nascimento" type="date">
+    <label for="c-pai">Pai</label><input id="c-pai">
+    <label for="c-mae">Mãe</label><input id="c-mae">
+    <label for="c-data">Data da apresentação</label><input id="c-data" type="date">
+    <label for="c-pastor">Pastor(a) que apresentou</label><input id="c-pastor" list="lista-pastores" value="Pr. Oziel Arnone Antunes">
+    <datalist id="lista-pastores"></datalist>
+    <label for="c-cargo">Cargo de quem assina</label><input id="c-cargo" value="Pastor Presidente">
+    <label for="c-ass2">Segunda assinatura (cargo)</label><input id="c-ass2" value="Secretaria">
+    <label for="c-cidade">Cidade</label><input id="c-cidade" value="Colombo - PR">
+    <label for="c-verso">Versículo</label><select id="c-verso"></select>
+    <label class="check"><input type="checkbox" id="c-foto"> Mostrar a foto da criança</label>
+    <button class="btn btn-pri" id="imprimir">🖨️ Imprimir ou salvar em PDF</button>
+    <p class="dica">No celular ou computador, escolha <b>Salvar como PDF</b> na tela de impressão. Papel A4 deitado; se aparecer, desmarque "Cabeçalhos e rodapés".</p>
+  </section>
+  <section class="previa">
+    <div class="moldura-previa" id="moldura"><div id="folha"></div></div>
+    <p class="dica dica-tela">As mudanças nos dados aparecem na hora. Nada aqui altera o cadastro.</p>
+  </section>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script>
+const SUPABASE_URL = 'https://kucctooazibqfzlmqsws.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_4yxH3tJotLPLK3LDiYb01A_7dsS2xpn';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const $ = (s) => document.querySelector(s);
+const esc = (t) => String(t ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const MESES = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+const VERSOS = [
+  ['Deixai vir a mim os pequeninos e não os impeçais, porque dos tais é o Reino de Deus.', 'Marcos 10:14'],
+  ['Por este menino orava eu; e o Senhor me concedeu a minha petição. Pelo que também ao Senhor eu o entrego, por todos os dias que viver.', '1 Samuel 1:27-28'],
+  ['Eis que os filhos são herança do Senhor, e o fruto do ventre, o seu galardão.', 'Salmos 127:3'],
+  ['Instrui o menino no caminho em que deve andar, e, até quando envelhecer, não se desviará dele.', 'Provérbios 22:6'],
+  ['O Senhor te abençoe e te guarde; o Senhor faça resplandecer o seu rosto sobre ti e tenha misericórdia de ti.', 'Números 6:24-25'],
+];
+const params = new URLSearchParams(location.search);
+const demo = params.has('demo');
+let fotoUrl = '';
+let modelo = params.get('modelo') || lerLocal('cert-modelo') || 'm1';
+
+function lerLocal(k) { try { return localStorage.getItem(k); } catch { return null; } }
+function gravarLocal(k, v) { try { localStorage.setItem(k, v); } catch {} }
+function hojeIso() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
+function porExtenso(iso) { if (!iso) return '____ de __________ de ______'; const [a, m, d] = iso.split('-').map(Number); return `${d === 1 ? '1º' : d} de ${MESES[m - 1]} de ${a}`; }
+function curta(iso) { if (!iso) return ''; const [a, m, d] = iso.split('-'); return `${d}.${m}.${a}`; }
+
+// Logo oficial da igreja (mão vermelha com coração). Arquivos em img/
+const LOGO = '<img class="logo" src="img/logo-somos-um.png" alt="Ministério Cristão Somos Um - Resgatando Vidas">';
+
+function dados() {
+  const v = (id) => $(id).value.trim();
+  const [verso, ref] = VERSOS[Number($('#c-verso').value) || 0];
+  return { nome: v('#c-nome'), menina: $('#c-sexo').value === 'feminino', nasc: v('#c-nascimento'), pai: v('#c-pai'), mae: v('#c-mae'), data: v('#c-data'),
+    pastor: v('#c-pastor'), cargo: v('#c-cargo') || 'Pastor Presidente', ass2: v('#c-ass2'), cidade: v('#c-cidade'), verso, ref, foto: $('#c-foto').checked && fotoUrl };
+}
+
+function textoPrincipal(d) {
+  const pais = [d.pai, d.mae].filter(Boolean).map(esc).join(' e ');
+  const o = d.menina ? 'a' : 'o';
+  return `${d.nasc ? `nascid${o} em ${porExtenso(d.nasc)}, ` : ''}${pais ? `filh${o} de <b>${pais}</b>, ` : ''}foi apresentad${o} ao Senhor no
+    <b>Ministério Cristão Somos Um</b>, em ${porExtenso(d.data)}, seguindo o exemplo de Jesus, que foi apresentado no templo (Lucas 2:22).`;
+}
+function assinaturas(d) {
+  return `<div class="ass"><div>${esc(d.pastor) || '&nbsp;'}<small>${esc(d.cargo)}</small></div>${d.ass2 ? `<div>&nbsp;<small>${esc(d.ass2)}</small></div>` : ''}</div>`;
+}
+const fotoTag = (d) => d.foto ? `<img class="foto" src="${esc(d.foto)}" alt="" crossorigin="anonymous">` : '';
+const nomeOu = (d) => esc(d.nome) || 'Nome da criança';
+
+const MODELOS = {
+  m1: (d) => `<div class="folha m1"><div class="borda"></div><div class="borda2"></div><div class="canto c1"></div><div class="canto c2"></div><div class="canto c3"></div><div class="canto c4"></div>
+    <div class="conteudo">${LOGO}
+      <div class="titulo">CERTIFICADO</div><div class="subt">DE APRESENTAÇÃO</div>
+      <div class="meio"><div class="linha-meio">${fotoTag(d)}<div><div class="cert">Certificamos que</div><div class="nome">${nomeOu(d)}</div></div></div>
+      <div class="texto">${textoPrincipal(d)}</div>
+      <div class="verso">“${esc(d.verso)}” <b>${esc(d.ref.toUpperCase())}</b></div></div>
+      ${assinaturas(d)}
+    </div></div>`,
+  m2: (d) => `<div class="folha m2"><div class="lado">
+      <div><img class="mao" src="img/mao-somos-um.png" alt=""><img class="texto-logo" src="img/texto-somos-um-branco.png" alt="Ministério Cristão Somos Um - Resgatando Vidas"></div>
+      ${fotoTag(d)}
+      <div class="data">${esc(d.cidade.toUpperCase())}<br>${curta(d.data)}</div></div>
+    <div class="corpo"><div class="titulo">CERTIFICADO DE</div><div class="titulo2">Apresentação</div><div class="barra"></div>
+      <div class="meio"><div class="cert">Certificamos que</div><div class="nome">${nomeOu(d)}</div>
+      <div class="texto">${textoPrincipal(d)}</div>
+      <div class="verso">“${esc(d.verso)}”<b>${esc(d.ref.toUpperCase())}</b></div></div>
+      ${assinaturas(d)}
+    </div></div>`,
+  m3: (d) => `<div class="folha m3 ${d.menina ? '' : 'menino'}">${fundoInfantil(d.menina)}<div class="borda"></div>
+    <div class="conteudo"><div class="topo">${LOGO}</div>
+      <div class="titulo">Certificado de Apresentação</div>
+      <div class="meio"><div class="linha-meio">${fotoTag(d)}<div><div class="cert">Com alegria, certificamos que</div><div class="nome">${nomeOu(d)}</div></div></div>
+      <div class="texto">${textoPrincipal(d)}</div>
+      <div class="verso">“${esc(d.verso)}” <b>${esc(d.ref)}</b></div></div>
+      ${assinaturas(d)}
+    </div></div>`,
+};
+// Menina: corações em vermelho e rosa. Menino: estrelas em vermelho e cinza.
+function fundoInfantil(menina) {
+  const CORACAO = 'M0 9C-6 4-11 0-11-5a5.5 5.5 0 0 1 11-1.5A5.5 5.5 0 0 1 11-5C11 0 6 4 0 9Z';
+  const ESTRELA = 'M0-10 2.9-3.1 10-3.1 4.3 1.4 6.5 8.5 0 4.3-6.5 8.5-4.3 1.4-10-3.1-2.9-3.1Z';
+  const claro = menina ? '#f0b3b4' : '#b5b5b5';
+  const estrela = (x, y, s, c) => `<path transform="translate(${x} ${y}) scale(${s})" fill="${c === '#f0b3b4' ? claro : c}" d="${menina ? CORACAO : ESTRELA}"/>`;
+  const nuvem = (x, y, s) => `<g transform="translate(${x} ${y}) scale(${s})" fill="#fff" stroke="${menina ? '#f0d2d3' : '#dddddd'}" stroke-width="1"><path d="M-30 8a12 12 0 0 1 4-23 16 16 0 0 1 30-4 13 13 0 0 1 24 7 10 10 0 0 1 2 20Z"/></g>`;
+  return `<svg class="fundo" viewBox="0 0 297 210" preserveAspectRatio="none" aria-hidden="true">
+    ${nuvem(36, 40, .55)}${nuvem(262, 36, .45)}${nuvem(268, 178, .5)}${nuvem(30, 176, .42)}
+    ${estrela(60, 24, .45, '#f0b3b4')}${estrela(238, 22, .35, '#ce0a0e')}${estrela(250, 60, .3, '#f0b3b4')}${estrela(22, 70, .3, '#ce0a0e')}
+    ${estrela(276, 120, .4, '#f0b3b4')}${estrela(18, 132, .38, '#f0b3b4')}${estrela(240, 196, .3, '#ce0a0e')}${estrela(58, 196, .32, '#f0b3b4')}
+  </svg>`;
+}
+
+function render() {
+  const d = dados();
+  $('#folha').innerHTML = MODELOS[modelo](d);
+  document.querySelectorAll('[data-modelo]').forEach((b) => b.classList.toggle('ativo', b.dataset.modelo === modelo));
+  ajustarEscala();
+}
+function ajustarEscala() {
+  const f = $('#folha .folha'); if (!f) return;
+  const largura = $('#moldura').clientWidth;
+  const escala = largura / f.offsetWidth;
+  f.style.transform = `scale(${escala})`;
+  $('#moldura').style.height = f.offsetHeight * escala + 'px';
+}
+window.addEventListener('resize', ajustarEscala);
+window.addEventListener('beforeprint', () => { const f = $('#folha .folha'); if (f) f.style.transform = 'none'; });
+window.addEventListener('afterprint', ajustarEscala);
+
+function preencher(c) {
+  for (const [k, v] of Object.entries(c)) { const el = $('#c-' + k); if (el && v != null) el.value = v; }
+}
+
+async function iniciar() {
+  $('#c-verso').innerHTML = VERSOS.map(([, r], i) => `<option value="${i}">${r}</option>`).join('');
+  $('#c-verso').value = lerLocal('cert-verso') || '0';
+  $('#c-data').value = hojeIso();
+  document.querySelectorAll('[data-modelo]').forEach((b) => (b.onclick = () => { modelo = b.dataset.modelo; gravarLocal('cert-modelo', modelo); render(); }));
+  document.querySelectorAll('#painel input, #painel select').forEach((el) => (el.oninput = el.onchange = render));
+  $('#c-verso').addEventListener('change', () => gravarLocal('cert-verso', $('#c-verso').value));
+  $('#imprimir').onclick = () => {
+    const d = dados();
+    if (!d.nome) return alert('Preencha o nome da criança.');
+    const anterior = document.title;
+    document.title = 'Certificado de apresentação - ' + d.nome; // vira o nome do PDF
+    window.print();
+    setTimeout(() => (document.title = anterior), 1000);
+  };
+
+  if (demo) {
+    preencher({ nome: 'Helena Souza Martins', sexo: 'feminino', nascimento: '2026-03-12', pai: 'Lucas Martins', mae: 'Ana Souza Martins' });
+    if (params.get('foto')) { fotoUrl = params.get('foto'); $('#c-foto').checked = true; }
+    return render();
+  }
+  render();
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) return mostrarAviso('Entre no app primeiro para puxar os dados da criança. Você ainda pode preencher os campos à mão.');
+  const { data: pastores } = await sb.from('membros').select('nome').eq('categoria', 'pastor').eq('situacao', 'ativo').order('nome');
+  $('#lista-pastores').innerHTML = (pastores || []).map((p) => `<option value="${esc(p.nome)}">`).join('');
+  const id = params.get('id');
+  if (!id) return render();
+  const { data: m, error } = await sb.from('membros').select('*').eq('id', id).single();
+  if (error || !m) return mostrarAviso('Não encontrei esse cadastro. Preencha os campos à mão.');
+  const ids = [m.pai_id, m.mae_id].filter(Boolean);
+  const { data: pais } = ids.length ? await sb.from('membros').select('id,nome').in('id', ids) : { data: [] };
+  const nomeDe = (pid) => (pais || []).find((p) => p.id === pid)?.nome || '';
+  preencher({ nome: m.nome, sexo: m.sexo === 'feminino' ? 'feminino' : 'masculino', nascimento: m.nascimento, pai: nomeDe(m.pai_id), mae: nomeDe(m.mae_id) || (!m.pai_id ? m.responsavel_nome : '') });
+  if (m.foto) {
+    const r = await sb.storage.from('fotos-membros').createSignedUrl(m.foto, 3600);
+    if (r.data?.signedUrl) fotoUrl = r.data.signedUrl;
+  }
+  document.title = 'Certificado de apresentação - ' + m.nome;
+  render();
+}
+function mostrarAviso(t) { const a = $('#aviso'); a.textContent = t; a.classList.remove('oculto'); }
+document.fonts?.ready.then(ajustarEscala);
+iniciar();
+</script>
+</body>
+</html>

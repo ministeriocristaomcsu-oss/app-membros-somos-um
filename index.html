@@ -600,6 +600,7 @@ function abrirForm(id, novo = {}) {
       <button class="btn btn-sec" id="f-cancelar">Cancelar</button>
       <button class="btn btn-pri" id="f-salvar">Salvar</button>
     </div>
+    ${id && (m.categoria === 'crianca_jovem' || (idade(m) ?? 99) <= 11) ? `<div class="acoes"><a class="btn btn-sec" href="certificado.html?id=${m.id}">📜 Certificado de apresentação</a></div>` : ''}
     ${id ? '<div class="acoes"><button class="btn btn-perigo" id="f-excluir">Excluir cadastro</button></div>' : ''}`;
 
   const atualizaCasal = () => document.querySelectorAll('.casal').forEach((el) => el.classList.toggle('oculto', !['casado', 'uniao_estavel'].includes($('#f-estado_civil').value)));
@@ -1363,6 +1364,7 @@ function renderKids() {
       ${[['todas', 'Todas as faixas'], ['kids', '🧸 Kids'], ['adolescentes', '🎒 Adolescentes'], ['jovens', '🔥 Jovens'], ['batismo', `💧 ${IDADE_BATISMO}+ ainda não batizados (${aBatizar})`]]
         .map(([k, t]) => `<option value="${k}" ${k === filtro ? 'selected' : ''}>${t}</option>`).join('')}</select>
       <button class="btn btn-sec" id="kj-copiar">Copiar lista</button></div>
+    <p class="dica">📜 Para o <a href="certificado.html">certificado de apresentação</a>, abra o cadastro da criança e toque em "Certificado de apresentação".</p>
     <p class="dica">${lista.length} ${lista.length === 1 ? 'pessoa' : 'pessoas'}. Membros batizados entre 18 e 29 anos também aparecem em Jovens.</p>
     ${lista.map((m) => {
       const r = responsaveis(m);
