@@ -1410,6 +1410,14 @@ async function registrarBatismo(id) {
 function renderCertificados() {
   const busca = ($('#ct-busca')?.value || '').toLowerCase();
   const tipo = $('#ct-tipo')?.value || 'apresentacao';
+  if (estado.certs === undefined) {
+    estado.certs = null;
+    sb.from('certificados').select('id,tipo,nome,data,membro_id,pai,mae').order('data', { ascending: false }).then(({ data, error }) => {
+      estado.certs = error ? { erro: true } : data || [];
+      if (estado.aba === 'certificados') renderCertificados();
+    });
+  }
+  const emitidos = Array.isArray(estado.certs) ? estado.certs.filter((c) => c.tipo === tipo && (!busca || c.nome.toLowerCase().includes(busca))) : [];
   const ativos = estado.membros.filter((m) => m.situacao === 'ativo');
   const lista = (tipo === 'batismo'
     ? ativos.filter((m) => m.batizado).sort((a, b) => (b.data_batismo || '').localeCompare(a.data_batismo || '') || a.nome.localeCompare(b.nome))
@@ -1424,8 +1432,16 @@ function renderCertificados() {
     </div>
     <input type="hidden" id="ct-tipo" value="${tipo}">
     <div class="barra"><input id="ct-busca" placeholder="Buscar por nome" value="${esc(busca)}">
-      <a class="btn btn-sec" href="certificado.html${tipo === 'batismo' ? '?tipo=batismo' : ''}">Em branco</a></div>
-    <p class="dica">Toque na pessoa para abrir o certificado já preenchido. Lá você escolhe o modelo e imprime ou salva em PDF.</p>
+      <a class="btn btn-pri" href="certificado.html${tipo === 'batismo' ? '?tipo=batismo' : ''}">+ Sem cadastro</a></div>
+    <p class="dica">Use <b>+ Sem cadastro</b> para quem não é da igreja (ex.: filho de visitante): os dados ficam guardados só aqui em Certificados, sem criar cadastro de membro.</p>
+    <h2>Emitidos</h2>
+    ${estado.certs === null ? '<div class="card vazio">Carregando…</div>' : estado.certs?.erro ? '<div class="aviso">Para guardar os certificados, falta rodar o SQL dos certificados no Supabase (o Anderson já recebeu).</div>'
+      : emitidos.map((c) => `<a class="card linha clicavel" style="text-decoration:none;color:inherit" href="certificado.html?cert=${c.id}"><div class="avatar">📜</div><div class="info">
+        <div class="nome">${esc(c.nome)}</div>
+        <div class="sub">${tipo === 'batismo' ? '💧 Batismo' : '👶 Apresentação'} em ${fmtIso(c.data)}${c.membro_id ? '' : ' · sem cadastro'}${[c.pai, c.mae].filter(Boolean).length ? ' · ' + esc([c.pai, c.mae].filter(Boolean).join(' e ')) : ''}</div>
+      </div></a>`).join('') || '<div class="card vazio">Nenhum certificado guardado ainda.</div>'}
+    <h2>${tipo === 'batismo' ? 'Batizados cadastrados' : 'Crianças cadastradas (até 11 anos)'}</h2>
+    <p class="dica">Toque na pessoa para abrir o certificado já preenchido com os dados do cadastro.</p>
     ${lista.map((m) => `<a class="card linha clicavel" style="text-decoration:none;color:inherit" href="certificado.html?${tipo === 'batismo' ? 'tipo=batismo&' : ''}id=${m.id}">${avatar(m)}<div class="info">
         <div class="nome">${esc(m.nome)}</div>
         <div class="sub">${tipo === 'batismo' ? (m.data_batismo ? '💧 Batizado(a) em ' + fmtIso(m.data_batismo) : '💧 Batizado(a), sem data no cadastro') : `🎂 ${fmtIso(m.nascimento)} · ${idade(m) === 0 ? 'menos de 1 ano' : idade(m) + (idade(m) === 1 ? ' ano' : ' anos')}`}</div>
@@ -1558,7 +1574,7 @@ async function mostrarTela(logado, sessao) {
   $('#sem-acesso').classList.toggle('oculto', !logado || liberado);
   $('#app').classList.toggle('oculto', !liberado);
   $('#sair').classList.toggle('oculto', !logado);
-  if (liberado) { ajustaNav(); carregar(); }
+  if (liberado) { ajustaNav(); carregar(); if (location.hash === '#certificados') { mostrarAba('certificados'); history.replaceState(null, '', location.pathname); } }
 }
 
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});

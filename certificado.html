@@ -32,6 +32,8 @@
   .check input { width: 18px; height: 18px; margin: 0; }
   .btn { border: 0; border-radius: 10px; padding: 12px 14px; font-size: 15px; font-weight: 600; cursor: pointer; width: 100%; margin-top: 14px; }
   .btn-pri { background: var(--red); color: #fff; }
+  .btn-sec { background: #fff; color: var(--ink); border: 1px solid var(--line); }
+  .ok { background: #e6f4ea; color: #1f7a3d; }
   .dica { font-size: 12.5px; color: var(--muted); margin: 8px 0 0; }
   .aviso { background: #fbe9e9; color: var(--red); border-radius: 8px; padding: 12px; font-size: 14px; }
   .previa { position: sticky; top: 70px; min-width: 0; }
@@ -123,7 +125,7 @@
 <body>
 <header>
   <h1 id="titulo-pag">Certificado de apresentação<small>Ministério Cristão Somos Um</small></h1>
-  <a href="./" id="voltar">Voltar ao app</a>
+  <a href="./#certificados" id="voltar">Voltar ao app</a>
 </header>
 
 <div class="tela">
@@ -157,6 +159,9 @@
     <label class="check"><input type="checkbox" id="c-foto"> Mostrar a foto</label>
     <p class="dica" id="dica-foto">A foto vem do cadastro da pessoa. Para trocar, mude a foto no cadastro.</p>
     <button class="btn btn-pri" id="imprimir">🖨️ Imprimir ou salvar em PDF</button>
+    <button class="btn btn-sec" id="salvar">💾 Guardar no sistema</button>
+    <p class="dica" id="status-salvo">Ao imprimir, o certificado também fica guardado em <b>Certificados → Emitidos</b>, mesmo sem cadastro de membro.</p>
+    <button class="btn btn-sec oculto" id="excluir" style="color:var(--red)">Excluir este certificado guardado</button>
     <p class="dica">No celular ou computador, escolha <b>Salvar como PDF</b> na tela de impressão. Papel A4 deitado; se aparecer, desmarque "Cabeçalhos e rodapés".</p>
   </section>
   <section class="previa">
@@ -197,6 +202,8 @@ let fotoUrl = '';
 let modelo = params.get('modelo') || lerLocal('cert-modelo') || 'm1';
 let tipo = params.get('tipo') === 'batismo' ? 'batismo' : 'apresentacao';
 let membro = null; // cadastro carregado do app
+let certId = params.get('cert'); // certificado guardado na tabela certificados
+let logado = false;
 const versos = () => (tipo === 'batismo' ? VERSOS_BATISMO : VERSOS_APRESENTACAO);
 
 function lerLocal(k) { try { return localStorage.getItem(k); } catch { return null; } }
@@ -299,9 +306,12 @@ async function iniciar() {
   document.querySelectorAll('[data-modelo]').forEach((b) => (b.onclick = () => { modelo = b.dataset.modelo; gravarLocal('cert-modelo', modelo); render(); }));
   document.querySelectorAll('#painel input, #painel select').forEach((el) => (el.oninput = el.onchange = render));
   $('#c-verso').addEventListener('change', () => gravarLocal('cert-verso-' + tipo, $('#c-verso').value));
-  $('#imprimir').onclick = () => {
+  $('#salvar').onclick = () => guardar(true);
+  $('#excluir').onclick = excluir;
+  $('#imprimir').onclick = async () => {
     const d = dados();
     if (!d.nome) return alert('Preencha o nome.');
+    if (logado) await guardar(false);
     const anterior = document.title;
     document.title = `Certificado de ${TIPOS[tipo].nome} - ${d.nome}`; // vira o nome do PDF
     window.print();
@@ -316,9 +326,11 @@ async function iniciar() {
   }
   render();
   const { data: { session } } = await sb.auth.getSession();
-  if (!session) return mostrarAviso('Entre no app primeiro para puxar os dados da criança. Você ainda pode preencher os campos à mão.');
+  if (!session) { $('#salvar').classList.add('oculto'); return mostrarAviso('Entre no app primeiro para puxar os dados e guardar o certificado. Você ainda pode preencher os campos à mão e imprimir.'); }
+  logado = true;
   const { data: pastores } = await sb.from('membros').select('nome').eq('categoria', 'pastor').eq('situacao', 'ativo').order('nome');
   $('#lista-pastores').innerHTML = (pastores || []).map((p) => `<option value="${esc(p.nome)}">`).join('');
+  if (certId) return abrirGuardado();
   const id = params.get('id');
   if (!id) return render();
   const { data: m, error } = await sb.from('membros').select('*').eq('id', id).single();
@@ -346,6 +358,50 @@ function aplicarTipo() {
   $('#c-verso').innerHTML = versos().map(([, r], i) => `<option value="${i}">${r}</option>`).join('');
   $('#c-verso').value = lerLocal('cert-verso-' + tipo) || '0';
   $('#c-data').value = (tipo === 'batismo' && membro?.data_batismo) || hojeIso();
+}
+// ---------- Certificados guardados (tabela certificados) ----------
+function linhaCert() {
+  const d = dados();
+  return { tipo, membro_id: membro?.id || null, nome: d.nome, sexo: d.menina ? 'feminino' : 'masculino', nascimento: d.nasc || null,
+    pai: d.pai, mae: d.mae, data: d.data || hojeIso(), pastor: d.pastor, cargo: d.cargo, ass2: d.ass2, cidade: d.cidade,
+    verso: Number($('#c-verso').value) || 0, modelo };
+}
+async function guardar(avisar) {
+  const linha = linhaCert();
+  if (!linha.nome) { if (avisar) alert('Preencha o nome.'); return; }
+  const r = certId ? await sb.from('certificados').update(linha).eq('id', certId).select().single()
+    : await sb.from('certificados').insert({ ...linha, criado_por: (await sb.auth.getUser()).data.user?.email || '' }).select().single();
+  if (r.error) {
+    const falta = /certificados/.test(r.error.message) && /(exist|schema cache)/i.test(r.error.message);
+    return mostrarAviso(falta ? 'Ainda não dá para guardar: falta rodar o SQL dos certificados no Supabase. O PDF sai normalmente.' : 'Não consegui guardar: ' + r.error.message);
+  }
+  certId = r.data.id;
+  history.replaceState(null, '', `certificado.html?cert=${certId}`);
+  $('#excluir').classList.remove('oculto');
+  $('#status-salvo').innerHTML = '✅ Guardado em <b>Certificados → Emitidos</b>. Mudanças aqui atualizam o mesmo certificado.';
+  $('#status-salvo').classList.add('ok');
+}
+async function abrirGuardado() {
+  const { data: c, error } = await sb.from('certificados').select('*').eq('id', certId).single();
+  if (error || !c) { certId = null; return mostrarAviso('Não encontrei esse certificado guardado.'); }
+  tipo = c.tipo; modelo = c.modelo || 'm1';
+  if (c.membro_id) { const r = await sb.from('membros').select('*').eq('id', c.membro_id).single(); membro = r.data || null; }
+  aplicarTipo();
+  preencher({ nome: c.nome, sexo: c.sexo || 'masculino', nascimento: c.nascimento, pai: c.pai, mae: c.mae, data: c.data, pastor: c.pastor, cargo: c.cargo, ass2: c.ass2, cidade: c.cidade, verso: String(c.verso || 0) });
+  if (membro?.foto) {
+    const r = await sb.storage.from('fotos-membros').createSignedUrl(membro.foto, 3600);
+    if (r.data?.signedUrl) { fotoUrl = r.data.signedUrl; $('#c-foto').checked = true; }
+  }
+  $('#excluir').classList.remove('oculto');
+  $('#status-salvo').innerHTML = '✅ Certificado guardado. Mudanças aqui atualizam o mesmo certificado.';
+  document.title = `Certificado de ${TIPOS[tipo].nome} - ${c.nome}`;
+  render();
+}
+async function excluir() {
+  if (!certId || !confirm('Excluir este certificado guardado? O PDF que você já salvou não é afetado.')) return;
+  const { error } = await sb.from('certificados').delete().eq('id', certId);
+  if (error) return mostrarAviso('Não consegui excluir: ' + error.message);
+  location.href = './#certificados';
 }
 function mostrarAviso(t) { const a = $('#aviso'); a.textContent = t; a.classList.remove('oculto'); }
 document.fonts?.ready.then(ajustarEscala);
