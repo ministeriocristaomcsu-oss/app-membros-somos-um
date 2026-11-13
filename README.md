@@ -10,6 +10,4 @@ Site estático (HTML puro, sem build) publicado na Netlify: https://crm-minister
 
 Banco: Supabase `kucctooazibqfzlmqsws`. Na Netlify: sem comando de build, pasta de publicação `.` (raiz).
 
-
-Importante: a Netlify (plano grátis) só publica commits feitos por Anderson Danesi <polako.danesi@gmail.com> neste repositório privado.
-....
+Publicação: cada envio na branch main publica sozinho na Netlify (repositório público desde 13/11/2026; não há dados de membros nem senhas no código).
