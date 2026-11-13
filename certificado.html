@@ -153,7 +153,8 @@
     <label for="c-pastor">Pastor que assina</label><input id="c-pastor" list="lista-pastores" value="Pr. Oziel Arnone Antunes">
     <datalist id="lista-pastores"></datalist>
     <label for="c-cargo">Cargo de quem assina</label><input id="c-cargo" value="Pastor Presidente">
-    <label for="c-ass2">Segunda assinatura (cargo)</label><input id="c-ass2" value="Secretaria">
+    <label for="c-ass2nome">Segunda assinatura (nome)</label><input id="c-ass2nome" value="Flavia Juliana Lisboa de Faria">
+    <label for="c-ass2">Segunda assinatura (cargo)</label><input id="c-ass2" value="Secretária">
     <label for="c-cidade">Cidade</label><input id="c-cidade" value="Colombo - PR">
     <label for="c-verso">Versículo</label><select id="c-verso"></select>
     <label class="check"><input type="checkbox" id="c-foto"> Mostrar a foto</label>
@@ -215,11 +216,25 @@ function curta(iso) { if (!iso) return ''; const [a, m, d] = iso.split('-'); ret
 // Logo oficial da igreja (mão vermelha com coração). Arquivos em img/
 const LOGO = '<img class="logo" src="img/logo-somos-um.png" alt="Ministério Cristão Somos Um - Resgatando Vidas">';
 
+// Nomes digitados em MAIÚSCULAS ou minúsculas viram "Gabriel Marchil Queiroz de Oliveira"
+const PARTICULAS = new Set(['de', 'da', 'do', 'das', 'dos', 'e', 'di', 'du', 'del', 'van', 'von']);
+function arrumaNome(n) {
+  return String(n || '').replace(/\s+/g, ' ').trim().split(' ').filter(Boolean).map((t, i) => {
+    const l = t.toLocaleLowerCase('pt-BR');
+    if (i > 0 && PARTICULAS.has(l)) return l;
+    if (t === l || (t === t.toLocaleUpperCase('pt-BR') && t.length > 2 && !t.includes('.'))) return l[0].toLocaleUpperCase('pt-BR') + l.slice(1);
+    return t;
+  }).join(' ');
+}
+// O nome e o cargo da 2ª assinatura ficam juntos na coluna ass2 ("nome\ncargo")
+function juntaAss2(nome, cargo) { return nome ? nome + '\n' + cargo : cargo; }
+function separaAss2(v) { const [a, b] = String(v || '').split('\n'); return b === undefined ? { nome: '', cargo: a } : { nome: a, cargo: b }; }
 function dados() {
   const v = (id) => $(id).value.trim();
   const [verso, ref] = versos()[Number($('#c-verso').value) || 0] || versos()[0];
-  return { nome: v('#c-nome'), menina: $('#c-sexo').value === 'feminino', nasc: v('#c-nascimento'), pai: v('#c-pai'), mae: v('#c-mae'), data: v('#c-data'),
-    pastor: v('#c-pastor'), cargo: v('#c-cargo') || 'Pastor Presidente', ass2: v('#c-ass2'), cidade: v('#c-cidade'), verso, ref, foto: $('#c-foto').checked && fotoUrl };
+  const n = (id) => arrumaNome(v(id));
+  return { nome: n('#c-nome'), menina: $('#c-sexo').value === 'feminino', nasc: v('#c-nascimento'), pai: n('#c-pai'), mae: n('#c-mae'), data: v('#c-data'),
+    pastor: v('#c-pastor'), cargo: v('#c-cargo') || 'Pastor Presidente', ass2nome: n('#c-ass2nome'), ass2: v('#c-ass2'), cidade: v('#c-cidade'), verso, ref, foto: $('#c-foto').checked && fotoUrl };
 }
 
 function textoPrincipal(d) {
@@ -232,7 +247,7 @@ function textoPrincipal(d) {
     <b>Ministério Cristão Somos Um</b>, em ${porExtenso(d.data)}, seguindo o exemplo de Jesus, que foi apresentado no templo (Lucas 2:22).`;
 }
 function assinaturas(d) {
-  return `<div class="ass"><div>${esc(d.pastor) || '&nbsp;'}<small>${esc(d.cargo)}</small></div>${d.ass2 ? `<div>&nbsp;<small>${esc(d.ass2)}</small></div>` : ''}</div>`;
+  return `<div class="ass"><div>${esc(d.pastor) || '&nbsp;'}<small>${esc(d.cargo)}</small></div>${d.ass2 || d.ass2nome ? `<div>${esc(d.ass2nome) || '&nbsp;'}<small>${esc(d.ass2)}</small></div>` : ''}</div>`;
 }
 const fotoTag = (d) => d.foto ? `<img class="foto" src="${esc(d.foto)}" alt="" crossorigin="anonymous">` : '';
 const nomeOu = (d) => esc(d.nome) || (tipo === 'batismo' ? 'Nome completo' : 'Nome da criança');
@@ -305,6 +320,7 @@ async function iniciar() {
   document.querySelectorAll('[data-tipo]').forEach((b) => (b.onclick = () => { tipo = b.dataset.tipo; aplicarTipo(); render(); }));
   document.querySelectorAll('[data-modelo]').forEach((b) => (b.onclick = () => { modelo = b.dataset.modelo; gravarLocal('cert-modelo', modelo); render(); }));
   document.querySelectorAll('#painel input, #painel select').forEach((el) => (el.oninput = el.onchange = render));
+  ['#c-nome', '#c-pai', '#c-mae', '#c-pastor', '#c-ass2nome'].forEach((id) => $(id).addEventListener('blur', () => { $(id).value = arrumaNome($(id).value); render(); }));
   $('#c-verso').addEventListener('change', () => gravarLocal('cert-verso-' + tipo, $('#c-verso').value));
   $('#salvar').onclick = () => guardar(true);
   $('#excluir').onclick = excluir;
@@ -363,7 +379,7 @@ function aplicarTipo() {
 function linhaCert() {
   const d = dados();
   return { tipo, membro_id: membro?.id || null, nome: d.nome, sexo: d.menina ? 'feminino' : 'masculino', nascimento: d.nasc || null,
-    pai: d.pai, mae: d.mae, data: d.data || hojeIso(), pastor: d.pastor, cargo: d.cargo, ass2: d.ass2, cidade: d.cidade,
+    pai: d.pai, mae: d.mae, data: d.data || hojeIso(), pastor: d.pastor, cargo: d.cargo, ass2: juntaAss2(d.ass2nome, d.ass2), cidade: d.cidade,
     verso: Number($('#c-verso').value) || 0, modelo };
 }
 async function guardar(avisar) {
@@ -387,7 +403,7 @@ async function abrirGuardado() {
   tipo = c.tipo; modelo = c.modelo || 'm1';
   if (c.membro_id) { const r = await sb.from('membros').select('*').eq('id', c.membro_id).single(); membro = r.data || null; }
   aplicarTipo();
-  preencher({ nome: c.nome, sexo: c.sexo || 'masculino', nascimento: c.nascimento, pai: c.pai, mae: c.mae, data: c.data, pastor: c.pastor, cargo: c.cargo, ass2: c.ass2, cidade: c.cidade, verso: String(c.verso || 0) });
+  preencher({ nome: c.nome, sexo: c.sexo || 'masculino', nascimento: c.nascimento, pai: c.pai, mae: c.mae, data: c.data, pastor: c.pastor, cargo: c.cargo, ass2: separaAss2(c.ass2).cargo, ass2nome: separaAss2(c.ass2).nome, cidade: c.cidade, verso: String(c.verso || 0) });
   if (membro?.foto) {
     const r = await sb.storage.from('fotos-membros').createSignedUrl(membro.foto, 3600);
     if (r.data?.signedUrl) { fotoUrl = r.data.signedUrl; $('#c-foto').checked = true; }
