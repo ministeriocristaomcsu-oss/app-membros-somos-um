@@ -415,6 +415,7 @@ function renderMembros() {
       <option value="ativo" ${filtro === 'ativo' ? 'selected' : ''}>Ativos</option>
       <option value="inativo" ${filtro === 'inativo' ? 'selected' : ''}>Inativos</option>
       <option value="todos" ${filtro === 'todos' ? 'selected' : ''}>Todos</option></select>
+      <a class="btn btn-sec" href="listagem.html">📋 Listagem</a>
       <button class="btn btn-sec" id="mb-importar">Importar planilha</button></div>
     <p class="dica">${lista.length} ${lista.length === 1 ? 'pessoa' : 'pessoas'}</p>
     ${lista.map((m) => `<div class="card linha clicavel" data-editar="${m.id}">${avatar(m)}<div class="info">
