@@ -43,7 +43,7 @@
 
   /* ---------- Folha A4 deitada ---------- */
   .folha { width: 297mm; height: 210mm; position: relative; overflow: hidden; background: #fff; color: #1b1b1b; transform-origin: top left; }
-  .folha .foto { object-fit: cover; border-radius: 50%; }
+  .folha .foto { background-size: cover; background-position: center; border-radius: 50%; flex: none; }
   .folha .meio { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6mm; width: 100%; }
   .folha .verso b { white-space: nowrap; }
   .ass { display: flex; justify-content: center; gap: 30mm; }
@@ -76,7 +76,7 @@
   .m2 .lado::after { content: ""; position: absolute; top: 0; right: 0; width: 3mm; height: 100%; background: var(--red); }
   .m2 .mao { width: 40mm; display: block; margin: 0 auto; }
   .m2 .texto-logo { width: 60mm; display: block; margin: 4mm auto 0; }
-  .m2 .foto { width: 52mm; height: 52mm; border: 1.2mm solid #fff; outline: 1mm solid var(--red); }
+  .m2 .foto { width: 52mm; height: 52mm; border: 1.2mm solid #fff; box-shadow: 0 0 0 1mm var(--red); }
   .m2 .lado .data { font-size: 9pt; letter-spacing: .14em; color: #bbb; }
   .m2 .corpo { padding: 20mm 18mm 14mm 18mm; display: flex; flex-direction: column; }
   .m2 .titulo { font-size: 13pt; font-weight: 700; letter-spacing: .45em; color: var(--red); }
@@ -162,11 +162,14 @@
     <label for="c-verso">Versículo</label><select id="c-verso"></select>
     <label class="check"><input type="checkbox" id="c-foto"> Mostrar a foto</label>
     <p class="dica" id="dica-foto">A foto vem do cadastro da pessoa. Para trocar, mude a foto no cadastro.</p>
-    <button class="btn btn-pri" id="imprimir">🖨️ Imprimir ou salvar em PDF</button>
+    <button class="btn btn-pri" id="baixar-pdf">📄 Gerar PDF (A4 deitado)</button>
+    <div id="pdf-pronto" class="oculto" style="margin-top:10px"><a class="btn btn-sec" id="pdf-link" target="_blank" style="display:block;text-align:center;text-decoration:none">📂 Abrir o PDF</a>
+      <p class="dica">No iPhone, abra o PDF e use o botão de compartilhar para <b>Imprimir</b>, <b>Salvar em Arquivos</b> ou mandar no WhatsApp.</p></div>
+    <button class="btn btn-sec" id="imprimir">🖨️ Imprimir direto</button>
     <button class="btn btn-sec" id="salvar">💾 Guardar no sistema</button>
-    <p class="dica" id="status-salvo">Ao imprimir, o certificado também fica guardado em <b>Certificados → Emitidos</b>, mesmo sem cadastro de membro.</p>
+    <p class="dica" id="status-salvo">Ao gerar o PDF ou imprimir, o certificado também fica guardado em <b>Certificados → Emitidos</b>, mesmo sem cadastro de membro.</p>
     <button class="btn btn-sec oculto" id="excluir" style="color:var(--red)">Excluir este certificado guardado</button>
-    <p class="dica">No celular ou computador, escolha <b>Salvar como PDF</b> na tela de impressão. Papel A4 deitado; se aparecer, desmarque "Cabeçalhos e rodapés".</p>
+    <p class="dica"><b>Gerar PDF</b> monta o arquivo certinho em uma folha A4 deitada (melhor opção no celular). "Imprimir direto" usa a impressão do navegador.</p>
   </section>
   <section class="previa">
     <div class="moldura-previa" id="moldura"><div id="folha"></div></div>
@@ -252,7 +255,8 @@ function textoPrincipal(d) {
 function assinaturas(d) {
   return `<div class="ass"><div>${esc(d.pastor) || '&nbsp;'}<small>${esc(d.cargo)}</small></div>${d.ass2 || d.ass2nome ? `<div>${esc(d.ass2nome) || '&nbsp;'}<small>${esc(d.ass2)}</small></div>` : ''}</div>`;
 }
-const fotoTag = (d) => d.foto ? `<img class="foto" src="${esc(d.foto)}" alt="" crossorigin="anonymous">` : '';
+// A foto vai como fundo (e não <img>) para sair igual no PDF gerado (html2canvas não entende object-fit)
+const fotoTag = (d) => d.foto ? `<div class="foto" style="background-image:url('${esc(d.foto)}')"></div>` : '';
 const nomeOu = (d) => esc(d.nome) || (tipo === 'batismo' ? 'Nome completo' : 'Nome da criança');
 
 const MODELOS = {
@@ -327,6 +331,7 @@ async function iniciar() {
   $('#c-verso').addEventListener('change', () => gravarLocal('cert-verso-' + tipo, $('#c-verso').value));
   $('#salvar').onclick = () => guardar(true);
   $('#excluir').onclick = excluir;
+  $('#baixar-pdf').onclick = gerarPDF;
   $('#imprimir').onclick = async () => {
     const d = dados();
     if (!d.nome) return alert('Preencha o nome.');
@@ -378,6 +383,52 @@ function aplicarTipo() {
   $('#c-verso').value = lerLocal('cert-verso-' + tipo) || '0';
   $('#c-data').value = (tipo === 'batismo' && membro?.data_batismo) || hojeIso();
 }
+// ---------- PDF gerado no próprio app ----------
+// O app desenha o certificado numa imagem e monta um PDF A4 deitado do tamanho exato da folha.
+// Assim não depende das margens da impressão do celular (o iPhone cortava a parte de baixo).
+function carregarScript(src) {
+  return new Promise((ok, erro) => { const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = erro; document.head.appendChild(s); });
+}
+const ehIphone = () => /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+async function gerarPDF() {
+  const d = dados();
+  if (!d.nome) return alert('Preencha o nome.');
+  const botao = $('#baixar-pdf'), texto = botao.textContent;
+  botao.disabled = true; botao.textContent = '⏳ Gerando o PDF…';
+  try {
+    if (logado) await guardar(false);
+    if (!window.html2canvas) await carregarScript('lib/html2canvas-1.4.1.min.js');
+    if (!window.jspdf) await carregarScript('lib/jspdf-2.5.1.umd.min.js');
+    await document.fonts?.ready;
+    // Cópia da folha em tamanho real, fora da tela
+    const caixa = document.createElement('div');
+    caixa.style.cssText = 'position:fixed;left:-20000px;top:0;';
+    caixa.innerHTML = MODELOS[modelo](d);
+    document.body.appendChild(caixa);
+    const folha = caixa.firstElementChild;
+    await Promise.all([...folha.querySelectorAll('img')].map((i) => i.complete ? null : new Promise((ok) => { i.onload = i.onerror = ok; })));
+    const canvas = await html2canvas(folha, { scale: 2.5, useCORS: true, backgroundColor: '#ffffff', logging: false });
+    caixa.remove();
+    const pdf = new jspdf.jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4', compress: true });
+    pdf.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, 297, 210);
+    const nomeArq = `Certificado de ${TIPOS[tipo].nome} - ${d.nome}.pdf`;
+    const blob = pdf.output('blob');
+    const arquivo = new File([blob], nomeArq, { type: 'application/pdf' });
+    const url = URL.createObjectURL(blob);
+    $('#pdf-link').href = url; $('#pdf-link').download = nomeArq;
+    $('#pdf-pronto').classList.remove('oculto');
+    if (ehIphone() && navigator.canShare?.({ files: [arquivo] })) {
+      try { await navigator.share({ files: [arquivo], title: nomeArq }); } catch {}
+    } else if (!ehIphone()) {
+      pdf.save(nomeArq);
+    }
+  } catch (e) {
+    alert('Não consegui gerar o PDF: ' + (e?.message || e) + '\nUse o botão "Imprimir direto".');
+  } finally {
+    botao.disabled = false; botao.textContent = texto;
+  }
+}
+
 // ---------- Certificados guardados (tabela certificados) ----------
 function linhaCert() {
   const d = dados();
