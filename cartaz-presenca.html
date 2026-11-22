@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cartaz de Presença</title>
+<style>
+  @page { size: A4; margin: 18mm; }
+  body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: #fff; color: #111; text-align: center; }
+  main { max-width: 640px; margin: 0 auto; padding: 32px 16px; }
+  .logo { width: 90px; height: 90px; }
+  h1 { font-size: 40px; margin: 16px 0 6px; }
+  h1 span { color: #c4161c; }
+  h2 { font-size: 24px; margin: 6px 0 10px; }
+  p { font-size: 20px; margin: 8px 0; }
+  #qr svg, #qr img { width: 340px; max-width: 80vw; height: auto; margin: 24px auto 8px; display: block; }
+  .link { font-size: 13px; color: #555; word-break: break-all; }
+  .rodape { margin-top: 28px; font-size: 16px; color: #555; }
+  .botoes { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 24px; }
+  button, a.btn { border: 0; border-radius: 10px; padding: 14px 24px; font-size: 16px; font-weight: 600; background: #c4161c; color: #fff; cursor: pointer; text-decoration: none; font-family: inherit; }
+  .sec { background: #fff !important; color: #111 !important; border: 1px solid #ccc !important; }
+  @media print { .botoes { display: none; } }
+</style>
+</head>
+<body>
+<main>
+  <img class="logo" src="icone-192.png" alt="">
+  <h1>Marque sua <span>presença</span></h1>
+  <h2 id="nome">Ministério Cristão Somos Um</h2>
+  <p>Aponte a câmera do celular para o código e digite o seu WhatsApp:</p>
+  <div id="qr"></div>
+  <div class="link" id="link"></div>
+  <div class="rodape">Ministério Cristão Somos Um · Colombo-PR · Instagram @mcsomosum</div>
+  <div class="botoes">
+    <button onclick="print()">Imprimir</button>
+    <a class="btn sec" id="baixar" download="qrcode-presenca.png">Baixar QR code</a>
+    <button class="sec" id="copiar">Copiar link</button>
+  </div>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="lib/qrcode-generator-1.4.4.js"></script>
+<script>
+const sb = supabase.createClient('https://kucctooazibqfzlmqsws.supabase.co', 'sb_publishable_4yxH3tJotLPLK3LDiYb01A_7dsS2xpn');
+const codigo = new URLSearchParams(location.search).get('c') || '';
+const link = new URL('presenca.html?c=' + encodeURIComponent(codigo), location.href).href;
+const qr = qrcode(0, 'M'); qr.addData(link); qr.make();
+document.getElementById('qr').innerHTML = qr.createSvgTag({ cellSize: 8, margin: 2, scalable: true });
+document.getElementById('link').textContent = link.replace(/^https?:\/\//, '');
+document.getElementById('baixar').href = qr.createDataURL(12, 4);
+document.getElementById('copiar').onclick = () => navigator.clipboard.writeText(link).then(() => alert('Link copiado.'), () => prompt('Copie o link:', link));
+sb.rpc('presenca_atividade', { p_codigo: codigo }).then(({ data }) => {
+  const a = data?.[0]; if (!a) return;
+  const DIAS = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
+  document.getElementById('nome').textContent = a.nome + (a.dia_semana != null ? ` · ${DIAS[a.dia_semana]}${a.horario ? ' ' + a.horario : ''}` : '');
+  document.title = 'Cartaz · ' + a.nome;
+  document.getElementById('baixar').download = 'qrcode-presenca-' + a.nome.normalize('NFD').replace(/[^\w]+/g, '-').toLowerCase() + '.png';
+});
+</script>
+</body>
+</html>
