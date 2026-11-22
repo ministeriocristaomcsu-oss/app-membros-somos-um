@@ -32,6 +32,10 @@
   .ok { background: var(--green-soft); color: var(--green); border-radius: 12px; padding: 24px 16px; text-align: center; font-size: 16px; }
   .dica { font-size: 13px; color: var(--muted); margin: 6px 0 0; }
   .oculto { display: none !important; }
+  .links-igreja { display: grid; gap: 10px; margin: 22px 0 10px; }
+  .links-igreja a { display: flex; align-items: center; justify-content: center; gap: 8px; border-radius: 10px; padding: 13px; font-size: 15px; font-weight: 600; text-decoration: none; }
+  .lk-agenda { color: var(--ink); border: 1px solid var(--line); background: var(--card); }
+  .lk-insta { color: #fff; background: linear-gradient(45deg, #f58529, #dd2a7b 45%, #8134af 75%, #515bd4); }
 </style>
 </head>
 <body>
@@ -83,6 +87,10 @@
     <div style="font-size:40px">🙏</div>
     <p><b>Obrigado pela visita!</b></p>
     <p style="font-size:14px">Foi uma alegria ter você com a gente. Volte sempre: domingo às 19h e terça às 20h. Deus abençoe!</p>
+  </div>
+  <div class="links-igreja">
+    <a href="agenda.html" class="lk-agenda">📅 Agenda de cultos e eventos</a>
+    <a href="https://www.instagram.com/mcsomosum" target="_blank" rel="noopener" class="lk-insta"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".6" fill="currentColor"/></svg> Siga no Instagram @mcsomosum</a>
   </div>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>

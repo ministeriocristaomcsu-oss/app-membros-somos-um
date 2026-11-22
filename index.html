@@ -135,6 +135,7 @@
     <button data-aba="kids"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="5"/><path d="M10 7.5h.01M14 7.5h.01M10 10.2a2.6 2.6 0 0 0 4 0M7 21c.8-3 2.8-4.5 5-4.5s4.2 1.5 5 4.5"/></svg><span>Kids e Jovens</span></button>
     <button data-aba="visitantes"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.6-3.5 3.3-5.5 6.5-5.5s5.9 2 6.5 5.5M19 7v6M16 10h6"/></svg><span>Visitantes</span> <span id="badge-visitantes" class="tag oculto"></span></button>
     <button data-aba="pedidos" class="sec"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 13h5l1.5 3h5L16 13h5"/><path d="M5.5 5h13L21 13v6a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-6z"/></svg><span>Pedidos</span> <span id="badge-pedidos" class="tag oculto"></span></button>
+    <button data-aba="agenda" class="sec"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M7.5 14h3v3h-3z"/></svg><span>Agenda</span></button>
     <button data-aba="certificados" class="sec"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="9" r="5.5"/><path d="M8.5 13.3 7 21l5-2.5 5 2.5-1.5-7.7"/><path d="m10 9 1.4 1.4L14.2 7.6"/></svg><span>Certificados</span></button>
     <button data-aba="mensagens" class="sec"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/></svg><span>Ajustes</span></button>
     <button id="btn-mais"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg><span>Mais</span> <span id="badge-mais" class="tag oculto"></span></button>
@@ -142,8 +143,10 @@
   <div id="menu-mais" class="oculto"><div class="folha">
     <button data-aba="proximos"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span>Próximos aniversários</span></button>
     <button data-aba="pedidos"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 13h5l1.5 3h5L16 13h5"/><path d="M5.5 5h13L21 13v6a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-6z"/></svg><span>Pedidos de atualização</span> <span id="badge-pedidos2" class="tag oculto"></span></button>
+    <button data-aba="agenda"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M7.5 14h3v3h-3z"/></svg><span>Agenda da igreja</span></button>
     <button data-aba="certificados"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="9" r="5.5"/><path d="M8.5 13.3 7 21l5-2.5 5 2.5-1.5-7.7"/><path d="m10 9 1.4 1.4L14.2 7.6"/></svg><span>Certificados (apresentação e batismo)</span></button>
     <button data-aba="mensagens"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/></svg><span>Ajustes e acessos</span></button>
+    <button data-link="https://www.instagram.com/mcsomosum"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".6"/></svg><span>Instagram da igreja</span></button>
   </div></div>
   <main>
     <section id="aba-hoje"></section>
@@ -157,17 +160,19 @@
     <section id="aba-kids" class="oculto"></section>
     <section id="aba-certificados" class="oculto"></section>
     <section id="aba-visitante" class="oculto"></section>
+    <section id="aba-agenda" class="oculto"></section>
   </main>
 </div>
 <div id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="agenda.js"></script>
 <script>
 const SUPABASE_URL = 'https://kucctooazibqfzlmqsws.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_4yxH3tJotLPLK3LDiYb01A_7dsS2xpn';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const estado = { membros: [], enviados: [], modelos: {}, pedidos: [], visitantes: [], contatos: [], aba: 'hoje', docs: {} };
+const estado = { membros: [], enviados: [], modelos: {}, pedidos: [], visitantes: [], contatos: [], aba: 'hoje', docs: {}, agenda: [], cultosEscala: [] };
 const LINK_ATUALIZACAO = new URL('atualizar.html', location.href).href;
 const $ = (s) => document.querySelector(s);
 const esc = (t) => String(t ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -316,8 +321,16 @@ async function carregar() {
     const dp = await sb.from('atualizacoes_documentos').select('*');
     (dp.data || []).forEach((x) => (estado.docs['pedido:' + x.pedido_id] = x));
   }
-  await carregarFotos();
+  await Promise.all([carregarFotos(), carregarAgenda()]);
   render();
+}
+
+// Agenda: tabela agenda (tudo, inclusive o que é só da equipe) + cultos da escala (data, hora e nome)
+async function carregarAgenda() {
+  const [a, p] = await Promise.all([sb.from('agenda').select('*'), sb.rpc('agenda_publica')]);
+  estado.agendaErro = !!a.error;
+  estado.agenda = a.data || [];
+  estado.cultosEscala = p.data?.cultos || [];
 }
 
 // Fotos ficam num bucket privado: gera links temporários (1 dia) para quem está logado
@@ -367,11 +380,13 @@ function renderHoje() {
   const semana = eventosEntre(new Date(h.getFullYear(), h.getMonth(), h.getDate() + 1), 7);
   eventosVisiveis = [...evs, ...semana];
   const pendentes = evs.filter((e) => !jaEnviado(e)).length;
+  const agendaHoje = expandirAgenda(estado.agenda, estado.cultosEscala, h, 1);
   $('#aba-hoje').innerHTML = `
     <h2>Hoje, ${fmtData(h)}</h2>
     ${evs.length ? `<p class="dica">${pendentes ? `Falta enviar ${pendentes} ${pendentes === 1 ? 'mensagem' : 'mensagens'}. Toque no botão verde, confira e envie no WhatsApp.` : 'Todas as mensagens de hoje já foram enviadas. 🙌'}</p>` : ''}
     ${evs.map((e, i) => cardEvento(e, i)).join('') || '<div class="card vazio">Nenhum aniversário hoje.</div>'}
     ${mudaramDeFaixa(7).length ? `<h2>Mudaram de faixa</h2>${mudaramDeFaixa(7).map((x) => `<div class="card linha clicavel" data-editar="${x.m.id}">${avatar(x.m)}<div class="info"><div class="nome">${esc(x.m.nome)}</div><div class="sub">${textoMudanca(x)} (${fmtData(x.data)})</div></div></div>`).join('')}` : ''}
+    ${agendaHoje.length ? `<h2>Hoje na igreja</h2>${agendaHoje.map((e) => `<div class="card linha clicavel" data-ir-aba="agenda"><div style="width:52px;flex:none;font-weight:700;color:var(--red)">${esc(agHora(e.hora)) || '—'}</div><div class="info"><div class="nome">${esc(e.titulo)}</div>${e.local ? `<div class="sub">${esc(e.local)}</div>` : ''}</div></div>`).join('')}` : ''}
     ${visitantesPendentes().length ? `<h2>Visitantes para contatar</h2>${visitantesPendentes().map(cardVisitantePendente).join('')}` : ''}
     <h2>Próximos 7 dias</h2>
     ${semana.map((e, i) => `<div class="card linha">${avatar(e.membro)}<div class="info"><div class="nome">${e.tipo === 'casamento' ? '💍' : '🎂'} ${esc(e.tipo === 'casamento' ? nomeEvento(e) : e.membro.nome)}</div>
@@ -1452,6 +1467,113 @@ function renderCertificados() {
   if (foco === 'ct-busca') { const i = $('#ct-busca'); i.focus(); i.setSelectionRange(i.value.length, i.value.length); }
 }
 
+// ---------- Agenda da igreja ----------
+// Eventos com data e cultos fixos da semana. Os cultos do app de Escalas entram sozinhos (só leitura aqui).
+const LINK_AGENDA = new URL('agenda.html', location.href).href;
+function renderAgenda() {
+  const sec = $('#aba-agenda');
+  if (estado.agendaErro) {
+    sec.innerHTML = '<h2>Agenda da igreja</h2><div class="aviso">Para usar a agenda, falta rodar o SQL da agenda no Supabase (2026-11-22-agenda.sql). O Anderson já recebeu.</div>';
+    return;
+  }
+  const ed = estado.agendaEditando;
+  const lista = expandirAgenda(estado.agenda, estado.cultosEscala, hoje(), Number(sec.dataset.dias || 30));
+  const fixos = estado.agenda.filter((i) => i.tipo === 'fixo').sort((a, b) => ((a.dia_semana + 6) % 7) - ((b.dia_semana + 6) % 7) || agMinutos(a.hora) - agMinutos(b.hora));
+  const passados = estado.agenda.filter((i) => i.tipo === 'evento' && agDia(i.data_fim || i.data) < hoje()).length;
+  const linhaAg = (e) => {
+    const editavel = e.origem !== 'escala';
+    const sub = [e.ate ? 'até ' + agFmtData(e.ate).toLowerCase() : '', e.local, e.descricao].filter(Boolean).map(esc).join(' · ');
+    return `<div class="card linha ${editavel ? 'clicavel' : ''}" ${editavel ? `data-ag-editar="${e.id}"` : ''}>
+      <div style="width:52px;flex:none;font-weight:700;color:var(--red)">${esc(agHora(e.hora)) || '—'}</div>
+      <div class="info"><div class="nome">${esc(e.titulo)}</div>${sub ? `<div class="sub">${sub}</div>` : ''}</div>
+      <div>${e.origem === 'escala' ? '<span class="tag tag-faixa">escala</span>' : ''}${e.origem === 'fixo' ? '<span class="tag tag-faixa">toda semana</span>' : ''}${e.publico === false ? '<span class="tag">só equipe</span>' : ''}</div></div>`;
+  };
+  let proximos = '', ultima = '';
+  for (const e of lista) {
+    const chave = agIso(e.data);
+    if (chave !== ultima) { proximos += `<div class="data-grupo">${agFmtData(e.data)}${chave === agIso(hoje()) ? ' <span class="tag">hoje</span>' : ''}</div>`; ultima = chave; }
+    proximos += linhaAg(e);
+  }
+  sec.innerHTML = `
+    ${ed ? formAgenda(ed) : ''}
+    <h2>Agenda da igreja</h2>
+    <div class="barra"><button class="btn btn-pri" id="ag-novo">+ Evento</button><button class="btn btn-sec" id="ag-copiar">Copiar semana</button></div>
+    <div class="barra"><a class="btn btn-sec" style="flex:1" href="agenda.html" target="_blank">Ver página dos membros</a><button class="btn btn-sec" id="ag-link">Copiar link</button></div>
+    <p class="dica">Os membros veem esta agenda em <b>${esc(LINK_AGENDA.replace(/^https?:\/\//, ''))}</b>, sem login. Os cultos marcados <b>escala</b> vêm do app de Escalas; para mudar, mude lá. Eventos marcados como <b>só equipe</b> não aparecem para os membros.</p>
+    <select id="ag-dias" style="margin-bottom:6px">${[[30, 'Próximos 30 dias'], [7, 'Próximos 7 dias'], [90, 'Próximos 3 meses']].map(([v, t]) => `<option value="${v}" ${v === Number(sec.dataset.dias || 30) ? 'selected' : ''}>${t}</option>`).join('')}</select>
+    ${proximos || '<div class="card vazio">Nada na agenda neste período.</div>'}
+    <h2>Toda semana</h2>
+    <p class="dica">Cultos e atividades fixos. Toque para mudar o horário ou o nome.</p>
+    ${fixos.map((i) => `<div class="card linha clicavel" data-ag-editar="${i.id}"><div style="width:52px;flex:none;font-weight:700;color:var(--red)">${esc(agHora(i.hora))}</div>
+      <div class="info"><div class="nome">${esc(i.titulo)}</div><div class="sub">${esc(agNomeSemana(i.dia_semana, i.semana_do_mes))}${i.local ? ' · ' + esc(i.local) : ''}${i.ativo === false ? ' · pausado' : ''}</div></div>
+      ${i.publico === false ? '<span class="tag">só equipe</span>' : ''}</div>`).join('') || '<div class="card vazio">Nenhum culto fixo cadastrado.</div>'}
+    <div class="acoes" style="margin-top:4px"><button class="btn btn-sec" id="ag-novo-fixo">+ Culto ou atividade fixa</button></div>
+    ${passados ? `<p class="dica" style="margin-top:14px">${passados} ${passados === 1 ? 'evento que já passou fica guardado' : 'eventos que já passaram ficam guardados'} no histórico.</p>` : ''}
+    <h2>Instagram</h2>
+    <a class="card linha clicavel" style="text-decoration:none;color:inherit" href="${INSTAGRAM.url}" target="_blank" rel="noopener">
+      <div class="avatar" style="background:linear-gradient(45deg,#f58529,#dd2a7b 45%,#8134af 75%,#515bd4)">${ICONE_INSTAGRAM}</div>
+      <div class="info"><div class="nome">${INSTAGRAM.arroba}</div><div class="sub">O link aparece na agenda e nos formulários de cadastro e de visitante.</div></div></a>`;
+  $('#ag-novo').onclick = () => { estado.agendaEditando = { tipo: 'evento', publico: true, ativo: true, data: agIso(hoje()) }; renderAgenda(); window.scrollTo(0, 0); };
+  $('#ag-novo-fixo').onclick = () => { estado.agendaEditando = { tipo: 'fixo', publico: true, ativo: true, dia_semana: 0, culto: true }; renderAgenda(); window.scrollTo(0, 0); };
+  $('#ag-dias').onchange = (e) => { sec.dataset.dias = e.target.value; renderAgenda(); };
+  $('#ag-copiar').onclick = () => navigator.clipboard.writeText(textoAgendaWhats(expandirAgenda(estado.agenda.filter((i) => i.publico !== false), estado.cultosEscala, hoje(), 7), 'Agenda da semana'))
+    .then(() => toast('Agenda da semana copiada. É só colar no grupo do WhatsApp.'), () => toast('Não foi possível copiar.'));
+  $('#ag-link').onclick = () => navigator.clipboard.writeText(LINK_AGENDA).then(() => toast('Link da agenda copiado.'), () => toast('Não foi possível copiar.'));
+  sec.querySelectorAll('[data-ag-editar]').forEach((b) => (b.onclick = () => { estado.agendaEditando = { ...estado.agenda.find((i) => i.id === b.dataset.agEditar) }; renderAgenda(); window.scrollTo(0, 0); }));
+  if (ed) ligarFormAgenda(ed);
+}
+
+function formAgenda(it) {
+  const fixo = it.tipo === 'fixo';
+  const hora = /^\d{1,2}:\d{2}$/.test(it.hora || '') ? it.hora.padStart(5, '0') : '';
+  return `<div class="card" id="ag-form" style="border-color:var(--red)">
+    <h2 style="margin-top:0">${it.id ? 'Editar' : 'Novo'} ${fixo ? 'culto fixo' : 'evento'}</h2>
+    <div class="grade">
+      <div class="inteiro"><label for="ag-titulo">Nome</label><input id="ag-titulo" value="${esc(it.titulo)}" placeholder="${fixo ? 'Ex.: Culto de Oração' : 'Ex.: Retiro de Jovens'}"></div>
+      ${fixo ? `<div><label for="ag-semana">Dia</label><select id="ag-semana">${DIAS_SEMANA.map((d, n) => `<option value="${n}" ${n === it.dia_semana ? 'selected' : ''}>${d}</option>`).join('')}</select></div>
+        <div><label for="ag-qual">Quando</label><select id="ag-qual"><option value="">Toda semana</option>${[1, 2, 3, 4, 5].map((n) => `<option value="${n}" ${n === it.semana_do_mes ? 'selected' : ''}>Só no ${n}º do mês</option>`).join('')}</select></div>`
+      : `<div><label for="ag-data">Data</label><input id="ag-data" type="date" value="${esc(it.data || '')}"></div>
+        <div><label for="ag-fim">Até (se durar mais de um dia)</label><input id="ag-fim" type="date" value="${esc(it.data_fim || '')}"></div>`}
+      <div><label for="ag-hora">Horário</label><input id="ag-hora" type="time" value="${hora}"></div>
+      <div><label for="ag-local">Local (se não for na igreja)</label><input id="ag-local" value="${esc(it.local)}"></div>
+      <div class="inteiro"><label for="ag-desc">Detalhes (opcional)</label><textarea id="ag-desc" style="min-height:70px" maxlength="500">${esc(it.descricao)}</textarea></div>
+      <div class="inteiro"><label class="check"><input type="checkbox" id="ag-publico" ${it.publico !== false ? 'checked' : ''}> Aparece para os membros na página da agenda</label></div>
+      ${fixo ? `<div class="inteiro"><label class="check"><input type="checkbox" id="ag-culto" ${it.culto ? 'checked' : ''}> É culto: some no dia em que o app de Escalas já tiver um culto marcado (para não aparecer duas vezes)</label></div>
+        <div class="inteiro"><label class="check"><input type="checkbox" id="ag-ativo" ${it.ativo !== false ? 'checked' : ''}> Ativo (desmarque para pausar sem apagar)</label></div>` : ''}
+    </div>
+    <div class="acoes"><button class="btn btn-pri" id="ag-salvar">Salvar</button><button class="btn btn-sec" id="ag-cancelar">Cancelar</button>
+      ${it.id ? '<button class="btn btn-perigo" id="ag-excluir">Excluir</button>' : ''}</div></div>`;
+}
+
+function ligarFormAgenda(it) {
+  $('#ag-cancelar').onclick = () => { estado.agendaEditando = null; renderAgenda(); };
+  if ($('#ag-excluir')) $('#ag-excluir').onclick = async () => {
+    if (!confirm(`Excluir "${it.titulo}" da agenda?`)) return;
+    const { error } = await sb.from('agenda').delete().eq('id', it.id);
+    if (error) return toast('Erro: ' + error.message);
+    estado.agenda = estado.agenda.filter((i) => i.id !== it.id); estado.agendaEditando = null;
+    toast('Excluído da agenda.'); renderAgenda();
+  };
+  $('#ag-salvar').onclick = async () => {
+    const v = (id) => ($('#' + id)?.value || '').trim();
+    const fixo = it.tipo === 'fixo';
+    const reg = { tipo: it.tipo, titulo: v('ag-titulo').replace(/\s+/g, ' '), hora: v('ag-hora'), local: v('ag-local'), descricao: v('ag-desc'), publico: $('#ag-publico').checked };
+    if (!reg.titulo) return toast('Escreva o nome.');
+    if (fixo) Object.assign(reg, { dia_semana: Number(v('ag-semana')), semana_do_mes: v('ag-qual') ? Number(v('ag-qual')) : null, culto: $('#ag-culto').checked, ativo: $('#ag-ativo').checked, data: null, data_fim: null });
+    else {
+      Object.assign(reg, { data: v('ag-data'), data_fim: v('ag-fim') || null, dia_semana: null, semana_do_mes: null, culto: false, ativo: true });
+      if (!reg.data) return toast('Escolha a data.');
+      if (reg.data_fim && reg.data_fim < reg.data) return toast('A data final é antes do início.');
+      if (reg.data_fim === reg.data) reg.data_fim = null;
+    }
+    const q = it.id ? sb.from('agenda').update(reg).eq('id', it.id) : sb.from('agenda').insert({ ...reg, criado_por: estado.email || '' });
+    const { data, error } = await q.select().single();
+    if (error) return toast('Erro ao salvar: ' + error.message);
+    estado.agenda = [...estado.agenda.filter((i) => i.id !== data.id), data]; estado.agendaEditando = null;
+    toast('Agenda salva.'); renderAgenda(); window.scrollTo(0, 0);
+  };
+}
+
 // ---------- Envio pelo WhatsApp ----------
 async function enviar(idx, pessoaId) {
   const ev = eventosVisiveis[idx];
@@ -1470,7 +1592,7 @@ function mostrarAba(aba) {
   estado.aba = aba;
   document.querySelectorAll('main > section').forEach((s) => s.classList.toggle('oculto', s.id !== 'aba-' + aba));
   document.querySelectorAll('nav button[data-aba], #menu-mais button').forEach((b) => b.classList.toggle('ativo', b.dataset.aba === aba));
-  $('#btn-mais').classList.toggle('ativo', ['proximos', 'pedidos', 'mensagens', 'certificados'].includes(aba));
+  $('#btn-mais').classList.toggle('ativo', ['proximos', 'pedidos', 'mensagens', 'certificados', 'agenda'].includes(aba));
   $('#menu-mais').classList.add('oculto');
   if (aba !== 'form') render();
 }
@@ -1483,8 +1605,10 @@ function render() {
   if (estado.aba === 'visitantes') renderVisitantes();
   if (estado.aba === 'kids') renderKids();
   if (estado.aba === 'certificados') renderCertificados();
+  if (estado.aba === 'agenda') renderAgenda();
 }
-document.querySelectorAll('nav button[data-aba], #menu-mais button').forEach((b) => (b.onclick = () => { mostrarAba(b.dataset.aba); window.scrollTo(0, 0); }));
+document.querySelectorAll('nav button[data-aba], #menu-mais button[data-aba]').forEach((b) => (b.onclick = () => { mostrarAba(b.dataset.aba); window.scrollTo(0, 0); }));
+document.querySelectorAll('#menu-mais button[data-link]').forEach((b) => (b.onclick = () => { $('#menu-mais').classList.add('oculto'); window.open(b.dataset.link, '_blank', 'noopener'); }));
 const ajustaNav = () => { $('nav').style.top = $('header').offsetHeight + 'px'; };
 addEventListener('resize', ajustaNav); setTimeout(ajustaNav, 0);
 $('#btn-mais').onclick = () => {
