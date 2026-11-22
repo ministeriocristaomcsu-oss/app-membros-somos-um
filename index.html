@@ -90,6 +90,25 @@
   .dica { font-size: 13px; color: var(--muted); }
   #login { max-width: 380px; margin: 60px auto; }
   #toast { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); background: #111; color: #fff; padding: 10px 16px; border-radius: 10px; font-size: 14px; display: none; z-index: 20; max-width: 90vw; }
+  /* Painel do pastor */
+  .kpis { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 4px; }
+  .kpi { margin: 0; }
+  .kpi .num { font-size: 28px; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; }
+  .kpi .rot { font-size: 13px; color: var(--muted); margin-top: 2px; }
+  .colunas { display: flex; align-items: flex-end; gap: 2px; height: 150px; padding-top: 18px; border-bottom: 1px solid var(--line); }
+  .colunas .col { flex: 1; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; min-width: 0; position: relative; }
+  .colunas .barra-v { width: 70%; max-width: 28px; background: var(--red); border-radius: 4px 4px 0 0; min-height: 0; }
+  .colunas .val { font-size: 11px; color: var(--muted); margin-bottom: 3px; font-variant-numeric: tabular-nums; }
+  .eixo { display: flex; gap: 2px; margin-top: 4px; }
+  .eixo span { flex: 1; text-align: center; font-size: 10.5px; color: var(--muted); min-width: 0; overflow: hidden; }
+  .hbarras .item { display: grid; grid-template-columns: 128px 1fr 64px; gap: 8px; align-items: center; margin: 8px 0; font-size: 14px; }
+  .hbarras .trilho { background: var(--line); border-radius: 4px; height: 12px; overflow: hidden; }
+  .hbarras .preench { background: var(--red); height: 100%; border-radius: 0 4px 4px 0; }
+  .hbarras .n { text-align: right; font-variant-numeric: tabular-nums; }
+  .hbarras .n small { color: var(--muted); }
+  #aba-painel a { color: var(--red); }
+  @media (min-width: 560px) { .kpis { grid-template-columns: repeat(4, 1fr); } }
+  @media (max-width: 400px) { .hbarras .item { grid-template-columns: 96px 1fr 58px; font-size: 13px; } }
   .oculto { display: none !important; }
   @media (max-width: 480px) { .grade { grid-template-columns: 1fr; } }
 </style>
@@ -134,6 +153,7 @@
     <button data-aba="membros"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.6-3.5 3.3-5.5 6.5-5.5s5.9 2 6.5 5.5M16 4.6a3.5 3.5 0 0 1 0 6.8M18 14.8c2 .7 3.2 2.5 3.5 5.2"/></svg><span>Membros</span></button>
     <button data-aba="kids"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="5"/><path d="M10 7.5h.01M14 7.5h.01M10 10.2a2.6 2.6 0 0 0 4 0M7 21c.8-3 2.8-4.5 5-4.5s4.2 1.5 5 4.5"/></svg><span>Kids e Jovens</span></button>
     <button data-aba="visitantes"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.6-3.5 3.3-5.5 6.5-5.5s5.9 2 6.5 5.5M19 7v6M16 10h6"/></svg><span>Visitantes</span> <span id="badge-visitantes" class="tag oculto"></span></button>
+    <button data-aba="painel"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/></svg><span>Painel</span></button>
     <button data-aba="pedidos" class="sec"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 13h5l1.5 3h5L16 13h5"/><path d="M5.5 5h13L21 13v6a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-6z"/></svg><span>Pedidos</span> <span id="badge-pedidos" class="tag oculto"></span></button>
     <button data-aba="certificados" class="sec"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="9" r="5.5"/><path d="M8.5 13.3 7 21l5-2.5 5 2.5-1.5-7.7"/><path d="m10 9 1.4 1.4L14.2 7.6"/></svg><span>Certificados</span></button>
     <button data-aba="mensagens" class="sec"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/></svg><span>Ajustes</span></button>
@@ -157,6 +177,7 @@
     <section id="aba-kids" class="oculto"></section>
     <section id="aba-certificados" class="oculto"></section>
     <section id="aba-visitante" class="oculto"></section>
+    <section id="aba-painel" class="oculto"></section>
   </main>
 </div>
 <div id="toast"></div>
@@ -1465,6 +1486,107 @@ async function enviar(idx, pessoaId) {
   render();
 }
 
+// ---------- Painel do pastor ----------
+// Só usa o que já está no banco: membros (criado_em, data_batismo, nascimento) e visitantes.
+const MES_CURTO = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+const INSTAGRAM = 'https://www.instagram.com/mcsomosum/';
+function anoMes(iso) { return iso ? iso.slice(0, 7) : null; }
+function graficoColunas(itens) {
+  const max = Math.max(1, ...itens.map((x) => x.v));
+  return `<div class="colunas" role="img" aria-label="${esc(itens.map((x) => `${x.titulo}: ${x.v}`).join('; '))}">${itens.map((x) =>
+    `<div class="col" title="${esc(x.titulo)}: ${x.v}">${x.v ? `<span class="val">${x.v}</span>` : ''}<div class="barra-v" style="height:${(x.v / max) * 100}%"></div></div>`).join('')}</div>
+    <div class="eixo">${itens.map((x) => `<span>${esc(x.rot)}</span>`).join('')}</div>`;
+}
+function graficoBarras(itens, total) {
+  const max = Math.max(1, ...itens.map((x) => x.v));
+  return `<div class="hbarras">${itens.map((x) => `<div class="item"><div>${x.rot}</div>
+    <div class="trilho"><div class="preench" style="width:${(x.v / max) * 100}%"></div></div>
+    <div class="n">${x.v}${total ? ` <small>${Math.round((x.v / total) * 100)}%</small>` : ''}</div></div>`).join('')}</div>`;
+}
+function renderPainel() {
+  const atual = hoje().getFullYear();
+  const anos = new Set([atual]);
+  estado.membros.forEach((m) => { if (m.data_batismo) anos.add(+m.data_batismo.slice(0, 4)); if (m.criado_em) anos.add(+m.criado_em.slice(0, 4)); });
+  estado.visitantes.forEach((v) => v.primeira_visita && anos.add(+v.primeira_visita.slice(0, 4)));
+  const ano = estado.painelAno || atual;
+  const ativos = estado.membros.filter((m) => m.situacao === 'ativo');
+  const membrosAtivos = ativos.filter(ehMembro);
+
+  // Crescimento: novos cadastros por mês nos 12 meses até o mês escolhido
+  const fim = ano === atual ? hoje().getMonth() : 11;
+  const meses = Array.from({ length: 12 }, (_, i) => { const d = new Date(ano, fim - 11 + i, 1); return { a: d.getFullYear(), m: d.getMonth() }; });
+  const chave = (x) => `${x.a}-${String(x.m + 1).padStart(2, '0')}`;
+  const cresc = meses.map((x) => ({ rot: MES_CURTO[x.m], titulo: `${MESES[x.m]} de ${x.a}`, v: estado.membros.filter((m) => ehMembro(m) && anoMes(m.criado_em) === chave(x)).length }));
+  const novosAno = estado.membros.filter((m) => ehMembro(m) && m.criado_em?.startsWith(String(ano))).length;
+
+  // Batismos no ano (pela data de batismo do cadastro)
+  const batAno = estado.membros.filter((m) => m.data_batismo?.startsWith(String(ano)));
+  const batMes = MES_CURTO.map((r, i) => ({ rot: r, titulo: `${MESES[i]} de ${ano}`, v: batAno.filter((m) => +m.data_batismo.slice(5, 7) === i + 1).length }));
+  const semDataBat = ativos.filter((m) => m.batizado && !m.data_batismo).length;
+  const aBatizar = ativos.filter((m) => !m.batizado && (idade(m) ?? 0) >= IDADE_BATISMO).length;
+
+  // Visitantes que vieram pela primeira vez no ano e o que aconteceu com eles
+  const vis = estado.visitantes.filter((v) => v.primeira_visita?.startsWith(String(ano)));
+  const voltaram = vis.filter((v) => (v.visitas || 1) >= 2 || ['frequentando', 'membro'].includes(v.situacao)).length;
+  const frequentando = vis.filter((v) => ['frequentando', 'membro'].includes(v.situacao)).length;
+  const viraram = vis.filter((v) => v.situacao === 'membro' || v.membro_id).length;
+  const visMes = MES_CURTO.map((r, i) => ({ rot: r, titulo: `${MESES[i]} de ${ano}`, v: vis.filter((v) => +v.primeira_visita.slice(5, 7) === i + 1).length }));
+
+  // Faixas de idade (todos os ativos, membros ou não)
+  const contaF = (k) => ativos.filter((m) => faixa(m) === k).length;
+  const adultos = ativos.filter((m) => (idade(m) ?? -1) >= 30).length;
+  const semNasc = ativos.filter((m) => !m.nascimento).length;
+
+  const kpi = (n, rot) => `<div class="card kpi"><div class="num">${n}</div><div class="rot">${rot}</div></div>`;
+  $('#aba-painel').innerHTML = `
+    <div class="barra" style="align-items:center"><h2 style="margin:0;flex:1">Painel do pastor</h2>
+      <select id="painel-ano" style="width:auto">${[...anos].sort((a, b) => b - a).map((a) => `<option ${a === ano ? 'selected' : ''}>${a}</option>`).join('')}</select></div>
+    <div class="kpis">
+      ${kpi(membrosAtivos.length, 'membros ativos')}
+      ${kpi(novosAno, `novos cadastros em ${ano}`)}
+      ${kpi(batAno.length, `batismos em ${ano}`)}
+      ${kpi(viraram, `visitantes que viraram membros em ${ano}`)}
+    </div>
+
+    <h2>Crescimento</h2>
+    <div class="card">
+      <div class="nome">Novos membros cadastrados por mês</div>
+      <div class="sub">Últimos 12 meses até ${MESES[fim]} de ${ano}. Hoje são ${membrosAtivos.length} membros ativos (${ativos.length - membrosAtivos.length} crianças/jovens ainda não batizados à parte).</div>
+      ${graficoColunas(cresc)}
+      <p class="dica">Outubro de 2026 inclui a importação da planilha da Secretaria, quando o app começou. A partir daí, cada barra mostra quem entrou de verdade.</p>
+    </div>
+
+    <h2>Visitantes em ${ano}</h2>
+    <div class="card">
+      ${vis.length ? `${graficoBarras([
+        { rot: 'Primeira visita', v: vis.length }, { rot: 'Voltaram', v: voltaram },
+        { rot: 'Frequentando', v: frequentando }, { rot: 'Viraram membros', v: viraram }], vis.length)}
+        <div class="nome" style="margin-top:14px">Primeiras visitas por mês</div>${graficoColunas(visMes)}`
+      : `<div class="vazio">Nenhum visitante registrado em ${ano} ainda.<br>Eles aparecem aqui quando preenchem o QR code ou são cadastrados na aba <a href="#" data-ir-aba="visitantes">Visitantes</a>.</div>`}
+    </div>
+
+    <h2>Batismos em ${ano}</h2>
+    <div class="card">
+      ${batAno.length ? graficoColunas(batMes) : `<div class="vazio">Nenhum batismo com data em ${ano}.</div>`}
+      ${semDataBat ? `<p class="dica">⚠️ ${semDataBat} batizados ativos estão sem a data do batismo no cadastro, por isso não entram na conta do ano. Dá para completar no cadastro de cada um.</p>` : ''}
+      <p class="dica">💧 ${aBatizar} ${aBatizar === 1 ? 'pessoa' : 'pessoas'} com ${IDADE_BATISMO} anos ou mais ainda ${aBatizar === 1 ? 'não é batizada' : 'não são batizadas'} (lista em <a href="#" data-ir-aba="kids">Kids e Jovens</a>).</p>
+    </div>
+
+    <h2>Faixas de idade</h2>
+    <div class="card">
+      ${graficoBarras([
+        ...Object.entries(FAIXAS).map(([k, f]) => ({ rot: `${f.emoji} ${f.nome}`, v: contaF(k) })),
+        { rot: '👤 Adultos 30+', v: adultos }, { rot: '❔ Sem nascimento', v: semNasc }], ativos.length)}
+      <p class="dica">Todos os ${ativos.length} cadastros ativos. Kids 0 a 11, Adolescentes 12 a 17, Jovens 18 a 29 anos.</p>
+    </div>
+
+    <h2>Instagram</h2>
+    <a class="card linha" href="${INSTAGRAM}" target="_blank" rel="noopener" style="text-decoration:none;color:inherit">
+      <div class="avatar" style="background:linear-gradient(45deg,#f58529,#dd2a7b,#8134af)">IG</div>
+      <div class="info"><div class="nome">@mcsomosum</div><div class="sub">Abrir o Instagram da igreja</div></div><span class="sub">↗</span></a>`;
+  $('#painel-ano').onchange = (e) => { estado.painelAno = +e.target.value; renderPainel(); };
+}
+
 // ---------- Navegação ----------
 function mostrarAba(aba) {
   estado.aba = aba;
@@ -1483,6 +1605,7 @@ function render() {
   if (estado.aba === 'visitantes') renderVisitantes();
   if (estado.aba === 'kids') renderKids();
   if (estado.aba === 'certificados') renderCertificados();
+  if (estado.aba === 'painel') renderPainel();
 }
 document.querySelectorAll('nav button[data-aba], #menu-mais button').forEach((b) => (b.onclick = () => { mostrarAba(b.dataset.aba); window.scrollTo(0, 0); }));
 const ajustaNav = () => { $('nav').style.top = $('header').offsetHeight + 'px'; };
