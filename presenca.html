@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Presença · Somos Um</title>
+<meta name="theme-color" content="#111111">
+<link rel="icon" href="icone.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+  :root { --bg: #f6f5f3; --card: #fff; --ink: #1b1b1b; --muted: #6b6b6b; --line: #e4e1dc; --red: #c4161c; --red-soft: #fbe9e9; --green: #1f7a3d; --green-soft: #e6f4ea; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #121212; --card: #1d1d1d; --ink: #f1f1f1; --muted: #a3a3a3; --line: #333; --red: #ef4b50; --red-soft: #3a1c1d; --green: #5cc883; --green-soft: #17311f; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--ink); }
+  header { background: #111; color: #fff; padding: 22px 16px; text-align: center; }
+  header h1 { margin: 0; font-size: 20px; }
+  header h1 span { color: #ff5a5f; }
+  header p { margin: 6px 0 0; color: #ccc; font-size: 14px; }
+  main { max-width: 560px; margin: 0 auto; padding: 16px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+  label { display: block; font-size: 14px; color: var(--muted); margin: 14px 0 4px; }
+  label:first-child { margin-top: 0; }
+  input { width: 100%; min-width: 0; padding: 12px; border: 1px solid var(--line); border-radius: 8px; font-size: 18px; background: var(--card); color: var(--ink); font-family: inherit; }
+  .pessoa { display: flex; gap: 12px; align-items: center; padding: 12px 4px; border-bottom: 1px solid var(--line); font-size: 18px; color: var(--ink); margin: 0; }
+  .pessoa:last-child { border-bottom: 0; }
+  .pessoa input, .check input { width: 24px; height: 24px; flex: none; margin: 0; }
+  .check { display: flex; gap: 10px; align-items: flex-start; margin-top: 14px; font-size: 14px; color: var(--ink); }
+  button, a.botao { display: block; width: 100%; border: 0; border-radius: 10px; padding: 15px; font-size: 17px; font-weight: 600; background: var(--red); color: #fff; cursor: pointer; text-align: center; text-decoration: none; font-family: inherit; }
+  button.sec, a.botao.sec { background: transparent; color: var(--ink); border: 1px solid var(--line); margin-top: 10px; }
+  button:disabled { opacity: .6; }
+  .aviso { background: var(--red-soft); color: var(--red); border-radius: 8px; padding: 10px; font-size: 14px; margin-bottom: 12px; }
+  .ok { background: var(--green-soft); color: var(--green); border-radius: 12px; padding: 24px 16px; text-align: center; font-size: 16px; }
+  .ok p { margin: 8px 0; }
+  .dica { font-size: 13px; color: var(--muted); margin: 8px 0 0; }
+  .insta { display: inline-flex; align-items: center; gap: 8px; margin-top: 14px; color: inherit; font-weight: 600; }
+  .oculto { display: none !important; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Presença <span>·</span> Somos Um</h1>
+  <p id="atividade">Ministério Cristão Somos Um</p>
+</header>
+<main>
+  <div id="erro" class="aviso oculto"></div>
+
+  <div id="passo-telefone" class="oculto">
+    <div class="card">
+      <p style="margin:0 0 4px">Que bom ter você aqui! 🙌 Marque a sua presença em 10 segundos.</p>
+      <label for="telefone">Seu WhatsApp com DDD</label>
+      <input id="telefone" type="tel" inputmode="tel" placeholder="41 99999-9999" autocomplete="tel">
+      <p class="dica">É o número que está no seu cadastro da igreja. O celular guarda para a próxima vez.</p>
+    </div>
+    <button id="continuar">Continuar</button>
+  </div>
+
+  <div id="passo-pessoas" class="oculto">
+    <div class="card">
+      <p style="margin:0 0 6px"><b>Quem veio hoje?</b></p>
+      <div id="pessoas"></div>
+    </div>
+    <button id="confirmar">Confirmar presença</button>
+    <button class="sec" id="outro-numero">Usar outro número</button>
+  </div>
+
+  <div id="passo-sem-cadastro" class="oculto">
+    <div class="card">
+      <p style="margin:0"><b>Não achamos esse WhatsApp no cadastro da igreja.</b></p>
+      <p class="dica">Confira o número. Se você é membro e trocou de número, escreva seu nome: a secretaria atualiza o seu cadastro.</p>
+      <label for="nome">Seu nome completo</label>
+      <input id="nome" autocomplete="name">
+      <label class="check"><input type="checkbox" id="lgpd"> Autorizo o Ministério Cristão Somos Um a guardar meu nome e WhatsApp para registrar a presença (LGPD).</label>
+    </div>
+    <button id="registrar-nome">Registrar presença</button>
+    <a class="botao sec" href="visitante.html">É a sua primeira vez aqui? Toque aqui</a>
+    <button class="sec" id="voltar">Corrigir o número</button>
+  </div>
+
+  <div id="sucesso" class="ok oculto">
+    <div style="font-size:44px">✅</div>
+    <p><b id="sucesso-titulo">Presença registrada!</b></p>
+    <p id="sucesso-texto" style="font-size:14px"></p>
+    <a class="insta" href="https://www.instagram.com/mcsomosum/" target="_blank" rel="noopener">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>
+      Siga a igreja no Instagram: @mcsomosum</a>
+  </div>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script>
+const sb = supabase.createClient('https://kucctooazibqfzlmqsws.supabase.co', 'sb_publishable_4yxH3tJotLPLK3LDiYb01A_7dsS2xpn');
+const $ = (s) => document.querySelector(s);
+const esc = (t) => String(t ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const DIAS = ['domingo', 'segunda-feira', 'terça-feira', 'quarta-feira', 'quinta-feira', 'sexta-feira', 'sábado'];
+const codigo = new URLSearchParams(location.search).get('c') || '';
+const guardado = { ler() { try { return localStorage.getItem('somosum_tel') || ''; } catch { return ''; } }, gravar(t) { try { localStorage.setItem('somosum_tel', t); } catch {} } };
+let atividade = null;
+
+function passo(id) {
+  ['passo-telefone', 'passo-pessoas', 'passo-sem-cadastro', 'sucesso'].forEach((p) => $('#' + p).classList.toggle('oculto', p !== id));
+  $('#erro').classList.add('oculto');
+  window.scrollTo(0, 0);
+}
+function erro(t) { const e = $('#erro'); e.textContent = t; e.classList.remove('oculto'); }
+const juntar = (nomes) => nomes.length > 1 ? nomes.slice(0, -1).join(', ') + ' e ' + nomes[nomes.length - 1] : nomes[0] || '';
+
+function sucesso(r) {
+  $('#sucesso-titulo').textContent = `Presença registrada, ${juntar(r.nomes)}!`;
+  $('#sucesso-texto').textContent = `${r.atividade}. ${r.sem_cadastro ? 'A secretaria vai conferir o seu cadastro. ' : ''}Deus abençoe o seu culto! 🙏`;
+  passo('sucesso');
+}
+function falha(r) {
+  if (r?.motivo === 'dia') return erro(`Hoje não tem ${atividade.nome}. A presença abre no dia (${DIAS[atividade.dia_semana]}).`);
+  if (r?.motivo === 'codigo') return erro('Este QR code não está mais ativo. Fale com a secretaria.');
+  erro('Não foi possível registrar agora. Tente de novo em instantes.');
+}
+
+async function iniciar() {
+  if (!codigo) return erro('Abra esta página pelo QR code do culto ou da célula.');
+  const { data, error } = await sb.rpc('presenca_atividade', { p_codigo: codigo });
+  if (error) return erro('Não foi possível abrir agora. Confira a internet e tente de novo.');
+  atividade = data?.[0];
+  if (!atividade) return erro('Este QR code não está mais ativo. Fale com a secretaria.');
+  $('#atividade').textContent = atividade.nome + (atividade.horario ? ' · ' + atividade.horario : '');
+  document.title = 'Presença · ' + atividade.nome;
+  if (!atividade.hoje_ok) return erro(`Hoje não tem ${atividade.nome}. A presença abre no dia (${DIAS[atividade.dia_semana]}${atividade.horario ? ', ' + atividade.horario : ''}).`);
+  $('#telefone').value = guardado.ler();
+  passo('passo-telefone');
+}
+
+$('#continuar').onclick = async () => {
+  const tel = $('#telefone').value.trim();
+  if (tel.replace(/\D/g, '').length < 10) return erro('Digite o WhatsApp com DDD, por exemplo 41 99999-9999.');
+  const btn = $('#continuar'); btn.disabled = true; btn.textContent = 'Procurando…';
+  const { data, error } = await sb.rpc('presenca_familia', { p_codigo: codigo, p_telefone: tel });
+  btn.disabled = false; btn.textContent = 'Continuar';
+  if (error) return falha();
+  if (!data.length) { passo('passo-sem-cadastro'); return; }
+  $('#pessoas').innerHTML = data.map((p) => `<label class="pessoa"><input type="checkbox" value="${esc(p.id)}" checked> ${esc(p.nome)}${p.titular ? '' : ' <span class="dica" style="margin:0">(filho/a)</span>'}</label>`).join('');
+  passo('passo-pessoas');
+};
+$('#telefone').onkeydown = (e) => { if (e.key === 'Enter') $('#continuar').click(); };
+
+$('#confirmar').onclick = async () => {
+  const ids = [...document.querySelectorAll('#pessoas input:checked')].map((i) => i.value);
+  if (!ids.length) return erro('Marque pelo menos uma pessoa.');
+  const btn = $('#confirmar'); btn.disabled = true; btn.textContent = 'Registrando…';
+  const tel = $('#telefone').value.trim();
+  const { data, error } = await sb.rpc('presenca_registrar', { p_codigo: codigo, p_telefone: tel, p_ids: ids, p_nome: '' });
+  btn.disabled = false; btn.textContent = 'Confirmar presença';
+  if (error || !data?.ok) return falha(data);
+  guardado.gravar(tel);
+  sucesso(data);
+};
+
+$('#registrar-nome').onclick = async () => {
+  const nome = $('#nome').value.trim().replace(/\s+/g, ' ');
+  if (nome.length < 3 || !nome.includes(' ')) return erro('Escreva o seu nome completo.');
+  if (!$('#lgpd').checked) return erro('Para registrar, marque a autorização da LGPD.');
+  const btn = $('#registrar-nome'); btn.disabled = true; btn.textContent = 'Registrando…';
+  const { data, error } = await sb.rpc('presenca_registrar', { p_codigo: codigo, p_telefone: $('#telefone').value.trim(), p_ids: [], p_nome: nome });
+  btn.disabled = false; btn.textContent = 'Registrar presença';
+  if (error || !data?.ok) return falha(data);
+  sucesso(data);
+};
+$('#outro-numero').onclick = () => { $('#telefone').value = ''; passo('passo-telefone'); $('#telefone').focus(); };
+$('#voltar').onclick = () => { passo('passo-telefone'); $('#telefone').focus(); };
+
+iniciar();
+</script>
+</body>
+</html>

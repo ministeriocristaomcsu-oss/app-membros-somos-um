@@ -1,7 +1,7 @@
 // Agenda da igreja: usado pela página pública (agenda.html) e pelo app (index.html).
 // Junta três fontes: cultos fixos da semana, eventos com data e os cultos do app de Escalas.
 const INSTAGRAM = { url: 'https://www.instagram.com/mcsomosum', arroba: '@mcsomosum' };
-const DIAS_SEMANA = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+const AG_DIAS_SEMANA = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
 const MESES_AG = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
 
 function agDia(iso) { const [a, m, d] = String(iso).slice(0, 10).split('-').map(Number); return new Date(a, m - 1, d); }
@@ -15,8 +15,8 @@ function agHora(h) {
   if (!m) return t;
   return Number(m[1]) + 'h' + (m[2] && m[2] !== '00' ? m[2] : '');
 }
-function agNomeSemana(n, semanaDoMes) { return semanaDoMes ? `${semanaDoMes}º ${DIAS_SEMANA[n].replace('-feira', '').toLowerCase()} do mês` : DIAS_SEMANA[n]; }
-function agFmtData(d) { return `${DIAS_SEMANA[d.getDay()].replace('-feira', '')}, ${d.getDate()} de ${MESES_AG[d.getMonth()]}`; }
+function agNomeSemana(n, semanaDoMes) { return semanaDoMes ? `${semanaDoMes}º ${AG_DIAS_SEMANA[n].replace('-feira', '').toLowerCase()} do mês` : AG_DIAS_SEMANA[n]; }
+function agFmtData(d) { return `${AG_DIAS_SEMANA[d.getDay()].replace('-feira', '')}, ${d.getDate()} de ${MESES_AG[d.getMonth()]}`; }
 
 // Lista de compromissos de `inicio` até `dias` dias depois, em ordem.
 // itens: linhas da tabela agenda; cultos: [{data, hora, nome}] vindos da escala.
