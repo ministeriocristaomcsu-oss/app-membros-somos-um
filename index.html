@@ -134,6 +134,7 @@
     <button data-aba="membros"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.6-3.5 3.3-5.5 6.5-5.5s5.9 2 6.5 5.5M16 4.6a3.5 3.5 0 0 1 0 6.8M18 14.8c2 .7 3.2 2.5 3.5 5.2"/></svg><span>Membros</span></button>
     <button data-aba="kids"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="5"/><path d="M10 7.5h.01M14 7.5h.01M10 10.2a2.6 2.6 0 0 0 4 0M7 21c.8-3 2.8-4.5 5-4.5s4.2 1.5 5 4.5"/></svg><span>Kids e Jovens</span></button>
     <button data-aba="visitantes"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.6-3.5 3.3-5.5 6.5-5.5s5.9 2 6.5 5.5M19 7v6M16 10h6"/></svg><span>Visitantes</span> <span id="badge-visitantes" class="tag oculto"></span></button>
+    <button data-aba="presenca"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="17" rx="2"/><path d="M9 2.5v3M15 2.5v3M8.5 13l2.5 2.5 4.5-5"/></svg><span>Presença</span> <span id="badge-presenca" class="tag oculto"></span></button>
     <button data-aba="pedidos" class="sec"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 13h5l1.5 3h5L16 13h5"/><path d="M5.5 5h13L21 13v6a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-6z"/></svg><span>Pedidos</span> <span id="badge-pedidos" class="tag oculto"></span></button>
     <button data-aba="certificados" class="sec"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="9" r="5.5"/><path d="M8.5 13.3 7 21l5-2.5 5 2.5-1.5-7.7"/><path d="m10 9 1.4 1.4L14.2 7.6"/></svg><span>Certificados</span></button>
     <button data-aba="mensagens" class="sec"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/></svg><span>Ajustes</span></button>
@@ -157,6 +158,8 @@
     <section id="aba-kids" class="oculto"></section>
     <section id="aba-certificados" class="oculto"></section>
     <section id="aba-visitante" class="oculto"></section>
+    <section id="aba-presenca" class="oculto"></section>
+    <section id="aba-atividade" class="oculto"></section>
   </main>
 </div>
 <div id="toast"></div>
@@ -316,6 +319,8 @@ async function carregar() {
     const dp = await sb.from('atualizacoes_documentos').select('*');
     (dp.data || []).forEach((x) => (estado.docs['pedido:' + x.pedido_id] = x));
   }
+  await carregarPresenca();
+  if (estado.presencaOk) atualizarBadgePresenca();
   await carregarFotos();
   render();
 }
@@ -373,6 +378,7 @@ function renderHoje() {
     ${evs.map((e, i) => cardEvento(e, i)).join('') || '<div class="card vazio">Nenhum aniversário hoje.</div>'}
     ${mudaramDeFaixa(7).length ? `<h2>Mudaram de faixa</h2>${mudaramDeFaixa(7).map((x) => `<div class="card linha clicavel" data-editar="${x.m.id}">${avatar(x.m)}<div class="info"><div class="nome">${esc(x.m.nome)}</div><div class="sub">${textoMudanca(x)} (${fmtData(x.data)})</div></div></div>`).join('')}` : ''}
     ${visitantesPendentes().length ? `<h2>Visitantes para contatar</h2>${visitantesPendentes().map(cardVisitantePendente).join('')}` : ''}
+    ${ausentes().length ? `<h2>Sentimos falta (${ausentes().length})</h2><p class="dica">Há 3 semanas ou mais sem vir.</p>${ausentes().slice(0, 3).map(cardAusente).join('')}${ausentes().length > 3 ? `<p class="dica"><a href="#" data-ir-aba="presenca">Ver todos os ${ausentes().length} na aba Presença</a></p>` : ''}` : ''}
     <h2>Próximos 7 dias</h2>
     ${semana.map((e, i) => `<div class="card linha">${avatar(e.membro)}<div class="info"><div class="nome">${e.tipo === 'casamento' ? '💍' : '🎂'} ${esc(e.tipo === 'casamento' ? nomeEvento(e) : e.membro.nome)}</div>
       <div class="sub">${fmtDiaSemana(e.data)}, ${fmtData(e.data)} · ${e.tipo === 'casamento' ? e.quantos + ' anos de casados' : e.quantos + ' anos'}</div></div>
@@ -440,6 +446,10 @@ function renderMensagens() {
     <p class="dica">Cada visitante recebe estas mensagens, contando os dias a partir da primeira visita. O app avisa no dia certo. Use <b>{nome}</b> para o primeiro nome.</p>
     ${ETAPAS.map((e) => `<label for="msg-visitante_${e.id}">🙋 Dia ${e.dias}: ${esc(e.nome)}</label>
     <textarea id="msg-visitante_${e.id}" style="min-height:120px">${esc(estado.modelos['visitante_' + e.id])}</textarea>`).join('')}
+    ${estado.modelos.ausente !== undefined ? `<h2>Sentimos falta</h2>
+    <p class="dica">Mensagem para quem está há 3 semanas sem vir. Use <b>{nome}</b> para o primeiro nome.</p>
+    <label for="msg-ausente">🙏 Sentimos a sua falta</label>
+    <textarea id="msg-ausente" style="min-height:120px">${esc(estado.modelos.ausente)}</textarea>` : ''}
     <div class="acoes"><button class="btn btn-pri" id="msg-salvar">Salvar textos</button></div>
     <h2>Acessos</h2>
     <p class="dica">Quem está nesta lista pode entrar no app${estado.souAdmin ? '. Para liberar um secretário, coloque o e-mail dele aqui. Depois ele abre o app, toca em <b>Primeiro acesso</b> e cria a própria senha.' : '. Só os administradores podem mudar a lista.'}</p>
@@ -451,7 +461,7 @@ function renderMensagens() {
     </div><div class="acoes"><button class="btn btn-pri" id="ac-incluir">Liberar acesso</button></div></div>` : ''}`;
   renderAcessos();
   $('#msg-salvar').onclick = async () => {
-    const linhas = ['aniversario', 'casamento', ...ETAPAS.map((e) => 'visitante_' + e.id)].map((tipo) => ({ tipo, texto: $('#msg-' + tipo).value.trim() }));
+    const linhas = ['aniversario', 'casamento', ...ETAPAS.map((e) => 'visitante_' + e.id), ...($('#msg-ausente') ? ['ausente'] : [])].map((tipo) => ({ tipo, texto: $('#msg-' + tipo).value.trim() }));
     if (linhas.some((l) => !l.texto)) return toast('Os textos não podem ficar vazios.');
     const { error } = await sb.from('config_mensagens').upsert(linhas);
     if (error) return toast('Erro ao salvar: ' + error.message);
@@ -1452,6 +1462,265 @@ function renderCertificados() {
   if (foco === 'ct-busca') { const i = $('#ct-busca'); i.focus(); i.setSelectionRange(i.value.length, i.value.length); }
 }
 
+// ---------- Presença nos cultos e células ----------
+const DIAS_SEMANA = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+const TIPOS_ATIV = { culto: 'Culto', celula: 'Célula', outro: 'Outro encontro' };
+const DIAS_AUSENCIA = 21; // 3 semanas
+const IDADE_MIN_AUSENCIA = 12; // crianças vêm com os pais: não entram no aviso
+async function carregarPresenca() {
+  const h = hoje();
+  const desde = (dias) => { const d = new Date(h); d.setDate(d.getDate() - dias); return isoDe(d); };
+  const [a, u, r, c] = await Promise.all([
+    sb.from('atividades').select('*').order('tipo').order('nome'),
+    sb.from('ultima_presenca').select('*'),
+    sb.from('presencas_resumo').select('*').gte('data', desde(180)).order('data', { ascending: false }),
+    sb.from('ausencias_contatos').select('*').gte('feito_em', desde(60)).order('feito_em'),
+  ]);
+  estado.presencaOk = !(a.error || u.error || r.error || c.error);
+  if (!estado.presencaOk) return;
+  estado.atividades = a.data; estado.resumo = r.data; estado.ausContatos = c.data;
+  estado.ultimas = Object.fromEntries(u.data.map((x) => [x.membro_id, x]));
+}
+const atividadePorId = (id) => (estado.atividades || []).find((a) => a.id === id);
+function semanaDe(iso) { const d = dataDeIso(iso); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return isoDe(d); }
+// Quem vinha e sumiu: 3 semanas ou mais sem presença, e a igreja registrou presença em pelo menos
+// 3 semanas diferentes depois disso (se a chamada não foi feita, ninguém aparece como sumido).
+// Quem já recebeu contato depois da última vinda sai da lista por 30 dias.
+function ausentes() {
+  if (!estado.presencaOk) return [];
+  const h = hoje();
+  return estado.membros.filter((m) => m.situacao === 'ativo' && (idade(m) ?? 99) >= IDADE_MIN_AUSENCIA).map((m) => {
+    const u = estado.ultimas[m.id];
+    if (!u) return null;
+    const dias = Math.round((h - dataDeIso(u.ultima)) / 86400000);
+    if (dias < DIAS_AUSENCIA) return null;
+    if (new Set(estado.resumo.filter((r) => r.data > u.ultima).map((r) => semanaDe(r.data))).size < 3) return null;
+    const contato = estado.ausContatos.filter((c) => c.membro_id === m.id).pop();
+    if (contato && contato.feito_em.slice(0, 10) > u.ultima && (h - new Date(contato.feito_em)) / 86400000 < 30) return null;
+    return { m, ultima: u.ultima, dias };
+  }).filter(Boolean).sort((a, b) => a.dias - b.dias || a.m.nome.localeCompare(b.m.nome));
+}
+// WhatsApp de quem sumiu: o da pessoa; se for menor sem telefone, o do responsável
+function contatoAusente(m) {
+  if (m.aceita_mensagens !== false && telefoneWa(m.telefone)) return { nome: m.nome, telefone: m.telefone, proprio: true };
+  if ((idade(m) ?? 99) < 18) return responsaveis(m).find((r) => r.aceita_mensagens !== false && telefoneWa(r.telefone)) || null;
+  return null;
+}
+function textoAusente(m) { return (estado.modelos.ausente || '').replaceAll('{nome}', primeiroNome(m.nome)); }
+function cardAusente({ m, ultima, dias }) {
+  const sem = Math.floor(dias / 7);
+  const ultimaAtiv = estado.ultimas[m.id];
+  const zap = contatoAusente(m);
+  return `<div class="card"><div class="linha clicavel" data-editar="${m.id}">${avatar(m)}<div class="info">
+      <div class="nome">${esc(m.nome)}</div>
+      <div class="sub">Veio pela última vez em ${fmtIso(ultima)} · <b>${sem} semanas sem vir</b>${ultimaAtiv?.vezes ? ` · ${ultimaAtiv.vezes} ${ultimaAtiv.vezes === 1 ? 'presença' : 'presenças'} registradas` : ''}</div>
+      ${zap && !zap.proprio ? `<div class="sub">Mensagem vai para ${esc(primeiroNome(zap.nome))} (responsável)</div>` : ''}
+    </div></div>
+    <div class="acoes" style="margin-top:10px">
+      ${zap ? `<button class="btn btn-wa" data-aus-wa="${m.id}">WhatsApp</button>` : ''}
+      <button class="btn btn-sec" data-aus-feito="${m.id}">Já falei com a pessoa</button>
+    </div>
+    ${zap ? '' : `<p class="dica">${m.aceita_mensagens === false ? 'Não quer receber mensagens: fale pessoalmente ou por ligação.' : 'Sem WhatsApp cadastrado.'}</p>`}
+  </div>`;
+}
+async function contatarAusente(id, canal) {
+  const m = estado.membros.find((x) => x.id === id);
+  if (!m) return;
+  if (canal === 'whatsapp') {
+    const zap = contatoAusente(m);
+    window.open(`https://wa.me/${telefoneWa(zap.telefone)}?text=${encodeURIComponent(textoAusente(m))}`, '_blank');
+  }
+  const { data, error } = await sb.from('ausencias_contatos').insert({ membro_id: id, canal, feito_por: estado.email || '' }).select().single();
+  if (error) return toast((canal === 'whatsapp' ? 'O WhatsApp abriu, mas não consegui marcar: ' : 'Erro: ') + error.message);
+  estado.ausContatos.push(data);
+  atualizarBadgePresenca();
+  render();
+}
+function atualizarBadgePresenca() {
+  const n = ausentes().length;
+  const b = $('#badge-presenca'); b.textContent = n; b.classList.toggle('oculto', !n);
+}
+
+// Data padrão da chamada: o último dia da atividade (hoje, se for o dia)
+function ultimoDiaDe(a) {
+  const d = hoje();
+  if (a && a.dia_semana != null) d.setDate(d.getDate() - ((d.getDay() - a.dia_semana + 7) % 7));
+  return isoDe(d);
+}
+async function carregarChamada() {
+  const ch = estado.ch;
+  ch.carregando = true;
+  const de = new Date(dataDeIso(ch.data)); de.setDate(de.getDate() - 90);
+  const [p, f] = await Promise.all([
+    sb.from('presencas').select('*').eq('atividade_id', ch.atividadeId).eq('data', ch.data).order('criado_em'),
+    sb.from('presencas').select('membro_id').eq('atividade_id', ch.atividadeId).gte('data', isoDe(de)).not('membro_id', 'is', null).limit(10000),
+  ]);
+  ch.carregando = false;
+  if (p.error || f.error) return toast('Erro ao carregar a chamada: ' + (p.error || f.error).message);
+  ch.lista = p.data;
+  ch.freq = {}; f.data.forEach((x) => (ch.freq[x.membro_id] = (ch.freq[x.membro_id] || 0) + 1));
+  if (estado.aba === 'presenca') renderPresenca();
+}
+function abrirChamada(atividadeId, data) {
+  const a = atividadePorId(atividadeId);
+  estado.ch = { atividadeId, data: data || ultimoDiaDe(a), lista: null, freq: {} };
+  carregarChamada();
+}
+async function marcarPresenca(membroId) {
+  const ch = estado.ch;
+  const ja = ch.lista.find((p) => p.membro_id === membroId);
+  if (ja) {
+    const { error } = await sb.from('presencas').delete().eq('id', ja.id);
+    if (error) return toast('Erro: ' + error.message);
+    ch.lista = ch.lista.filter((p) => p.id !== ja.id);
+  } else {
+    const { data, error } = await sb.from('presencas').insert({ atividade_id: ch.atividadeId, data: ch.data, membro_id: membroId, origem: 'chamada', registrado_por: estado.email || '' }).select().single();
+    if (error && error.code !== '23505') return toast('Erro: ' + error.message);
+    if (data) ch.lista.push(data); else return carregarChamada();
+  }
+  renderPresenca();
+  // Atualiza "última presença" e "Sentimos falta" depois que a secretária para de marcar
+  clearTimeout(marcarPresenca.t);
+  marcarPresenca.t = setTimeout(async () => { await carregarPresenca(); atualizarBadgePresenca(); if (estado.aba === 'presenca') renderPresenca(); }, 1500);
+}
+async function ligarSemCadastro(presencaId, membroId) {
+  const ch = estado.ch;
+  if (ch.lista.some((p) => p.membro_id === membroId)) {
+    await sb.from('presencas').delete().eq('id', presencaId); // a pessoa já estava marcada
+  } else {
+    const { error } = await sb.from('presencas').update({ membro_id: membroId }).eq('id', presencaId);
+    if (error) return toast('Erro: ' + error.message);
+  }
+  const m = estado.membros.find((x) => x.id === membroId);
+  const p = ch.lista.find((x) => x.id === presencaId);
+  if (m && p?.telefone_informado && telefoneWa(p.telefone_informado) !== telefoneWa(m.telefone)
+    && confirm(`Trocar o WhatsApp de ${primeiroNome(m.nome)} para ${p.telefone_informado}? (o número usado no QR)`)) {
+    await sb.from('membros').update({ telefone: p.telefone_informado }).eq('id', membroId);
+    m.telefone = p.telefone_informado;
+  }
+  toast('Presença ligada ao cadastro.');
+  await carregarChamada();
+}
+
+function renderPresenca() {
+  const el = $('#aba-presenca');
+  if (estado.presencaOk === false) {
+    el.innerHTML = `<h2>Presença</h2><div class="aviso">Falta rodar o SQL da presença no Supabase (arquivo 2026-11-22-presenca.sql). Depois de rodar, abra o app de novo.</div>`;
+    return;
+  }
+  if (!estado.atividades) { el.innerHTML = '<div class="card vazio">Carregando…</div>'; return; }
+  const ativas = estado.atividades.filter((a) => a.ativa);
+  if (!estado.ch && ativas.length) abrirChamada(ativas[0].id);
+  const ch = estado.ch;
+  const aus = ausentes();
+  const busca = ($('#pr-busca')?.value || '').toLowerCase();
+  const foco = document.activeElement?.id;
+  const presentes = new Set((ch?.lista || []).map((p) => p.membro_id).filter(Boolean));
+  const semCad = (ch?.lista || []).filter((p) => !p.membro_id);
+  const pessoas = estado.membros.filter((m) => m.situacao === 'ativo' && (!busca || m.nome.toLowerCase().includes(busca)))
+    .sort((a, b) => (ch?.freq[b.id] || 0) - (ch?.freq[a.id] || 0) || a.nome.localeCompare(b.nome));
+  const nuncaVieram = estado.membros.filter((m) => m.situacao === 'ativo' && !estado.ultimas[m.id]).length;
+  const ativ = ch && atividadePorId(ch.atividadeId);
+  const opcoesMembro = '<option value="">Ligar ao cadastro de…</option>' + estado.membros.filter((m) => m.situacao === 'ativo').map((m) => `<option value="${m.id}">${esc(m.nome)}</option>`).join('');
+  el.innerHTML = `
+    <h2>Sentimos falta${aus.length ? ` (${aus.length})` : ''}</h2>
+    <p class="dica">Quem vinha e está há 3 semanas ou mais sem presença registrada. Depois do contato, a pessoa sai da lista; se continuar sem vir, volta depois de 30 dias.</p>
+    ${aus.map(cardAusente).join('') || `<div class="card vazio">Ninguém sumido. 🙌${estado.resumo.length ? '' : '<br>A lista começa a funcionar depois de 3 semanas de presença registrada.'}</div>`}
+
+    <h2>Chamada</h2>
+    ${ativas.length ? `<div class="card">
+      <div class="grade">
+        <div><label for="pr-ativ">Culto ou célula</label><select id="pr-ativ">${ativas.map((a) => `<option value="${a.id}" ${a.id === ch?.atividadeId ? 'selected' : ''}>${esc(a.nome)}</option>`).join('')}</select></div>
+        <div><label for="pr-data">Dia</label><input id="pr-data" type="date" value="${esc(ch?.data || '')}" max="${isoDe(hoje())}"></div>
+      </div>
+      ${ativ && ativ.dia_semana != null && ch.data && dataDeIso(ch.data).getDay() !== ativ.dia_semana ? `<div class="aviso">Esse dia é ${DIAS_SEMANA[dataDeIso(ch.data).getDay()].toLowerCase()}, e ${esc(ativ.nome)} é ${DIAS_SEMANA[ativ.dia_semana].toLowerCase()}. Confira a data.</div>` : ''}
+      <p class="nome" style="margin:14px 0 0">${ch?.lista ? `✅ ${presentes.size} ${presentes.size === 1 ? 'presente' : 'presentes'}${semCad.length ? ` + ${semCad.length} sem cadastro` : ''}${ch.lista.some((p) => p.origem === 'qrcode') ? ` · ${ch.lista.filter((p) => p.origem === 'qrcode').length} pelo QR code` : ''}` : 'Carregando…'}</p>
+    </div>
+    ${semCad.length ? `<div class="card"><div class="nome">Marcaram pelo QR mas não achamos o cadastro</div>
+      <p class="dica">Escolha quem é a pessoa para contar a presença. Se for visitante, cadastre em Visitantes e apague daqui.</p>
+      ${semCad.map((p) => `<div style="margin-top:12px"><div>${esc(p.nome_informado)} <span class="sub">${esc(p.telefone_informado)}</span></div>
+        <div class="barra" style="margin:6px 0 0"><select data-pr-ligar="${p.id}">${opcoesMembro}</select><button class="btn btn-perigo" data-pr-apagar="${p.id}">Apagar</button></div></div>`).join('')}
+    </div>` : ''}
+    <div class="barra"><input id="pr-busca" placeholder="Buscar por nome" value="${esc(busca)}"></div>
+    <p class="dica">Toque na pessoa para marcar ou desmarcar. Quem mais vem nesta atividade aparece primeiro.</p>
+    ${ch?.lista ? pessoas.map((m) => `<div class="card linha clicavel" data-pr-marcar="${m.id}" style="${presentes.has(m.id) ? 'border-color:var(--green);background:var(--green-soft)' : ''}">${avatar(m)}<div class="info">
+        <div class="nome">${esc(m.nome)}</div>
+        <div class="sub">${estado.ultimas[m.id] ? 'Última presença: ' + fmtIso(estado.ultimas[m.id].ultima) : 'Nenhuma presença registrada ainda'}</div>
+      </div>${presentes.has(m.id) ? '<span class="enviado">✓ Veio</span>' : '<span class="btn btn-sec">Marcar</span>'}</div>`).join('') || '<div class="card vazio">Ninguém encontrado.</div>' : ''}`
+    : '<div class="card vazio">Cadastre um culto ou célula abaixo para fazer a chamada.</div>'}
+
+    <h2>Últimos encontros</h2>
+    ${estado.resumo.slice(0, 12).map((r) => { const a = atividadePorId(r.atividade_id); return `<div class="card linha clicavel" data-pr-abrir="${r.atividade_id}" data-data="${r.data}"><div class="info">
+      <div class="nome">${esc(a?.nome || 'Atividade apagada')}</div>
+      <div class="sub">${DIAS_SEMANA[dataDeIso(r.data).getDay()]}, ${fmtIso(r.data)}${r.pelo_qr ? ` · ${r.pelo_qr} pelo QR` : ''}${r.sem_cadastro ? ` · ${r.sem_cadastro} sem cadastro` : ''}</div>
+    </div><span class="tag">${r.total} ${r.total === 1 ? 'pessoa' : 'pessoas'}</span></div>`; }).join('') || '<div class="card vazio">Nenhuma presença registrada ainda.</div>'}
+    ${nuncaVieram && estado.resumo.length ? `<p class="dica">${nuncaVieram} ${nuncaVieram === 1 ? 'membro ativo ainda não tem' : 'membros ativos ainda não têm'} nenhuma presença registrada.</p>` : ''}
+
+    <h2>Cultos e células</h2>
+    <p class="dica">Cada um tem o seu QR code. Imprima o cartaz e deixe na entrada (ou mostre no celular, na célula). O membro aponta a câmera, digita o WhatsApp e pronto: marca a presença dele e dos filhos.</p>
+    ${estado.atividades.map((a) => `<div class="card"><div class="linha"><div class="info">
+        <div class="nome">${esc(a.nome)} ${a.ativa ? '' : '<span class="tag">desativado</span>'}</div>
+        <div class="sub">${esc(TIPOS_ATIV[a.tipo])}${a.dia_semana != null ? ' · ' + DIAS_SEMANA[a.dia_semana] : ''}${a.horario ? ' · ' + esc(a.horario) : ''}${a.lider ? ' · Líder: ' + esc(a.lider) : ''}${a.local ? ' · ' + esc(a.local) : ''}</div>
+      </div></div>
+      <div class="acoes" style="margin-top:10px">${a.ativa ? `<a class="btn btn-pri" href="cartaz-presenca.html?c=${encodeURIComponent(a.codigo)}" target="_blank">QR code</a>` : ''}<button class="btn btn-sec" data-pr-editar="${a.id}">Editar</button></div>
+    </div>`).join('')}
+    <div class="acoes"><button class="btn btn-pri" id="pr-nova-celula">+ Nova célula</button><button class="btn btn-sec" id="pr-novo-culto">+ Outro culto ou encontro</button></div>`;
+  if ($('#pr-ativ')) {
+    $('#pr-ativ').onchange = () => abrirChamada($('#pr-ativ').value);
+    $('#pr-data').onchange = () => { if ($('#pr-data').value) { estado.ch.data = $('#pr-data').value; estado.ch.lista = null; renderPresenca(); carregarChamada(); } };
+    $('#pr-busca').oninput = renderPresenca;
+  }
+  $('#pr-nova-celula').onclick = () => abrirAtividade(null, 'celula');
+  $('#pr-novo-culto').onclick = () => abrirAtividade(null, 'culto');
+  document.querySelectorAll('[data-pr-ligar]').forEach((s) => (s.onchange = () => s.value && ligarSemCadastro(s.dataset.prLigar, s.value)));
+  document.querySelectorAll('[data-pr-apagar]').forEach((b) => (b.onclick = async () => {
+    if (!confirm('Apagar esta presença sem cadastro?')) return;
+    const { error } = await sb.from('presencas').delete().eq('id', b.dataset.prApagar);
+    if (error) return toast('Erro: ' + error.message);
+    carregarChamada();
+  }));
+  if (foco === 'pr-busca') { const i = $('#pr-busca'); i.focus(); i.setSelectionRange(i.value.length, i.value.length); }
+}
+
+function abrirAtividade(id, tipo) {
+  const a = atividadePorId(id) || { nome: '', tipo, dia_semana: null, horario: '', lider: '', local: '', ativa: true };
+  mostrarAba('atividade');
+  $('#aba-atividade').innerHTML = `
+    <h2>${id ? 'Editar' : tipo === 'celula' ? 'Nova célula' : 'Novo culto ou encontro'}</h2>
+    <div class="card"><div class="grade">
+      <div class="inteiro"><label for="at-nome">Nome *</label><input id="at-nome" value="${esc(a.nome)}" placeholder="${a.tipo === 'celula' ? 'Ex.: Célula Família Silva' : 'Ex.: Culto de Santa Ceia'}"></div>
+      <div><label for="at-tipo">Tipo</label><select id="at-tipo">${Object.entries(TIPOS_ATIV).map(([k, t]) => `<option value="${k}" ${k === a.tipo ? 'selected' : ''}>${t}</option>`).join('')}</select></div>
+      <div><label for="at-dia">Dia da semana</label><select id="at-dia"><option value="">Qualquer dia</option>${DIAS_SEMANA.map((d, i) => `<option value="${i}" ${i === a.dia_semana ? 'selected' : ''}>${d}</option>`).join('')}</select></div>
+      <div><label for="at-horario">Horário</label><input id="at-horario" value="${esc(a.horario)}" placeholder="19:30"></div>
+      <div><label for="at-lider">Líder</label><input id="at-lider" value="${esc(a.lider)}"></div>
+      <div class="inteiro"><label for="at-local">Local (bairro ou casa)</label><input id="at-local" value="${esc(a.local)}"></div>
+      <div class="inteiro"><label class="check"><input type="checkbox" id="at-ativa" ${a.ativa ? 'checked' : ''}> Ativo (o QR code funciona)</label></div>
+    </div>
+    <p class="dica">Com o dia da semana escolhido, o QR code só aceita presença nesse dia. Escolha "Qualquer dia" para células que mudam de dia.</p></div>
+    <div id="at-erro" class="aviso oculto"></div>
+    <div class="acoes"><button class="btn btn-pri" id="at-salvar">Salvar</button><button class="btn btn-sec" id="at-voltar">Voltar</button></div>
+    ${id ? '<div class="acoes"><button class="btn btn-perigo" id="at-excluir">Excluir (apaga as presenças dele)</button></div>' : ''}`;
+  $('#at-voltar').onclick = () => mostrarAba('presenca');
+  $('#at-salvar').onclick = async () => {
+    const dados = { nome: $('#at-nome').value.trim(), tipo: $('#at-tipo').value, dia_semana: $('#at-dia').value === '' ? null : Number($('#at-dia').value),
+      horario: $('#at-horario').value.trim(), lider: $('#at-lider').value.trim(), local: $('#at-local').value.trim(), ativa: $('#at-ativa').checked };
+    if (!dados.nome) { $('#at-erro').textContent = 'Preencha o nome.'; return $('#at-erro').classList.remove('oculto'); }
+    const { error } = id ? await sb.from('atividades').update(dados).eq('id', id) : await sb.from('atividades').insert(dados);
+    if (error) { $('#at-erro').textContent = 'Erro ao salvar: ' + error.message; return $('#at-erro').classList.remove('oculto'); }
+    toast('Salvo.');
+    await carregarPresenca();
+    mostrarAba('presenca');
+  };
+  if (id) $('#at-excluir').onclick = async () => {
+    if (!confirm(`Excluir "${a.nome}" e todas as presenças registradas nele? Para só parar de usar, desmarque "Ativo".`)) return;
+    const { error } = await sb.from('atividades').delete().eq('id', id);
+    if (error) return toast('Erro: ' + error.message);
+    if (estado.ch?.atividadeId === id) estado.ch = null;
+    await carregar();
+    mostrarAba('presenca');
+  };
+}
+
 // ---------- Envio pelo WhatsApp ----------
 async function enviar(idx, pessoaId) {
   const ev = eventosVisiveis[idx];
@@ -1483,6 +1752,7 @@ function render() {
   if (estado.aba === 'visitantes') renderVisitantes();
   if (estado.aba === 'kids') renderKids();
   if (estado.aba === 'certificados') renderCertificados();
+  if (estado.aba === 'presenca') renderPresenca();
 }
 document.querySelectorAll('nav button[data-aba], #menu-mais button').forEach((b) => (b.onclick = () => { mostrarAba(b.dataset.aba); window.scrollTo(0, 0); }));
 const ajustaNav = () => { $('nav').style.top = $('header').offsetHeight + 'px'; };
@@ -1503,6 +1773,16 @@ document.addEventListener('click', (e) => {
   if (vp) return contatarVisitante(vp.dataset.visPular, vp.dataset.etapa, 'pulado');
   const va = e.target.closest('[data-vis-abrir]');
   if (va) return abrirVisitante(va.dataset.visAbrir);
+  const aw = e.target.closest('[data-aus-wa]');
+  if (aw) return contatarAusente(aw.dataset.ausWa, 'whatsapp');
+  const af = e.target.closest('[data-aus-feito]');
+  if (af) return contatarAusente(af.dataset.ausFeito, 'pessoalmente');
+  const pm = e.target.closest('[data-pr-marcar]');
+  if (pm) return marcarPresenca(pm.dataset.prMarcar);
+  const pa = e.target.closest('[data-pr-abrir]');
+  if (pa) { abrirChamada(pa.dataset.prAbrir, pa.dataset.data); renderPresenca(); return window.scrollTo(0, 0); }
+  const pe = e.target.closest('[data-pr-editar]');
+  if (pe) return abrirAtividade(pe.dataset.prEditar);
   const bt = e.target.closest('[data-kj-batizou]');
   if (bt) { e.stopPropagation(); return registrarBatismo(bt.dataset.kjBatizou); }
   const ir = e.target.closest('[data-ir-aba]');

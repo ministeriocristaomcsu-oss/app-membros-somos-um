@@ -1,4 +1,4 @@
-// Resumo diário de aniversários, bodas e visitantes para contatar, enviado por e-mail (Resend) às 7h.
+// Resumo diário de aniversários, bodas, visitantes para contatar e membros sumidos (3 semanas sem presença), enviado por e-mail (Resend) às 7h.
 // Chamado pelo pg_cron. Manda no máximo um e-mail por dia (tabela resumos_enviados),
 // então uma chamada repetida não gera e-mails extras.
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
@@ -10,6 +10,7 @@ const MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julh
 type Membro = {
   id: string; nome: string; telefone: string; nascimento: string | null; casamento: string | null;
   estado_civil: string; conjuge_id: string | null; conjuge_nome: string; situacao: string; aceita_mensagens: boolean;
+  pai_id: string | null; mae_id: string | null; responsavel_telefone: string | null;
 };
 type Evento = { tipo: "aniversario" | "casamento"; data: Date; membro: Membro; conjuge?: Membro; quantos: number };
 
@@ -81,6 +82,39 @@ function visitantesPendentes(visitantes: Visitante[], contatos: { visitante_id: 
   return lista.sort((a, b) => +a.data - +b.data || a.v.nome.localeCompare(b.v.nome));
 }
 
+// Sentimos falta: mesma regra do app (aba Presença). Quem vinha e está há 21+ dias sem presença,
+// com presença registrada na igreja em 3+ semanas diferentes depois disso; contato feito esconde por 30 dias.
+type Ultima = { membro_id: string; ultima: string; vezes: number };
+type Ausente = { m: Membro; ultima: string; dias: number; tel: string; proprio: boolean };
+function segundaDe(iso: string) {
+  const p = partes(iso); const d = new Date(Date.UTC(p.a, p.m - 1, p.d));
+  d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7));
+  return d.toISOString().slice(0, 10);
+}
+function ausentes(membros: Membro[], ultimas: Ultima[], datas: string[], contatos: { membro_id: string; feito_em: string }[], hoje: Date): Ausente[] {
+  const porId = Object.fromEntries(membros.map((m) => [m.id, m]));
+  const lista: Ausente[] = [];
+  for (const u of ultimas) {
+    const m = porId[u.membro_id];
+    if (!m || m.situacao !== "ativo") continue;
+    const idade = m.nascimento ? Math.floor((+hoje - +new Date(m.nascimento + "T00:00:00Z")) / 31557600000) : 99;
+    if (idade < 12) continue;
+    const dias = Math.round((+hoje - +new Date(u.ultima + "T00:00:00Z")) / 86400000);
+    if (dias < 21) continue;
+    if (new Set(datas.filter((d) => d > u.ultima).map(segundaDe)).size < 3) continue;
+    const c = contatos.filter((x) => x.membro_id === m.id).pop();
+    if (c && c.feito_em.slice(0, 10) > u.ultima && (+hoje - +new Date(c.feito_em)) / 86400000 < 30) continue;
+    let tel = m.aceita_mensagens !== false ? telefoneWa(m.telefone) : "", proprio = true;
+    if (!tel && idade < 18) {
+      proprio = false;
+      const pais = [m.pai_id, m.mae_id].map((id) => id && porId[id]).filter((x): x is Membro => !!x && x.aceita_mensagens !== false);
+      tel = pais.map((x) => telefoneWa(x.telefone)).find(Boolean) || telefoneWa(m.responsavel_telefone || "");
+    }
+    lista.push({ m, ultima: u.ultima, dias, tel, proprio });
+  }
+  return lista.sort((a, b) => a.dias - b.dias || a.m.nome.localeCompare(b.m.nome));
+}
+
 function nomeEvento(ev: Evento) {
   if (ev.tipo === "casamento") {
     const outro = ev.conjuge ? ev.conjuge.nome : ev.membro.conjuge_nome;
@@ -99,7 +133,7 @@ Deno.serve(async () => {
   const dia = hoje.toISOString().slice(0, 10);
 
   const [{ data: membros, error: e1 }, { data: modelos, error: e2 }, { data: visitantes, error: e3 }, { data: contatos, error: e4 }] = await Promise.all([
-    sb.from("membros").select("id,nome,telefone,nascimento,casamento,estado_civil,conjuge_id,conjuge_nome,situacao,aceita_mensagens"),
+    sb.from("membros").select("id,nome,telefone,nascimento,casamento,estado_civil,conjuge_id,conjuge_nome,situacao,aceita_mensagens,pai_id,mae_id,responsavel_telefone"),
     sb.from("config_mensagens").select("tipo,texto"),
     sb.from("visitantes").select("id,nome,telefone,primeira_visita,situacao,aceita_mensagens,quer_contato_pastor,responsavel").in("situacao", ["novo", "acompanhando"]),
     sb.from("visitantes_contatos").select("visitante_id,etapa").neq("etapa", "avulso"),
@@ -109,10 +143,21 @@ Deno.serve(async () => {
 
   const deHoje = eventosEntre(membros as Membro[], hoje, 1);
   const visitas = visitantesPendentes(visitantes as Visitante[], contatos || [], hoje);
-  if (!deHoje.length && !visitas.length) return Response.json({ ok: true, enviado: false, motivo: "nada para hoje" });
+
+  // Presença: se as tabelas ainda não existem, o resumo segue sem esta parte
+  const desde = new Date(hoje); desde.setUTCDate(desde.getUTCDate() - 180);
+  const [u, rp, c] = await Promise.all([
+    sb.from("ultima_presenca").select("membro_id,ultima,vezes"),
+    sb.from("presencas_resumo").select("data").gte("data", desde.toISOString().slice(0, 10)),
+    sb.from("ausencias_contatos").select("membro_id,feito_em").gte("feito_em", new Date(+hoje - 60 * 86400000).toISOString()).order("feito_em"),
+  ]);
+  const sumidos = u.error || rp.error || c.error ? [] : ausentes(membros as Membro[], u.data as Ultima[], (rp.data || []).map((x) => x.data), c.data || [], hoje);
+  // Sumidos sozinhos só disparam o e-mail na segunda-feira (depois do culto de domingo), para não repetir todo dia
+  const segunda = hoje.getUTCDay() === 1;
+  if (!deHoje.length && !visitas.length && !(segunda && sumidos.length)) return Response.json({ ok: true, enviado: false, motivo: "nada para hoje" });
 
   // Trava de um e-mail por dia
-  const { error: trava } = await sb.from("resumos_enviados").insert({ dia, quantidade: deHoje.length + visitas.length });
+  const { error: trava } = await sb.from("resumos_enviados").insert({ dia, quantidade: deHoje.length + visitas.length + sumidos.length });
   if (trava) return Response.json({ ok: true, enviado: false, motivo: "resumo de hoje já enviado" });
 
   const textos = Object.fromEntries((modelos || []).map((x) => [x.tipo, x.texto]));
@@ -140,13 +185,24 @@ Deno.serve(async () => {
     return `<tr><td style="padding:12px 0;border-bottom:1px solid #eee"><div style="font-weight:600">🙋 ${esc(v.nome)} · ${esc(etapa.nome)}</div>${extras ? `<div style="color:#666;font-size:13px">${extras}</div>` : ""}${botao}</td></tr>`;
   };
 
+  const linhaSumido = ({ m, ultima, dias, tel, proprio }: Ausente) => {
+    const texto = (textos["ausente"] || "").replaceAll("{nome}", primeiroNome(m.nome));
+    const p = partes(ultima);
+    const botao = tel
+      ? `<a href="https://wa.me/${tel}?text=${encodeURIComponent(texto)}" style="display:inline-block;background:#1fa855;color:#fff;text-decoration:none;padding:8px 14px;border-radius:8px;font-weight:600;margin:4px 6px 0 0">WhatsApp${proprio ? "" : " do responsável"}</a>`
+      : `<div style="color:#888;font-size:13px">${m.aceita_mensagens === false ? "não quer mensagens: falar pessoalmente" : "sem WhatsApp cadastrado"}</div>`;
+    return `<tr><td style="padding:12px 0;border-bottom:1px solid #eee"><div style="font-weight:600">🙏 ${esc(m.nome)} · ${Math.floor(dias / 7)} semanas sem vir</div><div style="color:#666;font-size:13px">última presença em ${p.d}/${p.m}</div>${botao}</td></tr>`;
+  };
+
   const html = `<div style="font-family:system-ui,Arial,sans-serif;max-width:560px;color:#1b1b1b">
     <div style="color:#666;margin-bottom:12px">${hoje.getUTCDate()} de ${MESES[hoje.getUTCMonth()]} · Ministério Cristão Somos Um</div>
     ${deHoje.length ? `<h2 style="margin:0 0 4px">Aniversariantes de hoje</h2>
     <table style="width:100%;border-collapse:collapse">${deHoje.map(linhaHoje).join("")}</table>` : ""}
     ${visitas.length ? `<h2 style="margin:${deHoje.length ? "20px" : "0"} 0 4px">Visitantes para contatar</h2>
     <table style="width:100%;border-collapse:collapse">${visitas.map(linhaVisitante).join("")}</table>` : ""}
-    <p style="font-size:13px;color:#666">Toque no botão verde: o WhatsApp abre com a mensagem pronta. Depois marque como enviado no <a href="${APP_URL}">app</a>.</p>
+    ${sumidos.length ? `<h2 style="margin:${deHoje.length || visitas.length ? "20px" : "0"} 0 4px">Sentimos falta (3 semanas sem vir)</h2>
+    <table style="width:100%;border-collapse:collapse">${sumidos.map(linhaSumido).join("")}</table>` : ""}
+    <p style="font-size:13px;color:#666">Toque no botão verde: o WhatsApp abre com a mensagem pronta. Depois marque como feito no <a href="${APP_URL}">app</a>.</p>
     ${semana.length ? `<h3 style="margin:20px 0 6px">Próximos dias</h3><ul style="padding-left:18px;margin:0">${semana.map(linhaSemana).join("")}</ul>` : ""}
   </div>`;
 
@@ -159,6 +215,7 @@ Deno.serve(async () => {
       subject: [
         deHoje.length ? `🎉 ${deHoje.length} ${deHoje.length === 1 ? "aniversário" : "aniversários"} hoje: ${deHoje.map(nomeEvento).join(", ")}` : "",
         visitas.length ? `🙋 ${visitas.length} ${visitas.length === 1 ? "visitante" : "visitantes"} para contatar` : "",
+        sumidos.length ? `🙏 ${sumidos.length} sem vir há 3 semanas` : "",
       ].filter(Boolean).join(" · "),
       html,
     }),
@@ -167,5 +224,5 @@ Deno.serve(async () => {
     await sb.from("resumos_enviados").delete().eq("dia", dia); // libera para tentar de novo
     return Response.json({ ok: false, erro: await r.text() }, { status: 502 });
   }
-  return Response.json({ ok: true, enviado: true, aniversarios: deHoje.length, visitantes: visitas.length });
+  return Response.json({ ok: true, enviado: true, aniversarios: deHoje.length, visitantes: visitas.length, sumidos: sumidos.length });
 });
