@@ -210,7 +210,7 @@ Deno.serve(async () => {
     method: "POST",
     headers: { Authorization: `Bearer ${chave}`, "Content-Type": "application/json" },
     body: JSON.stringify({
-      from: "Somos Um <onboarding@resend.dev>",
+      from: Deno.env.get("RESUMO_DE") || "Somos Um <onboarding@resend.dev>",
       to: para,
       subject: [
         deHoje.length ? `🎉 ${deHoje.length} ${deHoje.length === 1 ? "aniversário" : "aniversários"} hoje: ${deHoje.map(nomeEvento).join(", ")}` : "",
