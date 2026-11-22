@@ -109,6 +109,11 @@
   #aba-painel a { color: var(--red); }
   @media (min-width: 560px) { .kpis { grid-template-columns: repeat(4, 1fr); } }
   @media (max-width: 400px) { .hbarras .item { grid-template-columns: 96px 1fr 58px; font-size: 13px; } }
+  .ts-kpis { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+  .ts-kpis .kpi { padding: 10px; }
+  .ts-barras .item { grid-template-columns: 150px 1fr 96px; }
+  .ts-barras .item > span:first-child { overflow-wrap: anywhere; line-height: 1.2; }
+  @media (max-width: 400px) { .ts-barras .item { grid-template-columns: 110px 1fr 84px; } }
   .oculto { display: none !important; }
   @media (max-width: 480px) { .grade { grid-template-columns: 1fr; } }
 </style>
@@ -158,6 +163,7 @@
     <button data-aba="pedidos" class="sec"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 13h5l1.5 3h5L16 13h5"/><path d="M5.5 5h13L21 13v6a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-6z"/></svg><span>Pedidos</span> <span id="badge-pedidos" class="tag oculto"></span></button>
     <button data-aba="agenda" class="sec"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M7.5 14h3v3h-3z"/></svg><span>Agenda</span></button>
     <button data-aba="certificados" class="sec"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="9" r="5.5"/><path d="M8.5 13.3 7 21l5-2.5 5 2.5-1.5-7.7"/><path d="m10 9 1.4 1.4L14.2 7.6"/></svg><span>Certificados</span></button>
+    <button data-aba="tesouraria" class="sec oculto" id="nav-tesouraria"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="6" width="19" height="13" rx="2"/><circle cx="12" cy="12.5" r="2.6"/><path d="M6 9.5h.01M18 15.5h.01M5 3.5h14"/></svg><span>Tesouraria</span></button>
     <button data-aba="mensagens" class="sec"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/></svg><span>Ajustes</span></button>
     <button id="btn-mais"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg><span>Mais</span> <span id="badge-mais" class="tag oculto"></span></button>
   </nav>
@@ -167,6 +173,7 @@
     <button data-aba="painel"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/></svg><span>Painel do pastor (gráficos)</span></button>
     <button data-aba="agenda"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M7.5 14h3v3h-3z"/></svg><span>Agenda da igreja</span></button>
     <button data-aba="certificados"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="9" r="5.5"/><path d="M8.5 13.3 7 21l5-2.5 5 2.5-1.5-7.7"/><path d="m10 9 1.4 1.4L14.2 7.6"/></svg><span>Certificados (apresentação e batismo)</span></button>
+    <button data-aba="tesouraria" class="oculto" id="mais-tesouraria"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="6" width="19" height="13" rx="2"/><circle cx="12" cy="12.5" r="2.6"/><path d="M6 9.5h.01M18 15.5h.01M5 3.5h14"/></svg><span>Tesouraria (caixa)</span></button>
     <button data-aba="mensagens"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/></svg><span>Ajustes e acessos</span></button>
     <button data-link="https://www.instagram.com/mcsomosum"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".6"/></svg><span>Instagram da igreja</span></button>
   </div></div>
@@ -186,12 +193,14 @@
     <section id="aba-presenca" class="oculto"></section>
     <section id="aba-atividade" class="oculto"></section>
     <section id="aba-painel" class="oculto"></section>
+    <section id="aba-tesouraria" class="oculto"></section>
   </main>
 </div>
 <div id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="agenda.js"></script>
+<script src="tesouraria.js"></script>
 <script>
 const SUPABASE_URL = 'https://kucctooazibqfzlmqsws.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_4yxH3tJotLPLK3LDiYb01A_7dsS2xpn';
@@ -495,6 +504,7 @@ function renderMensagens() {
       <div><label for="ac-email">E-mail</label><input id="ac-email" type="email"></div>
       <div><label for="ac-nome">Nome</label><input id="ac-nome"></div>
       <div class="inteiro"><label class="check"><input type="checkbox" id="ac-admin"> Também pode liberar outros acessos (administrador)</label></div>
+      <div class="inteiro oculto" id="ac-tes-bloco"><label class="check"><input type="checkbox" id="ac-tes"> Pode ver e lançar na Tesouraria (tesoureiro)</label></div>
     </div><div class="acoes"><button class="btn btn-pri" id="ac-incluir">Liberar acesso</button></div></div>` : ''}`;
   renderAcessos();
   $('#msg-salvar').onclick = async () => {
@@ -510,9 +520,20 @@ function renderMensagens() {
 async function renderAcessos() {
   const { data, error } = await sb.from('usuarios_autorizados').select('*').order('nome');
   if (error) return toast('Erro ao carregar acessos: ' + error.message);
+  const temTes = data.length && 'tesoureiro' in data[0];
+  if ($('#ac-tes-bloco')) $('#ac-tes-bloco').classList.toggle('oculto', !temTes);
   $('#acessos').innerHTML = data.map((u) => `<div class="card linha"><div class="info"><div class="nome">${esc(u.nome || u.email)}</div>
-    <div class="sub">${esc(u.email)}${u.administrador ? ' · administrador' : ''}</div></div>
+    <div class="sub">${esc(u.email)}${u.administrador ? ' · administrador' : ''}${u.tesoureiro ? ' · tesoureiro' : ''}</div></div>
+    ${estado.souAdmin && temTes ? `<button class="btn btn-sec" data-tesoureiro="${esc(u.email)}" data-valor="${u.tesoureiro ? '' : '1'}">${u.tesoureiro ? 'Tirar da Tesouraria' : 'Liberar Tesouraria'}</button>` : ''}
     ${estado.souAdmin && u.email !== estado.email ? `<button class="btn btn-perigo" data-remover-acesso="${esc(u.email)}">Remover</button>` : ''}</div>`).join('');
+  document.querySelectorAll('[data-tesoureiro]').forEach((b) => (b.onclick = async () => {
+    const sim = !!b.dataset.valor, email = b.dataset.tesoureiro;
+    if (!confirm(sim ? `Liberar a Tesouraria (dízimos, ofertas e contas) para ${email}?` : `Tirar a Tesouraria de ${email}?`)) return;
+    const { error } = await sb.from('usuarios_autorizados').update({ tesoureiro: sim }).eq('email', email);
+    if (error) return toast('Erro: ' + error.message);
+    if (email === estado.email) { estado.souTesoureiro = sim; ['#nav-tesouraria', '#mais-tesouraria'].forEach((x) => $(x).classList.toggle('oculto', !sim)); }
+    toast(sim ? 'Tesouraria liberada.' : 'Tesouraria retirada.'); renderAcessos();
+  }));
   document.querySelectorAll('[data-remover-acesso]').forEach((b) => (b.onclick = async () => {
     if (!confirm(`Remover o acesso de ${b.dataset.removerAcesso}?`)) return;
     const { error } = await sb.from('usuarios_autorizados').delete().eq('email', b.dataset.removerAcesso);
@@ -522,10 +543,12 @@ async function renderAcessos() {
   if ($('#ac-incluir')) $('#ac-incluir').onclick = async () => {
     const email = $('#ac-email').value.trim().toLowerCase();
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return toast('Digite um e-mail válido.');
-    const { error } = await sb.from('usuarios_autorizados').insert({ email, nome: $('#ac-nome').value.trim(), administrador: $('#ac-admin').checked });
+    const novo = { email, nome: $('#ac-nome').value.trim(), administrador: $('#ac-admin').checked };
+    if (!$('#ac-tes-bloco').classList.contains('oculto')) novo.tesoureiro = $('#ac-tes').checked;
+    const { error } = await sb.from('usuarios_autorizados').insert(novo);
     if (error) return toast(error.code === '23505' ? 'Esse e-mail já tem acesso.' : 'Erro: ' + error.message);
     toast('Acesso liberado. Avise a pessoa para tocar em "Primeiro acesso".');
-    $('#ac-email').value = ''; $('#ac-nome').value = ''; $('#ac-admin').checked = false;
+    $('#ac-email').value = ''; $('#ac-nome').value = ''; $('#ac-admin').checked = false; $('#ac-tes').checked = false;
     renderAcessos();
   };
 }
@@ -1984,7 +2007,7 @@ function mostrarAba(aba) {
   estado.aba = aba;
   document.querySelectorAll('main > section').forEach((s) => s.classList.toggle('oculto', s.id !== 'aba-' + aba));
   document.querySelectorAll('nav button[data-aba], #menu-mais button').forEach((b) => b.classList.toggle('ativo', b.dataset.aba === aba));
-  $('#btn-mais').classList.toggle('ativo', ['proximos', 'pedidos', 'mensagens', 'certificados', 'agenda', 'painel'].includes(aba));
+  $('#btn-mais').classList.toggle('ativo', ['proximos', 'pedidos', 'mensagens', 'certificados', 'agenda', 'painel', 'tesouraria'].includes(aba));
   $('#menu-mais').classList.add('oculto');
   if (aba !== 'form') render();
 }
@@ -2000,6 +2023,7 @@ function render() {
   if (estado.aba === 'agenda') renderAgenda();
   if (estado.aba === 'presenca') renderPresenca();
   if (estado.aba === 'painel') renderPainel();
+  if (estado.aba === 'tesouraria') renderTesouraria();
 }
 document.querySelectorAll('nav button[data-aba], #menu-mais button[data-aba]').forEach((b) => (b.onclick = () => { mostrarAba(b.dataset.aba); window.scrollTo(0, 0); }));
 document.querySelectorAll('#menu-mais button[data-link]').forEach((b) => (b.onclick = () => { $('#menu-mais').classList.add('oculto'); window.open(b.dataset.link, '_blank', 'noopener'); }));
@@ -2095,8 +2119,9 @@ async function mostrarTela(logado, sessao) {
   let liberado = false;
   if (logado) {
     estado.email = (sessao?.user?.email || (await sb.auth.getUser()).data.user?.email || '').toLowerCase();
-    const { data } = await sb.from('usuarios_autorizados').select('email,administrador').eq('email', estado.email);
-    liberado = !!data?.length; estado.souAdmin = !!data?.[0]?.administrador;
+    const { data } = await sb.from('usuarios_autorizados').select('*').eq('email', estado.email);
+    liberado = !!data?.length; estado.souAdmin = !!data?.[0]?.administrador; estado.souTesoureiro = !!data?.[0]?.tesoureiro;
+    ['#nav-tesouraria', '#mais-tesouraria'].forEach((b) => $(b).classList.toggle('oculto', !estado.souTesoureiro));
     $('#sem-acesso-email').textContent = estado.email;
   }
   $('#login').classList.toggle('oculto', logado);
