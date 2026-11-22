@@ -63,8 +63,8 @@
 const sb = supabase.createClient('https://kucctooazibqfzlmqsws.supabase.co', 'sb_publishable_4yxH3tJotLPLK3LDiYb01A_7dsS2xpn');
 const $ = (s) => document.querySelector(s);
 const esc = (t) => String(t ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-$('#insta').href = INSTAGRAM.url;
-$('#insta').innerHTML = `${ICONE_INSTAGRAM} Siga no Instagram ${INSTAGRAM.arroba}`;
+$('#insta').href = AG_INSTAGRAM.url;
+$('#insta').innerHTML = `${ICONE_INSTAGRAM} Siga no Instagram ${AG_INSTAGRAM.arroba}`;
 
 let dados = { itens: [], cultos: [] }, dias = 30;
 const hoje = () => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), d.getDate()); };

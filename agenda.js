@@ -1,6 +1,6 @@
 // Agenda da igreja: usado pela página pública (agenda.html) e pelo app (index.html).
 // Junta três fontes: cultos fixos da semana, eventos com data e os cultos do app de Escalas.
-const INSTAGRAM = { url: 'https://www.instagram.com/mcsomosum', arroba: '@mcsomosum' };
+const AG_INSTAGRAM = { url: 'https://www.instagram.com/mcsomosum', arroba: '@mcsomosum' };
 const AG_DIAS_SEMANA = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
 const MESES_AG = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
 
@@ -59,7 +59,7 @@ function textoAgendaWhats(lista, titulo) {
     if (chave !== ultima) { txt += `\n*${agFmtData(e.data)}*\n`; ultima = chave; }
     txt += `• ${e.hora ? agHora(e.hora) + ' · ' : ''}${e.titulo}${e.local ? ' (' + e.local + ')' : ''}\n`;
   }
-  return txt + `\nAgenda completa: ${new URL('agenda.html', location.href).href}\nInstagram: ${INSTAGRAM.url}`;
+  return txt + `\nAgenda completa: ${new URL('agenda.html', location.href).href}\nInstagram: ${AG_INSTAGRAM.url}`;
 }
 
 // Ícone do Instagram (contorno), para os botões
