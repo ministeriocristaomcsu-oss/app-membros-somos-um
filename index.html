@@ -117,7 +117,7 @@
   .es-topo { display: flex; gap: 10px; align-items: center; justify-content: space-between; flex-wrap: wrap; margin: 6px 0 10px; }
   .es-topo select { width: auto; }
   .es-abas { display: flex; gap: 6px; overflow-x: auto; margin-bottom: 12px; padding-bottom: 2px; }
-  .es-abas button { flex: none; border: 1px solid var(--line); background: #fff; border-radius: 999px; padding: 7px 14px; font: inherit; font-size: 14px; cursor: pointer; }
+  .es-abas button { flex: none; border: 1px solid var(--line); background: var(--card); color: var(--ink); border-radius: 999px; padding: 7px 14px; font: inherit; font-size: 14px; cursor: pointer; }
   .es-abas button.ativo { background: var(--red); border-color: var(--red); color: #fff; }
   .es-pill { display: inline-block; border-radius: 999px; padding: 3px 10px; font-size: 12px; font-weight: 600; white-space: nowrap; }
   .es-pill.ok { background: #e3f3ea; color: #1f7a4d; } .es-pill.warn { background: #fdf1dc; color: #8a5a00; }
@@ -128,9 +128,9 @@
   .es-funcao { display: grid; grid-template-columns: 130px 1fr; gap: 8px; padding: 9px 0; border-top: 1px solid var(--line); align-items: start; }
   .es-rot { font-size: 13px; font-weight: 600; display: flex; gap: 6px; align-items: center; padding-top: 5px; }
   .es-rot i { width: 10px; height: 10px; border-radius: 3px; flex: none; }
-  .es-chip { background: #f3f1ee; border: 1px solid var(--line); border-radius: 999px; padding: 3px 4px 3px 10px; font-size: 14px; display: inline-flex; align-items: center; gap: 2px; }
-  .es-chip.dup { background: #fdf1dc; border-color: #e8c27a; }
-  .es-chip button { border: 0; background: none; font-size: 17px; line-height: 1; cursor: pointer; color: var(--muted); padding: 0 6px; }
+  .es-chip { background: #f3f1ee; color: #1b1b1b; border: 1px solid var(--line); border-radius: 999px; padding: 3px 4px 3px 10px; font-size: 14px; display: inline-flex; align-items: center; gap: 2px; }
+  .es-chip.dup { background: #fdf1dc; border-color: #e8c27a; color: #6b4600; }
+  .es-chip button { border: 0; background: none; font-size: 17px; line-height: 1; cursor: pointer; color: #6b6b6b; padding: 0 6px; }
   .es-vazia { color: var(--red); font-size: 13px; font-style: italic; }
   .es-chips input { width: 120px; flex: 1; min-width: 100px; padding: 5px 8px; font-size: 14px; }
   .es-avisos { margin: 10px 0 4px; display: grid; gap: 6px; }
@@ -140,7 +140,7 @@
   .es-checks { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 14px; }
   .es-checks label { display: inline-flex; gap: 5px; align-items: center; font-weight: 400; margin: 0; }
   .es-checks input { width: auto; }
-  .es-msg { white-space: pre-wrap; max-height: 140px; overflow: auto; background: #f7f6f4; border-radius: 8px; padding: 8px; margin-top: 6px; }
+  .es-msg { white-space: pre-wrap; max-height: 140px; overflow: auto; background: #f7f6f4; color: #1b1b1b; border-radius: 8px; padding: 8px; margin-top: 6px; }
   .es-culto { scroll-margin-top: 120px; }
   @media (max-width: 480px) { .es-funcao { grid-template-columns: 1fr; gap: 4px; } .es-rot { padding-top: 0; } }
   .oculto { display: none !important; }
