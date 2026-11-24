@@ -232,6 +232,7 @@
 <div id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="lib/qrcode-generator-1.4.4.js"></script>
 <script src="agenda.js"></script>
 <script src="tesouraria.js"></script>
 <script src="escalas.js"></script>
@@ -242,6 +243,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const estado = { membros: [], enviados: [], modelos: {}, pedidos: [], visitantes: [], contatos: [], aba: 'hoje', docs: {}, agenda: [], cultosEscala: [] };
 const LINK_ATUALIZACAO = new URL('atualizar.html', location.href).href;
+const LINK_KIDS = new URL('cadastro-kids.html', location.href).href;
 const $ = (s) => document.querySelector(s);
 const esc = (t) => String(t ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const MESES = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
@@ -1106,6 +1108,7 @@ function sugerirMembro(ped) {
 function renderPedidos() {
   const texto = `Olá, família Somos Um! 🙌 Estamos atualizando o cadastro da igreja para celebrarmos juntos os aniversários e as bodas. Leva menos de 1 minuto: ${LINK_ATUALIZACAO}`;
   const lista = estado.pedidos.map((p) => {
+    if (p.tipo === 'kids') return cardPedidoKids(p);
     const sug = sugerirMembro(p);
     const opcoes = `<option value="">➕ Criar cadastro novo</option>` + estado.membros.map((m) => `<option value="${m.id}" ${sug && sug.id === m.id ? 'selected' : ''}>${esc(m.nome)}</option>`).join('');
     return `<div class="card" data-pedido="${p.id}">
@@ -1134,13 +1137,16 @@ function renderPedidos() {
       <img src="qrcode-cadastro.png" alt="QR code do cadastro" style="width:200px;height:200px;image-rendering:pixelated">
       <div class="acoes"><a class="btn btn-sec" href="qrcode-cadastro.png" download="qrcode-cadastro-somos-um.png">Baixar QR code</a><a class="btn btn-pri" href="cartaz.html" target="_blank">Imprimir cartaz</a></div>
     </div>
+    <p class="dica">🧸 Os cadastros de crianças enviados pelos pais também chegam aqui. O link para os pais fica na aba <a href="#" data-ir-aba="kids">Kids e Jovens</a>.</p>
     <h2>${estado.pedidos.length ? estado.pedidos.length + ' aguardando' : 'Nenhum pedido aguardando'}</h2>
     ${lista}`;
   $('#ped-copiar').onclick = () => navigator.clipboard.writeText(texto).then(() => toast('Mensagem copiada. Cole no grupo da igreja.'), () => toast(LINK_ATUALIZACAO));
   $('#ped-wa').onclick = () => window.open('https://wa.me/?text=' + encodeURIComponent(texto), '_blank');
   document.querySelectorAll('[data-pedido]').forEach((card) => {
     const ped = estado.pedidos.find((p) => p.id === card.dataset.pedido);
-    card.querySelector('.ped-aplicar').onclick = () => aplicarPedido(ped, card.querySelector('.ped-membro').value);
+    card.querySelector('.ped-aplicar').onclick = () => (ped.tipo === 'kids'
+      ? aplicarPedidoKids(ped, card.querySelector('.ped-membro').value, card.querySelector('.ped-pai').value, card.querySelector('.ped-mae').value)
+      : aplicarPedido(ped, card.querySelector('.ped-membro').value));
     card.querySelector('.ped-descartar').onclick = () => resolverPedido(ped, 'descartado', null);
   });
 }
@@ -1211,6 +1217,94 @@ async function aplicarPedidoParcial(ped, id) {
     else {
       await sb.from('membros').update({ foto: destino, consentimento_imagem: true }).eq('id', id);
       if (m?.foto) await sb.storage.from('fotos-membros').remove([m.foto]);
+    }
+  }
+  await resolverPedido(ped, 'aplicado', id);
+}
+// ---------- Cadastro Kids enviado pelos pais (cadastro-kids.html) ----------
+// Acha um adulto cadastrado pelo nome digitado (ou pelo WhatsApp de quem preencheu)
+function sugerirAdulto(nome, sexo, telefone) {
+  const adultos = estado.membros.filter((m) => (idade(m) ?? 99) >= 16 && (!m.sexo || m.sexo === sexo));
+  const tp = tokens(nome);
+  if (tp.length) {
+    const porNome = adultos.filter((m) => { const t = tokens(m.nome); return t.length && (t.every((x) => tp.includes(x)) || (tp.length >= 2 && tp.every((x) => t.includes(x)))); });
+    if (porNome.length === 1) return porNome[0];
+  }
+  const d = digitos(telefone);
+  const porTel = d && adultos.filter((m) => digitos(m.telefone) === d);
+  return porTel && porTel.length === 1 && (!tp.length || tokens(porTel[0].nome)[0] === tp[0]) ? porTel[0] : null;
+}
+function sugerirCrianca(ped) {
+  const tp = tokens(ped.nome);
+  const achados = estado.membros.filter((m) => (m.categoria === 'crianca_jovem' || (idade(m) ?? 99) < 18) &&
+    ((m.nascimento && m.nascimento === ped.nascimento && tokens(m.nome)[0] === tp[0]) || (tokens(m.nome).length >= 2 && tokens(m.nome).every((x) => tp.includes(x)))));
+  return achados.length === 1 ? achados[0] : null;
+}
+function cardPedidoKids(p) {
+  const crianca = sugerirCrianca(p);
+  const pai = sugerirAdulto(p.pai_nome, 'masculino', p.pai_nome ? p.telefone : '');
+  const mae = sugerirAdulto(p.mae_nome, 'feminino', p.mae_nome ? p.telefone : '');
+  const adultos = estado.membros.filter((m) => (idade(m) ?? 99) >= 16).sort((a, b) => a.nome.localeCompare(b.nome));
+  const optAdulto = (sel, sexo) => '<option value="">(não está cadastrado)</option>' + adultos.filter((x) => !x.sexo || x.sexo === sexo).map((x) => `<option value="${x.id}" ${sel && sel.id === x.id ? 'selected' : ''}>${esc(x.nome)}</option>`).join('');
+  const criancas = estado.membros.filter((m) => m.categoria === 'crianca_jovem' || (idade(m) ?? 99) < 18).sort((a, b) => a.nome.localeCompare(b.nome));
+  const doc = estado.docs['pedido:' + p.id];
+  const anos = p.nascimento ? idadeEm(p.nascimento, hoje()) : null;
+  return `<div class="card" data-pedido="${p.id}">
+    <div class="linha">${avatar(p)}<div class="info"><div class="nome">🧸 ${esc(p.nome)}</div><div class="sub">Cadastro Kids enviado pela família${p.foto ? ' · 📷 com foto' : ''}</div></div></div>
+    <div class="sub">🎂 ${fmtIso(p.nascimento) || '—'}${anos != null ? ` (${anos} ${anos === 1 ? 'ano' : 'anos'})` : ''}${p.sexo ? ' · ' + (p.sexo === 'feminino' ? 'Menina' : 'Menino') : ''}</div>
+    ${p.pai_nome ? `<div class="sub">👨 Pai: ${esc(p.pai_nome)}</div>` : ''}${p.mae_nome ? `<div class="sub">👩 Mãe: ${esc(p.mae_nome)}</div>` : ''}
+    <div class="sub">📱 Preenchido por ${esc(p.responsavel_nome || '—')} · ${esc(p.telefone)}</div>
+    ${p.endereco ? `<div class="sub">🏠 ${esc([p.endereco, p.numero, p.complemento].filter(Boolean).join(', '))} · ${esc(p.bairro)} · ${esc(p.cidade)}-${esc(p.uf)} · ${esc(p.cep)}</div>` : ''}
+    ${doc?.cpf ? `<div class="sub">🪪 CPF ${esc(doc.cpf)}</div>` : ''}
+    ${p.autoriza_imagem_publica != null ? `<div class="sub">📸 ${p.autoriza_imagem_publica ? 'autoriza' : 'NÃO autoriza'} uso da imagem da criança em fotos, vídeos e lives</div>` : ''}
+    <div class="sub">Enviado em ${new Date(p.criado_em).toLocaleDateString('pt-BR')}</div>
+    <label>Criança</label><select class="ped-membro"><option value="">➕ Criar cadastro novo</option>${criancas.map((m) => `<option value="${m.id}" ${crianca && crianca.id === m.id ? 'selected' : ''}>${esc(m.nome)}</option>`).join('')}</select>
+    ${crianca ? '<p class="dica">Essa criança parece já estar cadastrada: os dados novos vão para o cadastro dela.</p>' : ''}
+    <div class="grade">
+      <div><label>Pai cadastrado</label><select class="ped-pai">${optAdulto(pai, 'masculino')}</select></div>
+      <div><label>Mãe cadastrada</label><select class="ped-mae">${optAdulto(mae, 'feminino')}</select></div>
+    </div>
+    <p class="dica">Ligue o pai e a mãe se já forem da igreja. Quem não estiver cadastrado fica anotado nas observações, e o WhatsApp de quem preencheu entra como responsável.</p>
+    <div class="acoes"><button class="btn btn-sec ped-descartar">Descartar</button><button class="btn btn-pri ped-aplicar">Aplicar</button></div>
+  </div>`;
+}
+async function aplicarPedidoKids(ped, membroId, paiId, maeId) {
+  const existente = estado.membros.find((x) => x.id === membroId);
+  const pais = [paiId, maeId].filter(Boolean).map((i) => estado.membros.find((x) => x.id === i));
+  const dados = { nascimento: ped.nascimento, lgpd_consentimento: true };
+  if (ped.sexo) dados.sexo = ped.sexo;
+  if (ped.autoriza_imagem_publica != null) dados.autoriza_imagem_publica = ped.autoriza_imagem_publica;
+  if (ped.endereco) ['cep', 'endereco', 'numero', 'complemento', 'bairro', 'cidade', 'uf'].forEach((k) => (dados[k] = ped[k] || ''));
+  if (paiId) dados.pai_id = paiId;
+  if (maeId) dados.mae_id = maeId;
+  // Quem preencheu vira "responsável", a não ser que seja o pai ou a mãe já ligados (evita parabéns em dobro)
+  const telResp = digitos(ped.telefone);
+  if (!pais.some((x) => x && digitos(x.telefone) === telResp)) { dados.responsavel_nome = arrumaNome(ped.responsavel_nome || ''); dados.responsavel_telefone = ped.telefone; }
+  const notas = [!paiId && ped.pai_nome && 'Pai: ' + arrumaNome(ped.pai_nome), !maeId && ped.mae_nome && 'Mãe: ' + arrumaNome(ped.mae_nome)].filter(Boolean);
+  const obs = ['Cadastrado pelo link Kids (preenchido por ' + (arrumaNome(ped.responsavel_nome || '') || 'responsável') + ')', ...notas].join('. ');
+  let id = membroId;
+  if (existente) {
+    dados.observacoes = [existente.observacoes, obs].filter(Boolean).join('\n');
+    const { error } = await sb.from('membros').update(dados).eq('id', id);
+    if (error) return toast('Erro ao aplicar: ' + error.message);
+  } else {
+    if (!ped.foto || !ped.consentimento_imagem) return toast('Este pedido veio sem foto. A foto é obrigatória: peça para a família preencher o link de novo com a foto.');
+    id = crypto.randomUUID();
+    const destino = `${id}/${Date.now()}.jpg`;
+    const mv = await sb.storage.from('fotos-membros').move(ped.foto, destino);
+    if (mv.error) return toast('Não consegui copiar a foto do pedido: ' + mv.error.message);
+    const { error } = await sb.from('membros').insert({ ...dados, id, nome: arrumaNome(ped.nome), telefone: '', categoria: 'crianca_jovem', situacao: 'ativo',
+      aceita_mensagens: true, foto: destino, consentimento_imagem: true, cidade: ped.cidade || 'Colombo', uf: ped.uf || 'PR', observacoes: obs });
+    if (error) return toast('Erro ao criar: ' + error.message);
+    ped = { ...ped, foto: '' }; // a foto já foi usada aqui
+  }
+  if (existente && ped.foto && ped.consentimento_imagem) {
+    const destino = `${id}/${Date.now()}.jpg`;
+    const mv = await sb.storage.from('fotos-membros').move(ped.foto, destino);
+    if (mv.error) toast('Dados aplicados, mas a foto não foi copiada: ' + mv.error.message);
+    else {
+      await sb.from('membros').update({ foto: destino, consentimento_imagem: true }).eq('id', id);
+      if (existente.foto) await sb.storage.from('fotos-membros').remove([existente.foto]);
     }
   }
   await resolverPedido(ped, 'aplicado', id);
@@ -1478,10 +1572,19 @@ function renderKids() {
   const aBatizar = todos.filter((m) => !m.batizado && idade(m) >= IDADE_BATISMO).length;
   const semNasc = estado.membros.filter((m) => m.categoria === 'crianca_jovem' && !m.nascimento);
   const mud = mudaramDeFaixa(30);
+  const kidsPendentes = estado.pedidos.filter((p) => p.tipo === 'kids').length;
   const foco = document.activeElement?.id;
   $('#aba-kids').innerHTML = `
     <div class="resumo-faixas">${Object.entries(FAIXAS).map(([k, f]) => `<button class="card faixa-box ${filtro === k ? 'ativo' : ''}" data-kj-faixa="${k}"><div style="font-size:22px">${f.emoji}</div><div class="nome">${conta(k)}</div><div class="sub">${f.nome}<br>${f.de} a ${f.ate} anos</div></button>`).join('')}</div>
     ${mud.length ? `<h2>Mudaram de faixa (últimos 30 dias)</h2>${mud.map((x) => `<div class="card linha clicavel" data-editar="${x.m.id}">${avatar(x.m)}<div class="info"><div class="nome">${esc(x.m.nome)}</div><div class="sub">${textoMudanca(x)} em ${fmtData(x.data)}</div></div></div>`).join('')}` : ''}
+    <div class="card">
+      <div class="nome">📲 Link de cadastro Kids para os pais</div>
+      <p class="dica">Os pais preenchem pelo celular: foto, nome, nascimento, família e endereço. O cadastro chega em <a href="#" data-ir-aba="pedidos">Pedidos</a> e só entra no app quando alguém da liderança aplica.</p>
+      ${kidsPendentes ? `<p class="dica"><b>${kidsPendentes} ${kidsPendentes === 1 ? 'cadastro enviado pelos pais aguardando' : 'cadastros enviados pelos pais aguardando'}.</b> <a href="#" data-ir-aba="pedidos">Ver em Pedidos</a></p>` : ''}
+      <div class="acoes"><button class="btn btn-sec" id="kj-link-copiar">Copiar mensagem com o link</button><button class="btn btn-wa" id="kj-link-wa">Enviar no WhatsApp</button></div>
+      <div class="acoes"><button class="btn btn-sec" id="kj-link-qr">Mostrar QR code</button><a class="btn btn-sec" href="cartaz-kids.html" target="_blank">Imprimir cartaz</a></div>
+      <div id="kj-qr" class="oculto" style="text-align:center;margin-top:10px"></div>
+    </div>
     <h2>Kids, Adolescentes e Jovens</h2>
     <div class="barra"><input id="kj-busca" placeholder="Buscar por nome" value="${esc(busca)}">
       <button class="btn btn-pri" id="kj-novo">+ Novo</button></div>
@@ -1504,6 +1607,20 @@ function renderKids() {
   $('#kj-busca').oninput = renderKids;
   $('#kj-filtro').onchange = renderKids;
   $('#kj-novo').onclick = () => abrirForm(null, { categoria: 'crianca_jovem', voltar: 'kids' });
+  const textoKids = `Olá, família Somos Um! 🧸 Para cadastrar o seu filho ou a sua filha no Ministério Infantil, é só preencher este link (leva menos de 2 minutos): ${LINK_KIDS}`;
+  $('#kj-link-copiar').onclick = () => navigator.clipboard.writeText(textoKids).then(() => toast('Mensagem copiada. Cole no grupo dos pais.'), () => toast(LINK_KIDS));
+  $('#kj-link-wa').onclick = () => window.open('https://wa.me/?text=' + encodeURIComponent(textoKids), '_blank');
+  $('#kj-link-qr').onclick = () => {
+    const box = $('#kj-qr');
+    if (!box.innerHTML) {
+      const qr = qrcode(0, 'M'); qr.addData(LINK_KIDS); qr.make();
+      box.innerHTML = `<div style="width:220px;max-width:70vw;margin:0 auto;background:#fff;padding:6px;border-radius:8px">${qr.createSvgTag({ cellSize: 6, margin: 2, scalable: true })}</div>
+        <p class="dica">Os pais apontam a câmera do celular e caem direto no cadastro.</p>
+        <a class="btn btn-sec" href="${qr.createDataURL(12, 4)}" download="qrcode-cadastro-kids.png">Baixar QR code</a>`;
+    }
+    box.classList.toggle('oculto');
+    $('#kj-link-qr').textContent = box.classList.contains('oculto') ? 'Mostrar QR code' : 'Esconder QR code';
+  };
   $('#kj-copiar').onclick = () => {
     const txt = lista.map((m) => `${m.nome} (${idade(m)} anos)${responsaveis(m).length ? ' · resp.: ' + responsaveis(m).map((x) => x.nome + (x.telefone ? ' ' + x.telefone : '')).join(', ') : ''}`).join('\n');
     navigator.clipboard.writeText(txt).then(() => toast('Lista copiada.'), () => toast('Não foi possível copiar.'));
