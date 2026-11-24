@@ -144,6 +144,7 @@
   .es-culto { scroll-margin-top: 120px; }
   @media (max-width: 480px) { .es-funcao { grid-template-columns: 1fr; gap: 4px; } .es-rot { padding-top: 0; } }
   .oculto { display: none !important; }
+  #aba-form.modo-kids .so-adulto { display: none !important; }
   @media (max-width: 480px) { .grade { grid-template-columns: 1fr; } }
 </style>
 </head>
@@ -601,7 +602,7 @@ function faltando(m) {
   if (!m.endereco || !m.numero) f.push('endereço');
   if (estado.souAdmin && !estado.docs[m.id]?.cpf) f.push('CPF');
   if (!m.foto) f.push('foto');
-  if (m.autoriza_imagem_publica == null) f.push('autorização de imagem');
+  if (m.autoriza_imagem_publica == null && (idade(m) ?? 99) > 11) f.push('autorização de imagem'); // Kids: campo fica fora do cadastro
   return f;
 }
 function opcionaisFaltando(m) {
@@ -645,17 +646,18 @@ function abrirForm(id, novo = {}) {
         ${m.foto ? '<button class="btn btn-perigo" id="f-foto-remover">Remover foto</button>' : ''}</div>
       <label class="check" style="text-align:left"><input type="checkbox" id="f-consentimento_imagem" ${m.consentimento_imagem ? 'checked' : ''}> <span id="f-img-txt"></span></label>
     </div>
+    <div id="f-aviso-kids" class="card dica so-kids">Cadastro Kids: só os dados da criança. <a href="#" id="f-mostrar-tudo">Mostrar todos os campos</a></div>
     <div class="card"><div class="grade">
       <div class="inteiro"><label for="f-nome">Nome completo *</label><input id="f-nome" value="${esc(m.nome)}"></div>
-      <div><label for="f-telefone">WhatsApp (com DDD)</label><input id="f-telefone" type="tel" inputmode="tel" placeholder="41 99999-9999" value="${esc(m.telefone)}"></div>
-      <div><label for="f-email">E-mail</label><input id="f-email" type="email" value="${esc(m.email)}"></div>
+      <div class="so-adulto"><label for="f-telefone">WhatsApp (com DDD)</label><input id="f-telefone" type="tel" inputmode="tel" placeholder="41 99999-9999" value="${esc(m.telefone)}"></div>
+      <div class="so-adulto"><label for="f-email">E-mail</label><input id="f-email" type="email" value="${esc(m.email)}"></div>
       <div><label for="f-nascimento">Data de nascimento</label><input id="f-nascimento" type="date" value="${esc(m.nascimento)}"></div>
-      <div><label for="f-sexo">Sexo</label><select id="f-sexo"><option value=""></option>${opt({ masculino: 'Masculino', feminino: 'Feminino' }, m.sexo)}</select></div>
-      <div><label for="f-categoria">Vínculo com a igreja</label><select id="f-categoria">${opt(CATEGORIAS, m.categoria)}</select></div>
-      <div><label for="f-situacao">Situação</label><select id="f-situacao">${opt({ ativo: 'Ativo', inativo: 'Inativo' }, m.situacao)}</select></div>
+      <div class="so-adulto"><label for="f-sexo">Sexo</label><select id="f-sexo"><option value=""></option>${opt({ masculino: 'Masculino', feminino: 'Feminino' }, m.sexo)}</select></div>
+      <div class="so-adulto"><label for="f-categoria">Vínculo com a igreja</label><select id="f-categoria">${opt(CATEGORIAS, m.categoria)}</select></div>
+      <div class="so-adulto"><label for="f-situacao">Situação</label><select id="f-situacao">${opt({ ativo: 'Ativo', inativo: 'Inativo' }, m.situacao)}</select></div>
     </div></div>
 
-    <div class="card"><div class="grade">
+    <div class="card so-adulto"><div class="grade">
       <div><label for="f-estado_civil">Estado civil</label><select id="f-estado_civil">${opt(ESTADOS_CIVIS, m.estado_civil)}</select></div>
       <div class="casal"><label for="f-casamento">Data de casamento</label><input id="f-casamento" type="date" value="${esc(m.casamento)}"></div>
       <div class="casal"><label for="f-conjuge_id">Cônjuge cadastrado</label><select id="f-conjuge_id"><option value="">(não está cadastrado)</option>
@@ -687,19 +689,21 @@ function abrirForm(id, novo = {}) {
     </div></div>
 
     <div class="card">
+      <div class="so-adulto">
       <label class="check"><input type="checkbox" id="f-batizado" ${m.batizado ? 'checked' : ''}> Batizado(a) nas águas</label>
       <div id="f-bloco-batismo"><label for="f-data_batismo">Data do batismo</label><input id="f-data_batismo" type="date" value="${esc(m.data_batismo)}"></div>
       <label class="check"><input type="checkbox" id="f-aceita_mensagens" ${m.aceita_mensagens !== false ? 'checked' : ''}> Aceita receber mensagens da igreja (aniversário, bodas)</label>
       <label for="f-imagem">Uso de imagem em fotos, vídeos e lives da igreja</label>
       <select id="f-imagem">${opt({ '': 'Ainda não respondeu', sim: 'Autoriza', nao: 'Não autoriza' }, m.autoriza_imagem_publica == null ? '' : m.autoriza_imagem_publica ? 'sim' : 'nao')}</select>
+      </div>
       <label class="check"><input type="checkbox" id="f-lgpd_consentimento" ${m.lgpd_consentimento ? 'checked' : ''}> <span id="f-lgpd-txt"></span></label>
-      <label for="f-observacoes">Observações</label><textarea id="f-observacoes" style="min-height:80px">${esc(m.observacoes)}</textarea>
+      <div class="so-adulto"><label for="f-observacoes">Observações</label><textarea id="f-observacoes" style="min-height:80px">${esc(m.observacoes)}</textarea></div>
     </div>
     ${estado.souAdmin ? `<div class="card">
       <div class="nome">Documentos <span class="sub">(só administradores veem)</span></div>
       <div class="grade">
         <div><label for="f-cpf">CPF</label><input id="f-cpf" inputmode="numeric" placeholder="000.000.000-00" value="${esc(estado.docs[id]?.cpf || '')}"></div>
-        <div><label for="f-rg">RG</label><input id="f-rg" value="${esc(estado.docs[id]?.rg || '')}"></div>
+        <div class="so-adulto"><label for="f-rg">RG</label><input id="f-rg" value="${esc(estado.docs[id]?.rg || '')}"></div>
       </div>
     </div>` : ''}
     <div id="f-erro" class="aviso oculto"></div>
@@ -739,14 +743,26 @@ function abrirForm(id, novo = {}) {
   atualizaBatismo();
   // LGPD (art. 14): dados de criança e adolescente só com autorização do pai, mãe ou responsável
   const atualizaMenor = () => {
-    const menor = (idadeEm($('#f-nascimento').value, hoje()) ?? 99) < 18;
+    const anosM = idadeEm($('#f-nascimento').value, hoje());
+    const menor = anosM != null ? anosM < 18 : $('#f-categoria').value === 'crianca_jovem';
     $('#f-faixa').innerHTML = tagFaixa({ nascimento: $('#f-nascimento').value });
     $('#f-lgpd-txt').textContent = menor
       ? 'O pai, a mãe ou o responsável autorizou a igreja a guardar os dados desta criança/adolescente, só para fins pastorais e de cuidado do ministério (LGPD) *'
       : 'A pessoa autorizou a igreja a guardar estes dados para fins pastorais e de comunicação (LGPD) *';
     $('#f-img-txt').textContent = menor ? 'O responsável autorizou o uso da foto no cadastro da igreja' : 'A pessoa autorizou o uso da foto no cadastro da igreja';
   };
-  $('#f-nascimento').onchange = atualizaMenor; atualizaMenor();
+  // Cadastro Kids (até 11 anos, ou criança nova ainda sem data): só nome, nascimento, família, foto, CPF e endereço.
+  // Os outros campos só ficam escondidos, então o que já estava salvo continua igual.
+  let mostrarTudo = false;
+  const atualizaKids = () => {
+    const anos = idadeEm($('#f-nascimento').value, hoje());
+    const kids = !mostrarTudo && (anos != null ? anos <= 11 : $('#f-categoria').value === 'crianca_jovem');
+    $('#aba-form').classList.toggle('modo-kids', kids);
+    $('#f-aviso-kids').classList.toggle('oculto', !kids);
+  };
+  $('#f-mostrar-tudo').onclick = (ev) => { ev.preventDefault(); mostrarTudo = true; atualizaKids(); };
+  $('#f-nascimento').onchange = () => { atualizaMenor(); atualizaKids(); };
+  atualizaMenor(); atualizaKids();
   if ($('#f-novo-filho')) $('#f-novo-filho').onclick = () => {
     const pai = m.sexo === 'feminino' ? { mae_id: m.id, pai_id: m.conjuge_id || null } : { pai_id: m.id, mae_id: m.conjuge_id || null };
     abrirForm(null, { ...pai, categoria: 'crianca_jovem', cep: m.cep, endereco: m.endereco, numero: m.numero, complemento: m.complemento, bairro: m.bairro, cidade: m.cidade, uf: m.uf, voltar: formVoltar });
