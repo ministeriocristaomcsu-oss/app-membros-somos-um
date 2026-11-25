@@ -142,6 +142,13 @@
   .es-checks input { width: auto; }
   .es-msg { white-space: pre-wrap; max-height: 140px; overflow: auto; background: #f7f6f4; color: #1b1b1b; border-radius: 8px; padding: 8px; margin-top: 6px; }
   .es-culto { scroll-margin-top: 120px; }
+  #es-ac { position: absolute; z-index: 60; background: var(--card); color: var(--ink); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 10px 28px rgba(0,0,0,.18); overflow: hidden; }
+  .es-ac-op { display: flex; gap: 10px; align-items: center; padding: 8px 10px; cursor: pointer; min-height: 48px; }
+  .es-ac-op + .es-ac-op { border-top: 1px solid var(--line); }
+  .es-ac-op.sel, .es-ac-op:hover { background: var(--red-soft); }
+  .es-ac-op .avatar { width: 34px; height: 34px; font-size: 12px; }
+  .es-ac-op b { display: block; font-weight: 600; font-size: 15px; line-height: 1.2; }
+  .es-ac-op small { display: block; color: var(--muted); font-size: 12px; }
   @media (max-width: 480px) { .es-funcao { grid-template-columns: 1fr; gap: 4px; } .es-rot { padding-top: 0; } }
   .oculto { display: none !important; }
   #aba-form.modo-kids .so-adulto { display: none !important; }
