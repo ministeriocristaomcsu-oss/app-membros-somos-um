@@ -18,7 +18,7 @@ const ES_NOTA_TER = 'Lembrete: ao final do culto, os voluntários empilham as ca
 const ES_ASSIN = 'Diaconia — Ministério Cristão Somos Um';
 const ES_AMOR = 'Seu serviço voluntário é feito com amor e faz toda a diferença. Cada irmão é parte do conjunto, e juntos somos a família que acolhe quem chega à casa do Senhor. ❤️';
 
-const es = { semAcesso: false, cultos: null, vols: [], avisos: {}, envios: {}, sub: 'inicio', mes: null, busca: '', lembrete: null, card: null, erro: null };
+const es = { novoMembro: null, semAcesso: false, cultos: null, vols: [], avisos: {}, envios: {}, sub: 'inicio', mes: null, busca: '', lembrete: null, card: null, erro: null };
 try { const s = localStorage.getItem('es_sub'); if (s) es.sub = s; } catch (e) { /* sem localStorage */ }
 
 const esNorm = (s) => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\s+/g, ' ').trim();
@@ -208,12 +208,7 @@ function esLinhaFuncao(c, k) {
   const nomes = (c.assign || {})[k] || [], f = ES_F[k], pes = esPessoas(c);
   const chips = nomes.map((n, i) => { const dup = (pes[esIdent(n)] || []).length > 1 && !esGrupo(n); return `<span class="es-chip${dup ? ' dup' : ''}">${esc(n)}<button data-es-tirar="${esc(c.id)}|${k}|${i}" aria-label="Tirar ${esc(n)}">×</button></span>`; }).join('');
   return `<div class="es-funcao"><div class="es-rot"><i style="background:${f.c}"></i>${esc(f.l)}</div><div class="es-chips">${chips}${nomes.length ? '' : '<span class="es-vazia">sem responsável</span>'}
-    <input list="es-dl-${k}" placeholder="+ nome" data-es-add="${esc(c.id)}|${k}" autocomplete="off" aria-label="Adicionar em ${esc(f.l)}"></div></div>`;
-}
-function esListasNomes() {
-  return ES_FUNCOES.map((r) => `<datalist id="es-dl-${r.k}">${es.vols.filter((v) => v.ativo !== false)
-    .sort((x, y) => ((x.funcoes || []).includes(r.k) ? 0 : 1) - ((y.funcoes || []).includes(r.k) ? 0 : 1) || x.nome.localeCompare(y.nome))
-    .map((v) => `<option value="${esc(v.nome)}">`).join('')}</datalist>`).join('');
+    <input placeholder="+ nome" data-es-add="${esc(c.id)}|${k}" autocomplete="off" aria-label="Adicionar em ${esc(f.l)}"></div></div>`;
 }
 function esTelaEscala(A) {
   const l = esDoMes();
@@ -230,21 +225,23 @@ function esTelaEscala(A) {
       <div class="acoes"><select data-es-extra="${esc(c.id)}" aria-label="Adicionar função"><option value="">+ Função extra…</option>${extra.map((f) => `<option value="${f.k}">${esc(f.l)}</option>`).join('')}</select>
         <button class="btn btn-sec" data-es-sugerir="${esc(c.id)}">Sugerir</button><button class="btn btn-sec" data-es-card="${esc(c.id)}">Card</button></div></div>`;
   }).join('');
-  return h + esListasNomes();
+  return h;
 }
 function esTelaVol(A) {
   const q = esNorm(es.busca), cont = A._cont;
   const vs = es.vols.slice().sort((a, b) => a.nome.localeCompare(b.nome)).filter((v) => !q || esNorm(v.nome).includes(q) || (v.apelidos || []).some((x) => esNorm(x).includes(q)));
   let h = `<p class="dica">Os outros nomes fazem o app reconhecer “Paulo” e “Dc. Paulo Borato” como a mesma pessoa. Sem WhatsApp aqui, o app usa o telefone do cadastro de membros.</p>
     <div class="barra"><input id="es-busca" placeholder="Buscar voluntário" value="${esc(es.busca)}"></div>
-    <div class="card"><div class="barra" style="margin:0"><input id="es-novo-vol" placeholder="Novo voluntário: nome completo, com título"><button class="btn btn-pri" id="es-add-vol">Adicionar</button></div></div>`;
+    <div class="card"><div class="barra" style="margin:0"><input id="es-novo-vol" data-es-ac="novo" placeholder="Novo voluntário: comece a digitar o nome" autocomplete="off" autocapitalize="words"><button class="btn btn-pri" id="es-add-vol">Adicionar</button></div>
+      <div class="sub" id="es-novo-info" style="margin-top:6px">${ES_NOVO_DICA}</div></div>`;
   h += vs.map((v) => {
     const tel = esTelefone(v), m = v.membro_id && estado.membros.find((x) => x.id === v.membro_id);
-    return `<div class="card"><div class="linha"><div class="info"><div class="nome">${esc(v.nome)}</div>
+    return `<div class="card"><div class="linha">${avatar(m || { nome: v.nome })}<div class="info"><div class="nome">${esc(v.nome)}</div>
       <div class="sub">${cont[v.id] || 0} escala${(cont[v.id] || 0) === 1 ? '' : 's'} • ${m ? `cadastro: <a href="#" data-editar="${esc(m.id)}">${esc(m.nome)}</a>` : 'sem cadastro de membro'}</div></div>
       <span class="es-pill ${tel ? 'ok' : 'warn'}">${tel ? 'WhatsApp ok' : 'sem WhatsApp'}</span></div>
       <div class="grade">
         <div><label for="es-t-${esc(v.id)}">WhatsApp (com DDD)</label><input type="tel" id="es-t-${esc(v.id)}" value="${esc(v.telefone || '')}" placeholder="${m && m.telefone ? esc(m.telefone) : '41 99999-9999'}" data-es-campo="${esc(v.id)}|telefone"></div>
+        <div class="inteiro"><label for="es-m-${esc(v.id)}">Cadastro de membro (digite para trocar)</label><input id="es-m-${esc(v.id)}" data-es-ac="vinculo|${esc(v.id)}" value="${esc(m ? m.nome : '')}" placeholder="Digite o nome do membro" autocomplete="off"></div>
         <div><label for="es-a-${esc(v.id)}">Outros nomes (vírgula)</label><input id="es-a-${esc(v.id)}" value="${esc((v.apelidos || []).join(', '))}" data-es-campo="${esc(v.id)}|apelidos"></div>
         <div class="inteiro"><label>Funções que pode fazer</label><div class="es-checks">${ES_FUNCOES.map((f) => `<label><input type="checkbox" data-es-check="${esc(v.id)}|funcoes|${f.k}"${(v.funcoes || []).includes(f.k) ? ' checked' : ''}>${esc(f.l)}</label>`).join('')}</div></div>
         <div class="inteiro"><label>Dias disponíveis (nenhum marcado = todos)</label><div class="es-checks">${ES_DK.map((d, i) => `<label><input type="checkbox" data-es-check="${esc(v.id)}|dias|${d}"${(v.dias || []).includes(d) ? ' checked' : ''}>${ES_DIAS[i].slice(0, 3)}</label>`).join('')}
@@ -399,7 +396,9 @@ document.addEventListener('click', (e) => {
   if (alvo.id === 'es-add-vol') {
     const nm = $('#es-novo-vol').value.trim(); if (!nm) return;
     const id = esSlug(nm); if (ES_VBY[id]) return toast('Esse voluntário já existe.');
-    const m = estado.membros.find((x) => esNorm(x.nome) === esNorm(nm.replace(/^(pr|pra|dc|dca|pb|ev|miss)\.\s*/i, '')));
+    const m = (es.novoMembro && estado.membros.find((x) => x.id === es.novoMembro)) || estado.membros.find((x) => esNorm(x.nome) === esNorm(nm.replace(/^(pr|pra|dc|dca|pb|ev|miss)\.\s*/i, '')));
+    const ja = m && es.vols.find((x) => x.membro_id === m.id); if (ja) return toast(m.nome + ' já é voluntário (' + ja.nome + ').');
+    es.novoMembro = null;
     const v = { id, nome: nm, telefone: '', ativo: true, funcoes: [], dias: [], apelidos: [], restricoes: {}, notas: '', membro_id: m ? m.id : null };
     es.vols.push(v); esIndexar(); esSalvarVol(v); es.busca = nm; return renderEscalas();
   }
@@ -413,7 +412,8 @@ document.addEventListener('keydown', (e) => { const ds = e.target.dataset || {};
 document.addEventListener('change', (e) => {
   const t = e.target, ds = t.dataset || {};
   if (!t.closest || !t.closest('#aba-escalas')) return;
-  if (ds.esAdd) { const [id, k] = ds.esAdd.split('|'), val = t.value; t.value = ''; return esAdicionar(id, k, val); }
+  if (ds.esAdd) { const val = t.value; if (!esVol(val) && !esGrupo(val)) return; const [id, k] = ds.esAdd.split('|'); t.value = ''; return esAdicionar(id, k, val); }
+  if (ds.esAc) return;
   if (ds.esExtra) { if (t.value) esMudarCulto(ds.esExtra, (c) => (c.funcoes = c.funcoes || []).push(t.value)); return; }
   if (t.id === 'es-mes') { es.mes = t.value; return renderEscalas(); }
   if (t.id === 'es-lembrete') { es.lembrete = t.value; return renderEscalas(); }
@@ -426,3 +426,90 @@ document.addEventListener('input', (e) => {
   es.busca = e.target.value; const pos = e.target.selectionStart; renderEscalas();
   const n = $('#es-busca'); if (n) { n.focus(); n.setSelectionRange(pos, pos); }
 });
+
+// ---------- autocompletar nomes (membros e voluntários) ----------
+// Busca sem acento e por qualquer parte do nome ("joao sil" acha "João da Silva"), com foto pequena.
+const ES_NOVO_DICA = 'Aparecem sugestões do cadastro de membros. Escolha uma para ligar o voluntário à pessoa certa.';
+let ES_AC = null; // { input, itens, sel }
+function esCasa(nome, q) {
+  const n = esNorm(nome), ps = q.split(' ').filter(Boolean);
+  if (!ps.length || !ps.every((p) => n.includes(p))) return -1;
+  return n.startsWith(q) ? 0 : n.split(' ').some((w) => w.startsWith(ps[0])) ? 1 : 2;
+}
+function esOpcoesAc(input) {
+  const q = esNorm(input.value), ds = input.dataset; if (!q) return [];
+  let l;
+  if (ds.esAdd) {
+    const k = ds.esAdd.split('|')[1];
+    l = es.vols.filter((v) => v.ativo !== false).map((v) => {
+      const r = Math.min(...[v.nome, ...(v.apelidos || [])].map((n) => { const x = esCasa(n, q); return x < 0 ? 9 : x; }));
+      const faz = (v.funcoes || []).includes(k), m = v.membro_id && estado.membros.find((x) => x.id === v.membro_id);
+      return { r: r === 9 ? 9 : r + (faz ? 0 : 3), nome: v.nome, valor: v.nome, m: m || { nome: v.nome }, sub: faz ? '' : 'não marcado nesta função' };
+    }).filter((o) => o.r < 9);
+  } else {
+    const vinc = {}; es.vols.forEach((v) => v.membro_id && (vinc[v.membro_id] = v));
+    l = estado.membros.map((m) => ({ r: esCasa(m.nome, q), m })).filter((o) => o.r >= 0).map(({ r, m }) => {
+      const inativo = m.situacao && m.situacao !== 'ativo';
+      const idade = m.nascimento ? Math.floor((Date.now() - new Date(m.nascimento + 'T12:00')) / 315576e5) : null;
+      const sub = [vinc[m.id] ? 'já é voluntário' : '', inativo ? m.situacao : '', idade !== null && idade < 18 ? idade + ' anos' : ''].filter(Boolean).join(' • ');
+      return { r: r + (inativo ? 3 : 0), nome: m.nome, valor: m.id, m, sub };
+    });
+  }
+  return l.sort((a, b) => a.r - b.r || a.nome.localeCompare(b.nome)).slice(0, 7);
+}
+function esFecharAc() { const b = document.getElementById('es-ac'); if (b) b.remove(); ES_AC = null; }
+function esAbrirAc(input) {
+  const itens = esOpcoesAc(input);
+  if (!itens.length) { esFecharAc(); return; }
+  let b = document.getElementById('es-ac');
+  if (!b) { b = document.createElement('div'); b.id = 'es-ac'; b.setAttribute('role', 'listbox'); document.body.appendChild(b); }
+  ES_AC = { input, itens, sel: 0 };
+  b.innerHTML = itens.map((o, i) => `<div class="es-ac-op${i === 0 ? ' sel' : ''}" role="option" data-es-ac-i="${i}">${avatar(o.m)}<div><b>${esc(o.nome)}</b>${o.sub ? `<small>${esc(o.sub)}</small>` : ''}</div></div>`).join('');
+  const r = input.getBoundingClientRect(), w = Math.min(Math.max(r.width, 260), window.innerWidth - 16);
+  b.style.width = w + 'px';
+  b.style.left = (Math.max(8, Math.min(r.left, window.innerWidth - w - 8)) + window.scrollX) + 'px';
+  b.style.top = (r.bottom + window.scrollY + 4) + 'px';
+}
+function esEscolherAc(i) {
+  if (!ES_AC) return; const { input, itens } = ES_AC, o = itens[i]; esFecharAc(); if (!o) return;
+  const ds = input.dataset;
+  if (ds.esAdd) { const [id, k] = ds.esAdd.split('|'); input.value = ''; return esAdicionar(id, k, o.valor); }
+  if (ds.esAc === 'novo') {
+    input.value = o.nome; es.novoMembro = o.valor;
+    const inf = $('#es-novo-info'); if (inf) inf.innerHTML = `✓ Vai ficar ligado ao cadastro de <b>${esc(o.nome)}</b>. Se quiser, coloque o título na frente (Dc., Pb.…) e toque em Adicionar.`;
+    return;
+  }
+  if (ds.esAc && ds.esAc.startsWith('vinculo|')) {
+    const vid = ds.esAc.split('|')[1], ja = es.vols.find((x) => x.membro_id === o.valor && x.id !== vid);
+    if (ja) { input.value = input.defaultValue; return toast(o.nome + ' já está ligado ao voluntário ' + ja.nome + '.'); }
+    esMudarVol(vid, (v) => (v.membro_id = o.valor)); renderEscalas(); toast('Ligado ao cadastro de ' + o.nome + '.');
+  }
+}
+document.addEventListener('input', (e) => {
+  const t = e.target; if (!t.closest || !t.closest('#aba-escalas') || !(t.dataset.esAdd || t.dataset.esAc)) return;
+  if (t.dataset.esAc === 'novo' && es.novoMembro) { es.novoMembro = null; const inf = $('#es-novo-info'); if (inf) inf.textContent = ES_NOVO_DICA; }
+  esAbrirAc(t);
+});
+document.addEventListener('focusin', (e) => { const t = e.target; if (t.closest && t.closest('#aba-escalas') && (t.dataset.esAdd || t.dataset.esAc) && t.value && !(t.dataset.esAc || '').startsWith('vinculo|')) esAbrirAc(t); });
+// Ao sair do campo: fecha a lista; no campo de vínculo, volta a mostrar o nome atual se nada foi escolhido
+document.addEventListener('focusout', (e) => {
+  const t = e.target;
+  setTimeout(() => {
+    if (document.activeElement === t) return;
+    if (ES_AC && ES_AC.input === t) esFecharAc();
+    if ((t.dataset && t.dataset.esAc || '').startsWith('vinculo|') && t.isConnected) t.value = t.defaultValue;
+  }, 150);
+});
+// Tocar na sugestão não tira o foco do campo (o teclado do celular não pisca e o toque não se perde)
+['pointerdown', 'mousedown'].forEach((ev) => document.addEventListener(ev, (e) => { if (e.target.closest && e.target.closest('#es-ac')) e.preventDefault(); }));
+document.addEventListener('click', (e) => { const op = e.target.closest && e.target.closest('[data-es-ac-i]'); if (op) esEscolherAc(+op.dataset.esAcI); });
+document.addEventListener('keydown', (e) => {
+  if (!ES_AC || e.target !== ES_AC.input) return;
+  const b = document.getElementById('es-ac'), n = ES_AC.itens.length;
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+    e.preventDefault(); ES_AC.sel = (ES_AC.sel + (e.key === 'ArrowDown' ? 1 : n - 1)) % n;
+    b.querySelectorAll('.es-ac-op').forEach((x, i) => x.classList.toggle('sel', i === ES_AC.sel));
+  } else if (e.key === 'Enter') { e.preventDefault(); e.stopImmediatePropagation(); esEscolherAc(ES_AC.sel); }
+  else if (e.key === 'Escape') esFecharAc();
+}, true);
+window.addEventListener('resize', () => { if (ES_AC) esAbrirAc(ES_AC.input); });
