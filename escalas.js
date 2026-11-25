@@ -303,7 +303,7 @@ function esDesenharCard(cv, c) {
   const H = 40 + 250 + 20 + tl.length * 72 + 60 + 40 + tot + 40 + nh + 110;
   cv.width = W; cv.height = H;
   ctx.fillStyle = '#faf9f8'; ctx.fillRect(0, 0, W, H);
-  if (ES_LOGO.complete && ES_LOGO.naturalWidth) ctx.drawImage(ES_LOGO, (W - 250) / 2, 40, 250, 250);
+  if (ES_LOGO.complete && ES_LOGO.naturalWidth) { const lw = 600, lh = Math.round(lw * ES_LOGO.naturalHeight / ES_LOGO.naturalWidth); ctx.drawImage(ES_LOGO, (W - lw) / 2, 40 + (250 - lh) / 2, lw, lh); }
   let y = 40 + 250 + 20; ctx.fillStyle = '#151515'; ctx.textBaseline = 'top'; ctx.textAlign = 'center'; ctx.font = '700 58px ' + T;
   tl.forEach((t) => { ctx.fillText(t, W / 2, y); y += 72; });
   const d = esPd(c.date);
