@@ -31,6 +31,10 @@ function expandirAgenda(itens, cultos, inicio, dias) {
     diasComCulto.add(agIso(d));
     lista.push({ data: d, hora: c.hora || '', titulo: c.nome || 'Culto', local: '', descricao: '', origem: 'escala' });
   }
+  // Evento com data marcado como culto (ex.: Cantata de Natal num domingo) também substitui o culto fixo do dia
+  for (const it of itens || []) {
+    if (it.ativo !== false && it.tipo === 'evento' && it.culto && it.data) diasComCulto.add(agIso(agDia(it.data)));
+  }
   for (const it of itens || []) {
     if (it.ativo === false) continue;
     if (it.tipo === 'evento') {
