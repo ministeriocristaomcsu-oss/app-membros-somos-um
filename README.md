@@ -4,6 +4,7 @@ Site estático (HTML puro, sem build) publicado no Cloudflare Pages: https://min
 
 - `index.html`: app da secretaria (membros, aniversários, Kids e Jovens, visitantes, pedidos)
 - `atualizar.html`: link público para o membro atualizar o cadastro
+- `cadastro-kids.html`: link público para os pais cadastrarem os filhos (chega em Pedidos; `cartaz-kids.html` imprime o QR)
 - `visitante.html`: cadastro de visitantes pelo QR code
 - `presenca.html`: presença pelo QR code (o membro digita o WhatsApp e marca ele e os filhos); `cartaz-presenca.html?c=<código>` imprime o QR de cada culto ou célula
 - `tesouraria.js`: aba Tesouraria (caixa da igreja). Só quem é tesoureiro em Ajustes → Acessos vê; o banco bloqueia os outros (`supabase/sql/2026-11-22-tesouraria.sql`)

@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cartaz do Cadastro Kids</title>
+<style>
+  @page { size: A4; margin: 18mm; }
+  body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: #fff; color: #111; text-align: center; }
+  main { max-width: 640px; margin: 0 auto; padding: 32px 16px; }
+  .logo { width: 90px; height: 90px; }
+  h1 { font-size: 40px; margin: 16px 0 6px; }
+  h1 span { color: #c4161c; }
+  p { font-size: 20px; margin: 8px 0; }
+  #qr svg { width: 340px; max-width: 80vw; height: auto; margin: 24px auto 8px; display: block; }
+  .link { font-size: 15px; color: #555; word-break: break-all; }
+  .rodape { margin-top: 28px; font-size: 16px; color: #555; }
+  .botoes { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 24px; }
+  button, a.btn { border: 0; border-radius: 10px; padding: 14px 24px; font-size: 16px; font-weight: 600; background: #c4161c; color: #fff; cursor: pointer; text-decoration: none; font-family: inherit; }
+  .sec { background: #fff !important; color: #111 !important; border: 1px solid #ccc !important; }
+  @media print { .botoes { display: none; } }
+</style>
+</head>
+<body>
+<main>
+  <img class="logo" src="icone-192.png" alt="">
+  <h1>Cadastro <span>Kids</span> 🧸</h1>
+  <p>Pai, mãe: cadastre o seu filho no Ministério Infantil!</p>
+  <p>Aponte a câmera do celular para o código:</p>
+  <div id="qr"></div>
+  <div class="link" id="link"></div>
+  <div class="rodape">Ministério Cristão Somos Um · Colombo-PR<br>Instagram <b>@mcsomosum</b></div>
+  <div class="botoes">
+    <button onclick="print()">Imprimir</button>
+    <a class="btn sec" id="baixar" download="qrcode-cadastro-kids.png">Baixar QR code</a>
+  </div>
+</main>
+<script src="lib/qrcode-generator-1.4.4.js"></script>
+<script>
+const link = new URL('cadastro-kids.html', location.href).href;
+const qr = qrcode(0, 'M'); qr.addData(link); qr.make();
+document.getElementById('qr').innerHTML = qr.createSvgTag({ cellSize: 8, margin: 2, scalable: true });
+document.getElementById('link').textContent = link.replace(/^https?:\/\//, '');
+document.getElementById('baixar').href = qr.createDataURL(12, 4);
+</script>
+</body>
+</html>
