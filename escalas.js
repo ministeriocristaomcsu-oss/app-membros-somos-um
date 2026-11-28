@@ -18,7 +18,7 @@ const ES_NOTA_TER = 'Lembrete: ao final do culto, os voluntários empilham as ca
 const ES_ASSIN = 'Diaconia — Ministério Cristão Somos Um';
 const ES_AMOR = 'Seu serviço voluntário é feito com amor e faz toda a diferença. Cada irmão é parte do conjunto, e juntos somos a família que acolhe quem chega à casa do Senhor. ❤️';
 
-const es = { novoMembro: null, semAcesso: false, cultos: null, vols: [], avisos: {}, envios: {}, sub: 'inicio', mes: null, busca: '', lembrete: null, card: null, erro: null };
+const es = { novoMembro: null, semAcesso: false, cultos: null, vols: [], avisos: {}, envios: {}, sub: 'inicio', mes: null, busca: '', lembrete: null, verMensal: false, card: null, erro: null };
 try { const s = localStorage.getItem('es_sub'); if (s) es.sub = s; } catch (e) { /* sem localStorage */ }
 
 const esNorm = (s) => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\s+/g, ' ').trim();
@@ -264,8 +264,9 @@ function esTelaMsg(A) {
     h += (A[c.id].vazias.length ? `<p class="aviso">Antes de avisar: faltam ${esc(A[c.id].vazias.join(', '))}.</p>` : '<div style="height:10px"></div>')
       + esEscalados((x) => x.id === c.id).map((p) => esItemMsg(p, `r__${c.id}__${p.ident}`, esMsgLembrete(p, c))).join('');
   });
-  h += `<h2>Escala de ${esc(mes)} (${pessoas.filter((p) => es.envios[chave(p)]).length} de ${pessoas.length} enviadas)</h2>`
-    + (l.length ? pessoas.map((p) => esItemMsg(p, chave(p), esMsgMensal(p, mes))).join('') : '<div class="card vazio">Nenhum culto neste mês.</div>');
+  h += `<details class="es-mensal"${es.verMensal ? ' open' : ''}><summary class="btn btn-sec" style="margin:18px 0 10px;display:block;text-align:center;list-style:none;cursor:pointer">${es.verMensal ? 'Esconder' : 'Ver'} a escala do mês de ${esc(mes)} (${pessoas.filter((p) => es.envios[chave(p)]).length} de ${pessoas.length} enviadas)</summary>`
+    + (l.length ? pessoas.map((p) => esItemMsg(p, chave(p), esMsgMensal(p, mes))).join('') : '<div class="card vazio">Nenhum culto neste mês.</div>')
+    + '</details>';
   return h;
 }
 function esTelaCard() {
@@ -426,6 +427,12 @@ document.addEventListener('input', (e) => {
   es.busca = e.target.value; const pos = e.target.selectionStart; renderEscalas();
   const n = $('#es-busca'); if (n) { n.focus(); n.setSelectionRange(pos, pos); }
 });
+document.addEventListener('toggle', (e) => {
+  const d = e.target;
+  if (!d.classList || !d.classList.contains('es-mensal')) return;
+  es.verMensal = d.open;
+  const s = d.querySelector('summary'); if (s) s.textContent = s.textContent.replace(/^(Ver|Esconder)/, d.open ? 'Esconder' : 'Ver');
+}, true);
 
 // ---------- autocompletar nomes (membros e voluntários) ----------
 // Busca sem acento e por qualquer parte do nome ("joao sil" acha "João da Silva"), com foto pequena.
