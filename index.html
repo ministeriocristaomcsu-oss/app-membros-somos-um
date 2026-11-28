@@ -89,6 +89,11 @@
   .aviso { background: var(--red-soft); color: var(--red); border-radius: 8px; padding: 10px; font-size: 14px; margin-top: 12px; }
   .dica { font-size: 13px; color: var(--muted); }
   #login { max-width: 380px; margin: 60px auto; }
+  #pede-data { position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 15; display: flex; align-items: center; justify-content: center; padding: 16px; }
+  #pede-data .folha { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 18px; width: 100%; max-width: 340px; }
+  #pede-data input { width: 100%; font-size: 22px; letter-spacing: 1px; text-align: center; padding: 10px; margin: 10px 0 4px; }
+  #pede-data .erro { color: var(--red); font-size: 13px; min-height: 18px; }
+  #pede-data .acoes { display: flex; gap: 8px; justify-content: flex-end; margin-top: 10px; }
   #toast { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); background: #111; color: #fff; padding: 10px 16px; border-radius: 10px; font-size: 14px; display: none; z-index: 20; max-width: 90vw; }
   /* Painel do pastor */
   .kpis { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 4px; }
@@ -1635,13 +1640,51 @@ function renderKids() {
   document.querySelectorAll('[data-kj-faixa]').forEach((b) => (b.onclick = () => { $('#kj-filtro').value = filtro === b.dataset.kjFaixa ? 'todas' : b.dataset.kjFaixa; renderKids(); }));
   if (foco === 'kj-busca') { const i = $('#kj-busca'); i.focus(); i.setSelectionRange(i.value.length, i.value.length); }
 }
+// Janela para digitar uma data: só aceita números, coloca as barras sozinha (dd/mm/aaaa)
+// e confere se a data existe, não está no futuro e não é antes do nascimento.
+function mascaraData(v) {
+  const n = String(v || '').replace(/\D/g, '').slice(0, 8);
+  return n.length > 4 ? `${n.slice(0, 2)}/${n.slice(2, 4)}/${n.slice(4)}` : n.length > 2 ? `${n.slice(0, 2)}/${n.slice(2)}` : n;
+}
+function conferirData(txt, minimoIso) {
+  const m = String(txt || '').match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if (!m) return { erro: 'Digite a data completa: dia/mês/ano.' };
+  const d = +m[1], mes = +m[2], a = +m[3];
+  const dt = new Date(a, mes - 1, d);
+  if (mes < 1 || mes > 12 || dt.getDate() !== d || dt.getMonth() !== mes - 1) return { erro: 'Essa data não existe.' };
+  if (a < 1900) return { erro: 'Ano inválido.' };
+  if (dt > hoje()) return { erro: 'A data está no futuro.' };
+  const iso = isoDe(dt);
+  if (minimoIso && iso < minimoIso) return { erro: 'A data é antes do nascimento.' };
+  return { iso };
+}
+function pedirData(titulo, padraoIso, minimoIso) {
+  return new Promise((resolve) => {
+    const fundo = document.createElement('div');
+    fundo.id = 'pede-data';
+    fundo.innerHTML = `<div class="folha" role="dialog" aria-modal="true">
+      <strong>${esc(titulo)}</strong>
+      <input type="text" inputmode="numeric" autocomplete="off" maxlength="10" placeholder="dd/mm/aaaa" value="${esc(fmtIso(padraoIso))}">
+      <div class="erro"></div>
+      <div class="acoes"><button class="btn btn-sec" data-x>Cancelar</button><button class="btn btn-pri" data-ok>Salvar</button></div>
+    </div>`;
+    document.body.appendChild(fundo);
+    const inp = fundo.querySelector('input'), erro = fundo.querySelector('.erro');
+    const fim = (v) => { fundo.remove(); resolve(v); };
+    const ok = () => { const r = conferirData(inp.value, minimoIso); if (r.erro) { erro.textContent = r.erro; inp.focus(); } else fim(r.iso); };
+    inp.addEventListener('input', () => { inp.value = mascaraData(inp.value); erro.textContent = ''; });
+    inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') ok(); if (e.key === 'Escape') fim(null); });
+    fundo.querySelector('[data-ok]').onclick = ok;
+    fundo.querySelector('[data-x]').onclick = () => fim(null);
+    fundo.addEventListener('click', (e) => { if (e.target === fundo) fim(null); });
+    inp.focus(); inp.select();
+  });
+}
 // Batismo nas águas: marca batizado, guarda a data e passa o vínculo para Membro
 async function registrarBatismo(id) {
   const m = estado.membros.find((x) => x.id === id);
-  const r = prompt(`Data do batismo de ${primeiroNome(m.nome)} (dd/mm/aaaa):`, fmtIso(isoDe(hoje())));
-  if (r == null) return;
-  const iso = dataIso(r);
-  if (!iso || new Date(iso) > new Date()) return toast('Data inválida. Use dd/mm/aaaa.');
+  const iso = await pedirData(`Data do batismo de ${primeiroNome(m.nome)}`, isoDe(hoje()), m.nascimento);
+  if (!iso) return;
   const mud = { batizado: true, data_batismo: iso };
   if (!ehMembro(m)) mud.categoria = 'membro';
   const { error } = await sb.from('membros').update(mud).eq('id', id);
